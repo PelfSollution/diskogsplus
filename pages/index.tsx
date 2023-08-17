@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { Button } from "@/components/ui/button"
 import TopNavBar from "@/components/TopNavBar"
 
 export default function Home() {
+  const router = useRouter();
+
   const [isLoggedIn, setIsLoggedIn] = useState(false); 
 
   const handleLogin = () => {
@@ -20,7 +23,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold mb-4">Bienvenido a MiApp</h1>
         <p className="text-xl">Descripción de la app</p>
       </header>
-      {!isLoggedIn && <Button onClick={handleLogin} className="self-center">Log in con Discogs</Button>}
+      {!isLoggedIn &&  <Button onClick={() => router.push('/api/auth/authorize')} className="self-center">Log in con Discogs</Button>}
     </div>
   )
 }

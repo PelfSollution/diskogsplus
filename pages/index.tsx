@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Button } from "@/components/ui/button"
-import TopNavBar from "@/components/TopNavBar"
+import TopNavBar from "@/components/top-nav-bar"
 
 export default function Home() {
   const router = useRouter();

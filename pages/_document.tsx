@@ -5,6 +5,8 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head />
+        <link rel="shortcut icon" href="/favicon.png" />
+        <title>Discogs Plus</title>
         <body>
           <Main />
           <NextScript />

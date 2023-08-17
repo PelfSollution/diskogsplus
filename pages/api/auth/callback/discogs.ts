@@ -34,7 +34,7 @@ export default async function discogsCallback(
     );
     const requestData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-    console.log("requestData descifrado:", requestData);
+    console.log("requestData Descifrado:", requestData);
 
     var oAuth = await new Discogs(requestData).oauth();
 

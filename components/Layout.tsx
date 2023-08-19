@@ -2,7 +2,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { getCookie } from 'cookies-next';
-import TopNavBar from "@/components/top-nav-bar";
+import TopNavBar from "@/components/TopNavBar";
 
 interface LayoutProps {
     children: ReactNode;

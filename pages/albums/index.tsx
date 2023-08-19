@@ -1,6 +1,7 @@
 // Importo los componentes y hooks necesarios.
 import Layout from "@/components/Layout";
 import useGetAlbumList from "@/hooks/useGetAlbumList";
+import Link from 'next/link';
 
 // Esta es la interfaz que define la estructura de un álbum.
 interface Album {
@@ -58,16 +59,18 @@ function Albums() {
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Álbumes</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allAlbums.map((album: Album) => (
-            <div key={album.id} className="bg-white p-4 rounded shadow">
-              <img
+        {allAlbums.map((album: Album) => (
+    <Link key={album.id} href={`/albums/${album.id}`} passHref>
+        <div className="bg-white p-4 rounded shadow cursor-pointer">
+            <img
                 src={album.basic_information.cover_image}
                 alt={album.basic_information.title}
                 className="w-full h-48 object-cover mb-2 rounded"
-              />
-              <h2 className="text-xl">{album.basic_information.title}</h2>
-            </div>
-          ))}
+            />
+            <h2 className="text-xl">{album.basic_information.title}</h2>
+        </div>
+    </Link>
+))}
         </div>
         <button
           onClick={loadMoreAlbums}

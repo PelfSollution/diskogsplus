@@ -31,7 +31,13 @@ export default function Home() {
       
       {/* si el usuario está loggeado, no mostrará el botón de inicio de sesión. 
            */}
-      <Button onClick={() => router.push('/api/auth/authorize')} className="self-center">Hacer Login con Discogs</Button>
+      <Button 
+    onClick={() => router.push('/api/auth/authorize')} 
+    className="self-center mx-auto block"
+>
+    Hacer Login con Discogs
+</Button>
+
     </Layout>
   )
 }

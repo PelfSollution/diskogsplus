@@ -36,10 +36,11 @@ function Albums() {
     const lowercasedSearchTerm = searchTerm.toLowerCase();
     filteredAlbums = filteredAlbums.filter(album => {
       const titleMatches = album.basic_information.title.toLowerCase().includes(lowercasedSearchTerm);
-      const artistMatches = album.basic_information.artists.some(artist => artist.name.toLowerCase().includes(lowercasedSearchTerm));
+      const artistMatches = album.basic_information.artists.some((artist: Artist) => artist.name.toLowerCase().includes(lowercasedSearchTerm));
       return titleMatches || artistMatches;
     });
 }
+
 
   console.log("searchTerm:", searchTerm);
 console.log("Filtered albums:", filteredAlbums);

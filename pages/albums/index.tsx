@@ -33,11 +33,16 @@ function Albums() {
   let filteredAlbums = [...allAlbums];
 
   if (searchTerm) {
-    filteredAlbums = filteredAlbums.filter(album => 
-      album.basic_information.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    filteredAlbums = filteredAlbums.filter(album => {
+      const titleMatches = album.basic_information.title.toLowerCase().includes(lowercasedSearchTerm);
+      const artistMatches = album.basic_information.artists.some(artist => artist.name.toLowerCase().includes(lowercasedSearchTerm));
+      return titleMatches || artistMatches;
+    });
+}
 
+  console.log("searchTerm:", searchTerm);
+console.log("Filtered albums:", filteredAlbums);
   switch(filter) {
     case "name":
       // Ordenar por nombre del artista

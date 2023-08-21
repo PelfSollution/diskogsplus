@@ -76,11 +76,11 @@ console.log("Filtered albums:", filteredAlbums);
   };
 
   if (isLoading) {
-    return <p>Cargando álbumes...</p>;
+    return <Layout>Cargando álbumes...</Layout>;
   }
 
   if (error || !allAlbums) {
-    return <p>Error al cargar los álbumes.</p>;
+    return <Layout>Error al cargar los álbumes.</Layout>;
   }
 
   if (allAlbums.length === 0) {

@@ -31,12 +31,14 @@ export default function Home() {
       
       {/* si el usuario está loggeado, no mostrará el botón de inicio de sesión. 
            */}
+           <div className='tw-flex tw-flex-col'>
       <Button 
     onClick={() => router.push('/api/auth/authorize')} 
-    className="tw-self-center tw-mx-auto tw-block"
+    className="tw-self-center mx-auto block"
 >
     Hacer Login con Discogs
 </Button>
+</div>
 
     </Layout>
   )

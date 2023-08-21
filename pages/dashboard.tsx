@@ -14,25 +14,25 @@ function Dashboard() {
 
     return (
         <Layout>
-            <div className="flex flex-col items-center justify-center w-full">
-                <header className="text-center mb-8">
+            <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-w-full">
+                <header className="tw-text-center tw-mb-8">
                     <div>
                         {error && !isLoading && <div>Error: failed to load</div>}
                         {isLoading || isValidating && <div>Loading...</div>}
 
                         {data?.userProfile && Object.keys(data).length > 0 ? (
                             <div>
-                                <h1 className='text-2xl'>Hola, <span className="font-bold text-blue-500">{data.userProfile.username}</span></h1>
-                                {data.userProfile.avatar_url && <img className='mt-4 rounded-full object-cover' src={data.userProfile.avatar_url} alt={`${data.userProfile.username} profile pic`} />}
+                                <h1 className='tw-text-2xl'>Hola, <span className="tw-font-bold tw-text-blue-500">{data.userProfile.username}</span></h1>
+                                {data.userProfile.avatar_url && <img className='tw-mt-4 tw-rounded-full tw-object-cover' src={data.userProfile.avatar_url} alt={`${data.userProfile.username} profile pic`} />}
                                 
                                 {isDateValid(data.userProfile.registered) ? (
-                                    <p className='mt-4'><span className="font-bold">Registrado:</span> {format(new Date(data.userProfile.registered), 'dd/MM/yyyy HH:mm')}</p>
+                                    <p className='tw-mt-4'><span className="tw-font-bold">Registrado:</span> {format(new Date(data.userProfile.registered), 'dd/MM/yyyy HH:mm')}</p>
                                 ) : (
-                                    <p className='mt-4'><span className="font-bold">Registrado:</span> Fecha desconocida</p>
+                                    <p className='tw-mt-4'><span className="tw-font-bold">Registrado:</span> Fecha desconocida</p>
                                 )}
 
-                                <p>Tu tienes <span className="font-bold text-blue-500">{data.userProfile.num_collection}</span> discos en tu colecci&oacute;n.</p>
-                                <Button onClick={() => router.push('/albums')} className="mt-4 self-center">Ver Discos</Button>
+                                <p>Tu tienes <span className="tw-font-bold tw-text-blue-500">{data.userProfile.num_collection}</span> discos en tu colecci&oacute;n.</p>
+                                <Button onClick={() => router.push('/albums')} className="tw-mt-4 tw-self-center">Ver Discos</Button>
                             </div>
                         ) : (
                             <p>Inicie sesi&oacute;n para ver su perfil.</p>

@@ -86,8 +86,8 @@ console.log("Filtered albums:", filteredAlbums);
   if (allAlbums.length === 0) {
     return (
       <Layout centeredContent={false}>
-        <div className="container mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-4">Álbumes</h1>
+        <div className="tw-container tw-mx-auto tw-p-6">
+          <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Álbumes</h1>
           <p>No hay álbumes disponibles para mostrar.</p>
         </div>
       </Layout>
@@ -96,10 +96,10 @@ console.log("Filtered albums:", filteredAlbums);
 
   return (
     <Layout centeredContent={false}>
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Álbumes</h1>
-        <div className="my-4">
-        <select onChange={(e) => setFilter(e.target.value as any)} className="ml-4 p-2">
+      <div className="tw-container tw-mx-auto tw-p-6">
+        <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Álbumes</h1>
+        <div className="tw-my-4">
+        <select onChange={(e) => setFilter(e.target.value as any)} className="tw-ml-4 tw-p-2">
   <option value="">Selecciona un filtro</option>
   <option value="name">Nombre</option>
   <option value="album">Álbum</option>
@@ -111,24 +111,25 @@ console.log("Filtered albums:", filteredAlbums);
             placeholder="Buscar..." 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="ml-4 p-2 border rounded"
+            className="tw-ml-4 tw-p-2 tw-border tw-rounded"
           />
 
-          <button onClick={() => setOrderAsc(!orderAsc)} className="ml-4">
+          <button onClick={() => setOrderAsc(!orderAsc)} className="tw-ml-4">
             {orderAsc ? '⬆️' : '⬇️'}
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-6">
+
           {filteredAlbums.map((album: Album) => (
             <Link key={album.id} href={`/albums/${album.id}`} passHref>
-              <div className="bg-white p-4 rounded shadow cursor-pointer">
+              <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
                 <img
                   src={album.basic_information.cover_image}
                   alt={album.basic_information.title}
-                  className="w-full h-48 object-cover mb-2 rounded"
+                  className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
                 />
-                <h2 className="text-xl">
-    <span className="font-bold">
+                <h2 className="tw-text-xl">
+    <span className="tw-font-bold">
         {album.basic_information.artists && album.basic_information.artists.length > 0 
             ? album.basic_information.artists[0].name 
             : "Artista desconocido"}
@@ -140,7 +141,7 @@ console.log("Filtered albums:", filteredAlbums);
         </div>
         <button
           onClick={loadMoreAlbums}
-          className="mt-4 w-full bg-blue-500 text-white py-2 rounded-full"
+          className="tw-mt-4 tw-w-full tw-bg-blue-500 tw-text-white tw-py-2 tw-rounded-full"
         >
           Cargar más álbumes
         </button>

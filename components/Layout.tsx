@@ -30,9 +30,9 @@ const Layout: React.FC<LayoutProps> = ({ children, centeredContent = true, allow
     if (isLoggedIn === null) return null; 
     // Agregué un margen superior de 20px para que no se superponga con la barra de navegación superior
     return (
-        <div className={`min-h-screen flex flex-col ${centeredContent ? 'items-center justify-center' : ''} bg-gray-100`}>
+        <div className={`tw-min-h-screen tw-flex tw-flex-col ${centeredContent ? 'tw-items-center tw-justify-center' : ''} tw-bg-gray-100`}>
         <TopNavBar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-        <div className="mt-20"> 
+        <div className="tw-mt-10"> 
             {children}
         </div>
     </div>

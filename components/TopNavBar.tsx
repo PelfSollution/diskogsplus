@@ -28,14 +28,14 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
   };
 
   return (
-      <nav className="w-full bg-white shadow-md py-2 px-4 fixed top-0 left-0 z-10">
-      <div className="container mx-auto flex justify-between items-center">
-        <Image src="/diskogs-logo.gif" alt="Diskogs plus" className="w-24" width={200} height={60}/>
-        <ul className="flex space-x-4 items-center">
-          <li className="cursor-pointer inline-flex items-center" onClick={() => router.push('/dashboard')}>Home</li>
-          <li className="cursor-pointer inline-flex items-center" onClick={() => router.push('/albums')}>Álbumes</li>
+      <nav className="tw-w-full tw-bg-white tw-shadow-md tw-py-2 tw-px-4 tw-fixed tw-top-0 tw-left-0 tw-z-10">
+      <div className="tw-container tw-mx-auto tw-flex tw-justify-between tw-items-center">
+        <Image src="/diskogs-logo.gif" alt="Diskogs plus" className="tw-w-24" width={200} height={60}/>
+        <ul className="tw-flex tw-space-x-4 tw-items-center">
+          <li className="tw-cursor-pointer tw-inline-flex tw-items-center" onClick={() => router.push('/dashboard')}>Home</li>
+          <li className="tw-cursor-pointer tw-inline-flex tw-items-center" onClick={() => router.push('/albums')}>Álbumes</li>
           <li>
-            <Button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white">
+            <Button variant="destructive" onClick={handleLogout} className="tw-bg-red-500 tw-hover:bg-red-600 tw-text-white">
               Logout
             </Button>
           </li>

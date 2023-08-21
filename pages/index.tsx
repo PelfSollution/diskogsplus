@@ -18,22 +18,22 @@ export default function Home() {
 
   return (
     <Layout allowPublicAccess={true}>
-      <header className="text-center mb-8">
+      <header className="tw-text-center tw-mb-8">
         <Image 
           src="/diskogs-logo.gif" 
           alt="Diskogs plus" 
-          className="w-full max-w-full" 
+          className="tw-w-full tw-max-w-full" 
           width={500} 
           height={149}
         />
-        <p className="text-xl mt-2">Descripción de la app</p>
+        <p className="tw-text-xl tw-mt-2">Descripción de la app</p>
       </header>
       
       {/* si el usuario está loggeado, no mostrará el botón de inicio de sesión. 
            */}
       <Button 
     onClick={() => router.push('/api/auth/authorize')} 
-    className="self-center mx-auto block"
+    className="tw-self-center tw-mx-auto tw-block"
 >
     Hacer Login con Discogs
 </Button>

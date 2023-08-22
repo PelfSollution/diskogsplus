@@ -18,6 +18,7 @@ export interface AlbumInfoInterface {
   genres: string[];
   styles: string[];
   tracklist: { position: string; title: string; duration: string }[];
+  lastfmTags?: string[];
 }
 
 // Defino la estructura de la respuesta que espero del hook.

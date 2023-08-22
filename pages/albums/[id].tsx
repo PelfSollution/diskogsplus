@@ -57,10 +57,14 @@ console.log("Album info released:", albumInfo.released);
           Genres
         </Typography>
         <Stack direction="row" spacing={1}>
-          {albumInfo.genres.map((genre: string) => (
-            <Chip key={genre} clickable label={genre} color="primary"/>
-          ))}
-        </Stack>
+        {albumInfo.genres && albumInfo.genres.map((genre: string) => (
+    <Chip key={genre} clickable label={genre} color="primary"/>
+))}
+
+{albumInfo.lastfmTags && albumInfo.lastfmTags.map((tag: string) => (
+    <Chip key={tag} clickable label={tag} color="secondary"/>
+))}
+</Stack>
 
         <Accordion defaultExpanded>
           <AccordionSummary>

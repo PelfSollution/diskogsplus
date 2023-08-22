@@ -3,6 +3,25 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
 
+async function fetchLastfmData(albumName: string, artistName?: string) {
+  const apiKey = process.env.LASTFM_API_KEY;
+  const baseUrl = "http://ws.audioscrobbler.com/2.0/?method=album.getinfo";
+  const format = "&format=json";
+  const url = `${baseUrl}&api_key=${apiKey}&album=${albumName}${
+    artistName ? `&artist=${artistName}` : ""
+  }${format}`;
+
+  // Aquí está el console.log para imprimir la URL:
+  console.log("URL for Last.fm request:", url);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch from Last.fm");
+  }
+  return response.json();
+}
+
+
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
 export default async function albumInfo(
@@ -71,7 +90,37 @@ export default async function albumInfo(
         tracklist: selectedTracklist,
       };
 
-      res.send({ albumInfo });
+      //... (mantén tu código existente aquí)
+
+      const discogsData = {
+        label: releaseData.labels[0].name,
+        //... (todos tus otros datos de Discogs)
+      };
+
+      let lastfmTags: string[] = [];
+
+      try {
+        const lastfmResponse = await fetchLastfmData(
+          releaseData.title,
+          releaseData.artists ? releaseData.artists[0].name : undefined
+        );
+        if (lastfmResponse.album && lastfmResponse.album.tags) {
+          lastfmTags = lastfmResponse.album.tags.tag.map(
+            (tag: any) => tag.name
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching Last.fm data:", error);
+      }
+
+      const combinedData = {
+        ...discogsData,
+        lastfmTags: lastfmTags,
+      };
+
+      console.log("Combined data:", combinedData);
+      res.send({ albumInfo: combinedData });
+
     } else {
       // Si no tengo datos de acceso, envío una respuesta vacía.
       res.send({

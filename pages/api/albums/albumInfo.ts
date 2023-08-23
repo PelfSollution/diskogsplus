@@ -1,7 +1,10 @@
 var Discogs = require("disconnect").Client;
+import OpenAI from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
+
+
 
 async function fetchLastfmData(albumName: string, artistName?: string) {
   const apiKey = process.env.LASTFM_API_KEY;
@@ -21,6 +24,28 @@ async function fetchLastfmData(albumName: string, artistName?: string) {
   return response.json();
 }
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+async function enrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
+  try {
+    const completion = await openai.completions.create({
+      model: "text-davinci-003",
+      prompt: `Proporciona información adicional sobre el artista ${artistName}`,
+      max_tokens: 300,
+      temperature: 0,
+    });
+
+    // Si la API devuelve alguna opción de finalización, devuelve la primera. De lo contrario, devuelve un mensaje de error.
+    return completion.choices && completion.choices.length > 0
+      ? completion.choices[0].text.trim()
+      : "No se pudo obtener información adicional del artista.";
+  } catch (error) {
+    console.error("Error en OpenAI:", error);
+    return "Error al obtener información adicional del artista.";
+  }
+}
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -43,12 +68,15 @@ export default async function albumInfo(
 
       // Aquí está mi objeto accessData descifrado.
       const accessData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+      console.log("Decrypted accessData:", accessData);
 
       // Me conecto a la base de datos de Discogs.
       var db = await new Discogs(accessData).database();
 
       // Obtengo los datos de un lanzamiento específico del álbum.
+      console.log("Making request to Discogs API...");
       const releaseData = await db.getRelease(id);
+      console.log("Received data from Discogs API:", releaseData);
 
       // Algunos lanzamientos no tienen un maestro asociado.
       // Esto es evidente cuando Discogs devuelve '0' como el ID maestro.
@@ -97,6 +125,14 @@ export default async function albumInfo(
         //... (todos tus otros datos de Discogs)
       };
 
+      // Enriquece la información del artista usando ChatGPT
+      let enrichedArtistInfo = "";
+      if (releaseData.artists && releaseData.artists[0]?.name) {
+        enrichedArtistInfo = await enrichArtistInfoWithChatGPT(
+          releaseData.artists[0].name
+        );
+      }
+
       let lastfmTags: string[] = [];
 
       try {
@@ -115,12 +151,12 @@ export default async function albumInfo(
 
       const combinedData = {
         ...discogsData,
+        enrichedInfo: enrichedArtistInfo, // Información enriquecida del artista
         lastfmTags: lastfmTags,
       };
 
       console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });
-
     } else {
       // Si no tengo datos de acceso, envío una respuesta vacía.
       res.send({
@@ -129,6 +165,7 @@ export default async function albumInfo(
     }
   } catch (err: any) {
     // Si ocurre algún error, lo envío con un código 400 y un mensaje específico.
+    console.error("Error in albumInfo:", err);
     res.status(400).json({
       error_code: "album_info",
       message: err.message,

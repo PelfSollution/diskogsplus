@@ -53,29 +53,36 @@ console.log("Album info released:", albumInfo.released);
         </Typography>
         <Chip label={albumInfo.label} className="tw-mr-2"/>
 
+        { (albumInfo.genres?.length || albumInfo.lastfmTags?.length) && (
+    <>
         <Typography variant="h6" gutterBottom>
-          Genres
+            Tags
         </Typography>
         <Stack direction="row" spacing={1}>
-        {albumInfo.genres && albumInfo.genres.map((genre: string) => (
-    <Chip key={genre} clickable label={genre} color="primary"/>
-))}
+            {albumInfo.genres && albumInfo.genres.map((genre: string) => (
+                <Chip key={genre} clickable label={genre} color="primary"/>
+            ))}
+            
+            {albumInfo.lastfmTags && albumInfo.lastfmTags.map((tag: string) => (
+                <Chip key={tag} clickable label={tag} color="secondary"/>
+            ))}
+        </Stack>
+    </>
+)}
 
-{albumInfo.lastfmTags && albumInfo.lastfmTags.map((tag: string) => (
-    <Chip key={tag} clickable label={tag} color="secondary"/>
-))}
-</Stack>
 
-        <Accordion defaultExpanded>
-          <AccordionSummary>
-            <Typography variant="h6">Album Notes</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="body1">
-              {/* Aquí puedes incluir detalles o notas adicionales sobre el álbum */}
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
+{albumInfo.enrichedInfo && (
+  <Accordion defaultExpanded>
+      <AccordionSummary>
+          <Typography variant="h6">Información extra</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+          <Typography variant="body1">
+              {albumInfo.enrichedInfo}
+          </Typography>
+      </AccordionDetails>
+  </Accordion>
+)}
       </Grid>
 
       {/* Columna de la derecha */}

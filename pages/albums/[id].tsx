@@ -87,25 +87,22 @@ console.log("Album info released:", albumInfo.released);
 
       {/* Columna de la derecha */}
       <Grid item xs={12} md={5}>
-        <Typography variant="h6" gutterBottom>
-          Listen Now
-        </Typography>
-        <iframe
-          allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
-          frameBorder="0" // Cambiado a frameBorder con 'B' en mayúscula.
-          height="450"
-          sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
-          src="https://embed.music.apple.com/us/album/1422648512?theme=light"
-          style={{
-            width: "100%",
-            overflow: "hidden",
-            background: "transparent",
-            borderRadius: "15px",
-          }}
-        ></iframe>
+  <Typography variant="h6" gutterBottom>
+    Listen Now
+  </Typography>
+  
+  {/* Esto es un ejemplo con el reproductor de Spotify */}
+  <iframe 
+    src={`https://open.spotify.com/embed/album/${albumInfo.spotifyAlbumId}`} 
+    width="100%" 
+    height="380" 
+    frameBorder="0" 
+    allow="encrypted-media">
+</iframe>
 
-        {/* Agrega los otros componentes como videos de YouTube, imágenes, etc. */}
-      </Grid>
+
+  {/* ... Resto de tu componente ... */}
+</Grid>
     </Grid>
   </Layout>
   );

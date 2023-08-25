@@ -71,7 +71,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-async function enrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
+function mockEnrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
+  return new Promise((resolve) => {
+    resolve(`Esta es una respuesta simulada para el artista ${artistName}.`);
+  });
+}
+
+
+  async function enrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
+    if (process.env.NODE_ENV === 'development') {
+      return mockEnrichArtistInfoWithChatGPT(artistName);
+    }
   try {
     const completion = await openai.completions.create({
       model: "text-davinci-003",

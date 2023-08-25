@@ -79,7 +79,7 @@ function mockEnrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
 
 
   async function enrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENTORNO === 'development') {
       return mockEnrichArtistInfoWithChatGPT(artistName);
     }
   try {

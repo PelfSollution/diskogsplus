@@ -58,11 +58,17 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      transformOrigin: {
-        '0': '0%',
+      backfaceVisibility: { 
+        'hidden': 'hidden',
+        'visible': 'visible'
       },
-      zIndex: {
-        '-1': '-1',
+      perspective: { 
+        'none': 'none',
+        'flip': '1000px'
+      },
+      rotate: {
+        '0': '0deg',
+        '180': '180deg',
       },
       keyframes: {
         "accordion-down": {
@@ -73,10 +79,15 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+        'flip': { 
+          '0%': { transform: 'rotateY(0deg)' },
+          '100%': { transform: 'rotateY(180deg)' }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        'flip': 'flip 0.6s',
       },
     },
   },

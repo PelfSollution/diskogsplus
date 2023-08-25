@@ -58,6 +58,12 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      transformOrigin: {
+        '0': '0%',
+      },
+      zIndex: {
+        '-1': '-1',
+      },
       keyframes: {
         "accordion-down": {
           from: { height: 0 },

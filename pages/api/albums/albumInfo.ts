@@ -152,6 +152,24 @@ export default async function albumInfo(
         }
       }
 
+      interface Image {
+        type: string;
+        uri: string;
+        resource_url: string;
+        uri150: string;
+        width: number;
+        height: number;
+      }
+
+      const frontCover = releaseData.images.find((image: Image) => image.type === 'primary')?.uri || '';
+      const backCover = releaseData.images.find((image: Image) => image.type === 'secondary')?.uri || frontCover;
+      
+      console.log("CHIVATO");
+      console.log("Front cover:", frontCover);
+      console.log("Back cover:", backCover);
+
+
+
       // Recopilo la información del álbum.
       const albumInfo = {
         label: releaseData.labels[0].name,
@@ -159,13 +177,13 @@ export default async function albumInfo(
         rating: releaseData.community.rating.average,
         released: releaseData.released,
         country: releaseData.country,
-        genres: hasValidMasterId
-          ? masterReleaseData.genres
-          : releaseData.genres,
-        styles: hasValidMasterId
-          ? masterReleaseData.styles
-          : releaseData.styles,
+        genres: hasValidMasterId ? masterReleaseData.genres : releaseData.genres,
+        styles: hasValidMasterId ? masterReleaseData.styles : releaseData.styles,
         tracklist: selectedTracklist,
+        coverImage: frontCover,
+        backCoverImage: backCover,
+        artist: releaseData.artists[0].name, 
+        title: releaseData.title,
       };
 
       //... (mantén tu código existente aquí)
@@ -201,6 +219,10 @@ export default async function albumInfo(
 
       const combinedData = {
         ...discogsData,
+        artist: releaseData.artists[0].name,
+        title: releaseData.title,
+        coverImage: frontCover,
+        backCoverImage: backCover,
         enrichedInfo: enrichedArtistInfo, // Información enriquecida del artista
         lastfmTags: lastfmTags,
         spotifyAlbumId: spotifyAlbumId, 

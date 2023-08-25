@@ -10,6 +10,10 @@ const fetcher = (url: string) => fetch(url).then((res) => {
 
 // Esta es la estructura de los datos del álbum que espero obtener de la API.
 export interface AlbumInfoInterface {
+  coverImage: string;
+  backCoverImage: string;
+  artist: string;
+  title: string;
   label: string;
   catalogNo: string;
   rating: number;

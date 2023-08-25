@@ -7,6 +7,7 @@ import {
   Chip,
   Stack,
   Card,
+  CardMedia,
   CardContent,
   Accordion,
   AccordionSummary,
@@ -17,7 +18,15 @@ import Link from 'next/link';
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 
 
+
 function AlbumDetails() {
+
+  const [isFlipped, setIsFlipped] = useState(false);
+
+const handleFlip = () => {
+  setIsFlipped(!isFlipped);
+};
+
   const router = useRouter();
   const { id, masterId } = router.query;
   const { data, isLoading, error } = useGetAlbumInfo(Number(id), Number(masterId));
@@ -37,12 +46,46 @@ function AlbumDetails() {
   console.log("Data received:", data);
 console.log("Album info:", albumInfo);
 console.log("Album info released:", albumInfo.released);
+console.log("Cover image:", albumInfo.coverImage);
+console.log("Back cover image:", albumInfo.backCoverImage);
 
   return (
     <Layout centeredContent={false}>
     <Grid container spacing={3} className="tw-container tw-mx-auto tw-p-6">
       {/* Columna de la izquierda */}
       <Grid item xs={12} md={7}>
+       {/* Contenedor flex para centrar verticalmente y horizontalmente */}
+       <div className="tw-flex tw-items-center tw-mb-4 tw-mt-4">
+            {/* Componente de la portada del disco */}
+            <div 
+  className="relative cursor-pointer transform transition-transform duration-700 tw-w-64 tw-h-64"
+  onClick={handleFlip}
+>
+  {isFlipped ? (
+    <Card className="absolute w-full h-full">
+      <CardMedia
+        component="img"
+        image={albumInfo.backCoverImage}
+        alt={`${albumInfo.artist} - ${albumInfo.title} back cover`}
+      />
+    </Card>
+  ) : (
+    <Card className="absolute w-full h-full">
+      <CardMedia
+        component="img"
+        image={albumInfo.coverImage}
+        alt={`${albumInfo.artist} - ${albumInfo.title} front cover`}
+      />
+    </Card>
+  )}
+</div>
+
+            {/* Información del artista y álbum */}
+            <div className="tw-ml-4">
+              <Typography variant="h5">{albumInfo.artist}</Typography>
+              <Typography variant="h6">{albumInfo.title}</Typography>
+            </div>
+          </div>
         <Typography variant="subtitle1">Released in {albumInfo.released}</Typography>
         <Typography variant="subtitle2">
           Added to collection: July 30, 2019

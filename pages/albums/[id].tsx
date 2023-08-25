@@ -11,6 +11,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  CircularProgress,
 } from "@mui/material";
 import Link from 'next/link';
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
@@ -25,7 +26,7 @@ function AlbumDetails() {
   console.log("Error:", error);
 
   if (isLoading) {
-    return <Layout>Cargando...</Layout>;
+    return <Layout><CircularProgress/></Layout>;
   }
 
   if (error || !albumInfo) {

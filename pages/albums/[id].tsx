@@ -59,13 +59,13 @@ console.log("Album info released:", albumInfo.released);
         <Typography variant="h6" gutterBottom>
             Tags
         </Typography>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" flexWrap="wrap">
             {albumInfo.genres && albumInfo.genres.map((genre: string) => (
-                <Chip key={genre} clickable label={genre} color="primary"/>
+                <Chip key={genre} label={genre} className="tw-mr-2 tw-mb-2"/>
             ))}
             
             {albumInfo.lastfmTags && albumInfo.lastfmTags.map((tag: string) => (
-                <Chip key={tag} clickable label={tag} color="secondary"/>
+                <Chip key={tag}  label={tag} className="tw-mr-2 tw-mb-2"/>
             ))}
         </Stack>
     </>

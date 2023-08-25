@@ -180,63 +180,48 @@ export default async function albumInfo(
 
 
 
-      // Recopilo la información del álbum.
-      const albumInfo = {
-        label: releaseData.labels[0].name,
-        catalogNo: releaseData.labels[0].catno,
-        rating: releaseData.community.rating.average,
-        released: releaseData.released,
-        country: releaseData.country,
-        genres: hasValidMasterId ? masterReleaseData.genres : releaseData.genres,
-        styles: hasValidMasterId ? masterReleaseData.styles : releaseData.styles,
-        tracklist: selectedTracklist,
-        coverImage: frontCover,
-        backCoverImage: backCover,
-        artist: releaseData.artists[0].name, 
-        title: releaseData.title,
-      };
+  // Recopilo la información del álbum.
+const albumInfo = {
+  label: releaseData.labels[0].name,
+  catalogNo: releaseData.labels[0].catno,
+  rating: releaseData.community.rating.average,
+  released: releaseData.released,
+  country: releaseData.country,
+  genres: hasValidMasterId ? masterReleaseData.genres : releaseData.genres,
+  styles: hasValidMasterId ? masterReleaseData.styles : releaseData.styles,
+  tracklist: selectedTracklist,
+  coverImage: frontCover,
+  backCoverImage: backCover,
+  artist: releaseData.artists[0].name,
+  title: releaseData.title,
+};
 
-      //... (mantén tu código existente aquí)
+// Enriquece la información del artista usando ChatGPT
+let enrichedArtistInfo = "";
+if (releaseData.artists && releaseData.artists[0]?.name) {
+  enrichedArtistInfo = await enrichArtistInfoWithChatGPT(releaseData.artists[0].name);
+}
 
-      const discogsData = {
-        label: releaseData.labels[0].name,
-        //... (todos tus otros datos de Discogs)
-      };
+let lastfmTags: string[] = [];
 
-      // Enriquece la información del artista usando ChatGPT
-      let enrichedArtistInfo = "";
-      if (releaseData.artists && releaseData.artists[0]?.name) {
-        enrichedArtistInfo = await enrichArtistInfoWithChatGPT(
-          releaseData.artists[0].name
-        );
-      }
+try {
+  const lastfmResponse = await fetchLastfmData(
+    releaseData.title,
+    releaseData.artists ? releaseData.artists[0].name : undefined
+  );
+  if (lastfmResponse.album && lastfmResponse.album.tags) {
+    lastfmTags = lastfmResponse.album.tags.tag.map((tag: any) => tag.name);
+  }
+} catch (error) {
+  console.error("Error fetching Last.fm data:", error);
+}
 
-      let lastfmTags: string[] = [];
-
-      try {
-        const lastfmResponse = await fetchLastfmData(
-          releaseData.title,
-          releaseData.artists ? releaseData.artists[0].name : undefined
-        );
-        if (lastfmResponse.album && lastfmResponse.album.tags) {
-          lastfmTags = lastfmResponse.album.tags.tag.map(
-            (tag: any) => tag.name
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching Last.fm data:", error);
-      }
-
-      const combinedData = {
-        ...discogsData,
-        artist: releaseData.artists[0].name,
-        title: releaseData.title,
-        coverImage: frontCover,
-        backCoverImage: backCover,
-        enrichedInfo: enrichedArtistInfo, // Información enriquecida del artista
-        lastfmTags: lastfmTags,
-        spotifyAlbumId: spotifyAlbumId, 
-      };
+const combinedData = {
+  ...albumInfo, // Incorporamos la información recopilada previamente
+  enrichedInfo: enrichedArtistInfo, 
+  lastfmTags: lastfmTags,
+  spotifyAlbumId: spotifyAlbumId,
+};
 
       console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });

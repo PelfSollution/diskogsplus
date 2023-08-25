@@ -9,7 +9,15 @@ const fetcher = (url: string) => fetch(url).then((res) => {
 });
 
 // Esta es la estructura de los datos del álbum que espero obtener de la API.
+export interface TrackType {
+  uniqueId: string;  // Este es el identificador único (ID del álbum + título del track)
+  position: string;
+  title: string;
+  duration: string;
+  // ... posiblemente otras propiedades
+}
 export interface AlbumInfoInterface {
+  albumId: string;
   coverImage: string;
   backCoverImage: string;
   artist: string;
@@ -21,7 +29,7 @@ export interface AlbumInfoInterface {
   country: string;
   genres: string[];
   styles: string[];
-  tracklist: { position: string; title: string; duration: string }[];
+  tracklist: TrackType[];
   lastfmTags?: string[];
   enrichedInfo?: string;
   spotifyAlbumId?: string; 

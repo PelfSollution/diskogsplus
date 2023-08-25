@@ -14,11 +14,15 @@ import {
   AccordionDetails,
   CircularProgress,
 } from "@mui/material";
-import Link from "next/link";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
+import { useMixtape } from '@/hooks/useMixtape';
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
+  const { mixtape, addToMixtape, removeFromMixtape, isTrackInMixtape } = useMixtape();
+
+
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -31,6 +35,8 @@ function AlbumDetails() {
     Number(masterId)
   );
   const albumInfo: AlbumInfoInterface = data;
+
+
 
   console.log("Error:", error);
 
@@ -49,6 +55,8 @@ function AlbumDetails() {
       </Layout>
     );
   }
+
+  
   console.log("Data received:", data);
   console.log("Album info:", albumInfo);
   console.log("Album info released:", albumInfo.released);
@@ -127,7 +135,12 @@ function AlbumDetails() {
 
           {albumInfo.enrichedInfo && (
             <Accordion defaultExpanded>
-              <AccordionSummary>
+                   <AccordionSummary
+          expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+                
                 <Typography variant="h6">Información extra</Typography>
               </AccordionSummary>
               <AccordionDetails>
@@ -137,25 +150,67 @@ function AlbumDetails() {
               </AccordionDetails>
             </Accordion>
           )}
+
+{albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
+  <Accordion>
+       <AccordionSummary
+          expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+      <Typography variant="h6">Tracklist</Typography>
+    </AccordionSummary>
+    <AccordionDetails>
+      <Stack direction="column" spacing={1}>
+{albumInfo.tracklist.map((track, index) => (
+  <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
+    <span>{track.title}</span>
+    {isTrackInMixtape(id as string, track.position) ? (
+  <button 
+    className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
+    onClick={() => removeFromMixtape(id as string, track.position)}
+  >
+    Quitar de mixtape
+  </button>
+) : (
+  <button 
+    className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
+    onClick={() => addToMixtape(id as string, track)}
+  >
+    Añadir a mixtape
+  </button>
+)}
+  </div>
+))}
+      </Stack>
+    </AccordionDetails>
+  </Accordion>
+)}
         </Grid>
 
         {/* Columna de la derecha */}
         <Grid item xs={12} md={5}>
-          <Typography variant="h6" gutterBottom>
-            Listen Now
-          </Typography>
+    <Typography variant="h6" gutterBottom>
+        Escucha ahora
+    </Typography>
 
-          {/* Esto es un ejemplo con el reproductor de Spotify */}
-          <iframe
+    {albumInfo.spotifyAlbumId ? (
+        <iframe
             src={`https://open.spotify.com/embed/album/${albumInfo.spotifyAlbumId}`}
             width="100%"
             height="380"
             frameBorder="0"
             allow="encrypted-media"
-          ></iframe>
+        ></iframe>
+    ) : (
+        <Typography variant="body1" color="textSecondary">
+            Este álbum no está disponible en Spotify.
+        </Typography>
+    )}
 
-          {/* ... Resto de tu componente ... */}
-        </Grid>
+    {/* ... Resto de tu componente ... */}
+</Grid>
+
       </Grid>
     </Layout>
   );

@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children, centeredContent = true, allow
             return;
         }
         setIsLoggedIn(!!getCookie('username'));
-    }, []);
+    }, [getCookie, allowPublicAccess, router]);
 
     const handleLogout = () => {
         setIsLoggedIn(false);

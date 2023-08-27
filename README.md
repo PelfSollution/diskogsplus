@@ -1,7 +1,7 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## DiscogsPlus
-
+```
 diskogsplus/
 ┣ .next/
 ┃ ┣ cache/
@@ -62,6 +62,7 @@ diskogsplus/
 ┣ tailwind.config.js
 ┣ tailwind.config.ts
 ┗ tsconfig.json
+```
 
 ## Getting Started
 

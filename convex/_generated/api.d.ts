@@ -16,6 +16,7 @@ import type {
 } from "convex/server";
 import type * as addUser from "../addUser";
 import type * as mixtapes from "../mixtapes";
+import type * as tracks from "../tracks";
 import type * as user from "../user";
 
 /**
@@ -29,6 +30,7 @@ import type * as user from "../user";
 declare const fullApi: ApiFromModules<{
   addUser: typeof addUser;
   mixtapes: typeof mixtapes;
+  tracks: typeof tracks;
   user: typeof user;
 }>;
 export declare const api: FilterApi<

@@ -34,7 +34,7 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
         <ul className="tw-flex tw-space-x-4 tw-items-center">
           <li className="tw-cursor-pointer tw-inline-flex tw-items-center" onClick={() => router.push('/dashboard')}>Home</li>
           <li className="tw-cursor-pointer tw-inline-flex tw-items-center" onClick={() => router.push('/albums')}>Álbumes</li>
-          <li className="tw-cursor-pointer tw-inline-flex tw-items-center" onClick={() => router.push('/convex')}>Convex</li>
+          <li className="tw-cursor-pointer tw-inline-flex tw-items-center" onClick={() => router.push('/mixtape')}>Mixtape</li>
           <li>
             <Button variant="destructive" onClick={handleLogout} className="tw-bg-red-500 tw-hover:bg-red-600 tw-text-white">
               Logout

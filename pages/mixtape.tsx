@@ -4,6 +4,7 @@ import { api } from "../convex/_generated/api";
 
 export default function Convex() {
 
+  // @ts-ignore
   const tracks = useQuery(api.tracks.get);
   console.log(tracks);
   return (

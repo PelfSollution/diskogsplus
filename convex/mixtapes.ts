@@ -1,10 +1,9 @@
 import { query } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 
-export const get = query({
-  args: {},
-  handler: async (ctx) => {
-    const mixtapes = await ctx.db.query("mixtapes").collect();
 
-    return mixtapes;
-  },
+export const list = query(async (ctx): Promise<Doc<"mixtapes">[]> => {
+  return await ctx.db.query("mixtapes").collect();
 });
+
+

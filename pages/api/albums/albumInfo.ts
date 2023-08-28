@@ -1,8 +1,8 @@
 var Discogs = require("disconnect").Client;
-import OpenAI from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
+import { enrichArtistInfoWithChatGPT } from "../../../services/openai/enrichArtistInfo";
 
 async function getSpotifyAccessToken() {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -65,39 +65,6 @@ async function fetchLastfmData(albumName: string, artistName?: string) {
     throw new Error("Failed to fetch from Last.fm");
   }
   return response.json();
-}
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-function mockEnrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
-  return new Promise((resolve) => {
-    resolve(`Esta es una respuesta simulada para el artista ${artistName}.`);
-  });
-}
-
-
-  async function enrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
-    if (process.env.NODE_ENTORNO === 'development') {
-      return mockEnrichArtistInfoWithChatGPT(artistName);
-    }
-  try {
-    const completion = await openai.completions.create({
-      model: "text-davinci-003",
-      prompt: `Proporciona información adicional sobre el artista ${artistName}`,
-      max_tokens: 300,
-      temperature: 0,
-    });
-
-    // Si la API devuelve alguna opción de finalización, devuelve la primera. De lo contrario, devuelve un mensaje de error.
-    return completion.choices && completion.choices.length > 0
-      ? completion.choices[0].text.trim()
-      : "No se pudo obtener información adicional del artista.";
-  } catch (error) {
-    console.error("Error en OpenAI:", error);
-    return "Error al obtener información adicional del artista.";
-  }
 }
 
 // Esta función obtiene los datos del álbum del usuario.

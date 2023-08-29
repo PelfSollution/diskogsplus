@@ -3,69 +3,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
 import { enrichArtistInfoWithChatGPT } from "../../../services/openai/enrichArtistInfo";
-
-async function getSpotifyAccessToken() {
-  const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-
-  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-  
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${auth}`,
-    },
-    body: 'grant_type=client_credentials',
-  });
-
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error(data.error_description);
-  }
-
-  return data.access_token;
-}
-
-
-async function getSpotifyAlbumId(albumName: string, artistName: string, accessToken: string) {
-  const response = await fetch(`https://api.spotify.com/v1/search?q=album:${albumName} artist:${artistName}&type=album`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error(data.error.message);
-  }
-
-  if (data.albums.items.length === 0) {
-    return null;
-  }
-
-  return data.albums.items[0].id;
-}
-
-async function fetchLastfmData(albumName: string, artistName?: string) {
-  const apiKey = process.env.LASTFM_API_KEY;
-  const baseUrl = "http://ws.audioscrobbler.com/2.0/?method=album.getinfo";
-  const format = "&format=json";
-  const url = `${baseUrl}&api_key=${apiKey}&album=${albumName}${
-    artistName ? `&artist=${artistName}` : ""
-  }${format}`;
-
-  // Aquí está el console.log para imprimir la URL:
-  console.log("URL for Last.fm request:", url);
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error("Failed to fetch from Last.fm");
-  }
-  return response.json();
-}
+import { fetchLastfmData } from "../../../services/last.fm/fetchData";
+import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken";
+import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -79,8 +19,6 @@ export default async function albumInfo(
 
     // Descifro el objeto cookie de accessData.
     const accessDatacipherObj = getCookie("accessData", { req, res });
-    
-
 
     if (accessDatacipherObj) {
       const bytes = await CryptoJS.AES.decrypt(
@@ -100,10 +38,13 @@ export default async function albumInfo(
       const releaseData = await db.getRelease(id);
       console.log("Received data from Discogs API:", releaseData);
 
-          // Autenticación en Spotify para obtener el token de acceso.
-    const accessToken = await getSpotifyAccessToken();
-    const spotifyAlbumId = await getSpotifyAlbumId(releaseData.title, releaseData.artists[0].name, accessToken);
-    
+      // Autenticación en Spotify para obtener el token de acceso.
+      const accessToken = await getSpotifyAccessToken();
+      const spotifyAlbumId = await getSpotifyAlbumId(
+        releaseData.title,
+        releaseData.artists[0].name,
+        accessToken
+      );
 
       // Algunos lanzamientos no tienen un maestro asociado.
       // Esto es evidente cuando Discogs devuelve '0' como el ID maestro.
@@ -138,57 +79,67 @@ export default async function albumInfo(
         height: number;
       }
 
-      const frontCover = releaseData.images.find((image: Image) => image.type === 'primary')?.uri || '';
-      const backCover = releaseData.images.find((image: Image) => image.type === 'secondary')?.uri || frontCover;
-      
+      const frontCover =
+        releaseData.images.find((image: Image) => image.type === "primary")
+          ?.uri || "";
+      const backCover =
+        releaseData.images.find((image: Image) => image.type === "secondary")
+          ?.uri || frontCover;
+
       console.log("CHIVATO");
       console.log("Front cover:", frontCover);
       console.log("Back cover:", backCover);
 
+      // Recopilo la información del álbum.
+      const albumInfo = {
+        label: releaseData.labels[0].name,
+        catalogNo: releaseData.labels[0].catno,
+        rating: releaseData.community.rating.average,
+        released: releaseData.released,
+        country: releaseData.country,
+        genres: hasValidMasterId
+          ? masterReleaseData.genres
+          : releaseData.genres,
+        styles: hasValidMasterId
+          ? masterReleaseData.styles
+          : releaseData.styles,
+        tracklist: selectedTracklist,
+        coverImage: frontCover,
+        backCoverImage: backCover,
+        artist: releaseData.artists[0].name,
+        title: releaseData.title,
+      };
 
+      // Enriquece la información del artista usando ChatGPT
+      let enrichedArtistInfo = "";
+      if (releaseData.artists && releaseData.artists[0]?.name) {
+        enrichedArtistInfo = await enrichArtistInfoWithChatGPT(
+          releaseData.artists[0].name
+        );
+      }
 
-  // Recopilo la información del álbum.
-const albumInfo = {
-  label: releaseData.labels[0].name,
-  catalogNo: releaseData.labels[0].catno,
-  rating: releaseData.community.rating.average,
-  released: releaseData.released,
-  country: releaseData.country,
-  genres: hasValidMasterId ? masterReleaseData.genres : releaseData.genres,
-  styles: hasValidMasterId ? masterReleaseData.styles : releaseData.styles,
-  tracklist: selectedTracklist,
-  coverImage: frontCover,
-  backCoverImage: backCover,
-  artist: releaseData.artists[0].name,
-  title: releaseData.title,
-};
+      let lastfmTags: string[] = [];
 
-// Enriquece la información del artista usando ChatGPT
-let enrichedArtistInfo = "";
-if (releaseData.artists && releaseData.artists[0]?.name) {
-  enrichedArtistInfo = await enrichArtistInfoWithChatGPT(releaseData.artists[0].name);
-}
+      try {
+        const lastfmResponse = await fetchLastfmData(
+          releaseData.title,
+          releaseData.artists ? releaseData.artists[0].name : undefined
+        );
+        if (lastfmResponse.album && lastfmResponse.album.tags) {
+          lastfmTags = lastfmResponse.album.tags.tag.map(
+            (tag: any) => tag.name
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching Last.fm data:", error);
+      }
 
-let lastfmTags: string[] = [];
-
-try {
-  const lastfmResponse = await fetchLastfmData(
-    releaseData.title,
-    releaseData.artists ? releaseData.artists[0].name : undefined
-  );
-  if (lastfmResponse.album && lastfmResponse.album.tags) {
-    lastfmTags = lastfmResponse.album.tags.tag.map((tag: any) => tag.name);
-  }
-} catch (error) {
-  console.error("Error fetching Last.fm data:", error);
-}
-
-const combinedData = {
-  ...albumInfo, // Incorporamos la información recopilada previamente
-  enrichedInfo: enrichedArtistInfo, 
-  lastfmTags: lastfmTags,
-  spotifyAlbumId: spotifyAlbumId,
-};
+      const combinedData = {
+        ...albumInfo, // Incorporamos la información recopilada previamente
+        enrichedInfo: enrichedArtistInfo,
+        lastfmTags: lastfmTags,
+        spotifyAlbumId: spotifyAlbumId,
+      };
 
       console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });

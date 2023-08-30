@@ -1,9 +1,31 @@
 import format from "date-fns/format";
+var Discogs = require("disconnect").Client;
 import { useRouter } from "next/router";
 import useGetUserData from "@/hooks/useGetUserData";
+import useGetAlbumList from "@/hooks/useGetAlbumList";
 import Image from "next/image";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+
+interface UserAlbums {
+  releases: Album[];
+}
+
+interface Artist {
+  name: string;
+}
+
+interface Album {
+  id: number;
+  basic_information: {
+    cover_image: string;
+    artists: Artist[];
+    title: string;
+    created_at: string;
+  };
+}
 
 const isDateValid = (dateString: string): boolean => {
   return !isNaN(Date.parse(dateString));
@@ -12,6 +34,10 @@ const isDateValid = (dateString: string): boolean => {
 function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, isValidating } = useGetUserData();
+  console.log("Datos obtenidos de useGetUserData:", data);
+ 
+
+
 
   return (
     <Layout>
@@ -54,18 +80,25 @@ function Dashboard() {
                   </p>
                 )}
 
-                <p>
+<p>
                   Tu tienes{" "}
                   <span className="tw-font-bold tw-text-blue-500">
                     {data.userProfile.num_collection}
                   </span>{" "}
                   discos en tu colecci&oacute;n.
                 </p>
+                {data.userProfile.favorite_styles && (
+    <Stack direction="row" spacing={1}>
+        {data.userProfile.favorite_styles.split(',').map((style: string, index: number) => (
+            <Chip key={index} label={style.trim()} />
+        ))}
+    </Stack>
+)}
                 <Button
                   onClick={() => router.push("/albums")}
                   className="tw-mt-4 tw-self-center"
                 >
-                  Ver Discos
+                  Ver Vinilos
                 </Button>
               </div>
             ) : (

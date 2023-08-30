@@ -26,8 +26,9 @@ async function getVinylCollection(username: string, accessData: any, per_page: n
         });
 
         totalPages = userCollection.pagination.pages;
-        allReleases = allReleases.concat(userCollection.releases.filter((album: Album) => album.basic_information.formats[0].name === "Vinyl"));
-        
+        //allReleases = allReleases.concat(userCollection.releases.filter((album: Album) => album.basic_information.formats[0].name === "Vinyl"));
+        allReleases = allReleases.concat(userCollection.releases);
+
         currentPage++;
     }
 

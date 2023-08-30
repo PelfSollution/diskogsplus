@@ -75,10 +75,10 @@ export default function Comparador() {
 
         {comparePressed && !isLoading && albumsDifference && (
           <div>
-            <h2>
-              Álbumes que {user1} tiene y {user2} no tiene: (
-              {albumsDifference[0].length})
-            </h2>
+            <p className="tw-mb-4 tw-mt-4">
+              Vinilos que <span className="tw-font-bold">{user1}</span> tiene y <span className="tw-font-bold">{user2}</span> no tiene:  <span className="tw-font-bold tw-text-blue-500">
+              {albumsDifference[0].length}</span>
+            </p>
 
             <ul>
               <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-6">

@@ -3,7 +3,7 @@ import useGetAlbumList from "@/hooks/useGetAlbumList";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-
+import { CircularProgress } from "@mui/material";
 interface Artist {
   name: string;
 }
@@ -20,9 +20,10 @@ interface Album {
 
 function Albums() {
   const { data: albums, isLoading, error, size, setSize } = useGetAlbumList();
-  const allAlbums = albums ? albums.flatMap((page) => page.releases) : [];
+  console.log("Datos obtenidos de useGetAlbumList:", albums);
 
-  console.log("All albums data:", allAlbums);
+  const allAlbums = albums ? albums.flatMap((page) => page.releases) : [];
+  console.log("Todos los álbumes:", allAlbums);
 
   const [filter, setFilter] = useState<
     "name" | "album" | "added" | "year" | ""
@@ -86,7 +87,13 @@ function Albums() {
   };
 
   if (isLoading) {
-    return <Layout>Cargando álbumes...</Layout>;
+    return (
+      <Layout>
+        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+          <CircularProgress />
+        </div>
+      </Layout>
+    );
   }
 
   if (error || !allAlbums) {

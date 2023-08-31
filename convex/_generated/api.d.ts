@@ -14,7 +14,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as addMixtape from "../addMixtape";
+import type * as addMixtape from "../addTrack";
 import type * as getMixtape from "../getMixtape";
 
 /**

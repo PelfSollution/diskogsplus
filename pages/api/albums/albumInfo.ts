@@ -6,6 +6,7 @@ import { enrichArtistInfoWithChatGPT } from "../../../services/openai/enrichArti
 import { fetchLastfmData } from "../../../services/last.fm/fetchData";
 import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken";
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
+import { getSpotifyTrackId } from "../../../services/spotify/getTrackId";
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -70,6 +71,20 @@ export default async function albumInfo(
         }
       }
 
+      const tracklistWithSpotifyIds = await Promise.all(
+        selectedTracklist.map(async (track: any) => {
+          const spotifyTrackId = await getSpotifyTrackId(
+            track.title,
+            releaseData.artists[0].name,
+            accessToken
+          );
+          return {
+            ...track,
+            spotifyTrackId,
+          };
+        })
+      );
+
       interface Image {
         type: string;
         uri: string;
@@ -103,7 +118,7 @@ export default async function albumInfo(
         styles: hasValidMasterId
           ? masterReleaseData.styles
           : releaseData.styles,
-        tracklist: selectedTracklist,
+        tracklist: tracklistWithSpotifyIds, // Aquí reemplazamos tracklist con tracklistWithSpotifyIds
         coverImage: frontCover,
         backCoverImage: backCover,
         artist: releaseData.artists[0].name,

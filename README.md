@@ -5,6 +5,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 - user: diskogsplus
 - pass: diskogsplus
 
+ejemplo user para matching: dayats 
+
 ## DiscogsPlus
 ```
 diskogsplus/

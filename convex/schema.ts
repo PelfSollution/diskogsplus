@@ -2,20 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-
-  
-  mixtapes: defineTable({
-    mixtapeName: v.string(),
-    description: v.optional(v.string()),
-    tracks: v.array(v.id("tracks")),
-    spotifyLink: v.string(),
-    spotifyEmbed: v.string()
-  }),
-
-  tracks: defineTable({
-    trackTitle: v.string(),
-    artist: v.string(),
-  }),
-  
-});
+    mixtape: defineTable({
+      userName: v.string(), // ID del usuario, que podría ser un nombre de usuario, email, o cualquier identificador único
+      discogsAlbumId: v.string(),
+      spotifyTrackId: v.optional(v.string()),
+      artistName: v.string(),
+      trackName: v.string(),
+      // ... (otros campos que consideres necesarios)
+    }).index("by_userName", ["userName"]),
+  });
 

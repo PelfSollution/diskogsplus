@@ -5,48 +5,86 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 diskogsplus/
 ┣ .next/
 ┃ ┣ cache/
+┃ ┃ ┣ images/
+┃ ┃ ┣ swc/
+┃ ┃ ┗ webpack/
 ┃ ┣ server/
+┃ ┃ ┣ pages/
+┃ ┃ ┣ _error.js
+┃ ┃ ┣ middleware-build-manifest.js
+┃ ┃ ┣ middleware-manifest.json
+┃ ┃ ┣ middleware-react-loadable-manifest.js
+┃ ┃ ┣ next-font-manifest.js
+┃ ┃ ┣ next-font-manifest.json
+┃ ┃ ┣ pages-manifest.json
+┃ ┃ ┣ webpack-api-runtime.js
+┃ ┃ ┗ webpack-runtime.js
 ┃ ┣ static/
+┃ ┃ ┣ chunks/
+┃ ┃ ┣ development/
+┃ ┃ ┗ webpack/
 ┃ ┣ build-manifest.json
 ┃ ┣ package.json
 ┃ ┣ react-loadable-manifest.json
 ┃ ┗ trace
 ┣ components/
 ┃ ┣ ui/
+┃ ┃ ┗ button.tsx
 ┃ ┣ Layout.tsx
 ┃ ┗ TopNavBar.tsx
 ┣ convex/
 ┃ ┣ _generated/
-┃ ┣ .schema.ts
+┃ ┃ ┣ api.d.ts
+┃ ┃ ┣ api.js
+┃ ┃ ┣ dataModel.d.ts
+┃ ┃ ┣ server.d.ts
+┃ ┃ ┗ server.js
 ┃ ┣ README.md
 ┃ ┣ addUser.ts
 ┃ ┣ mixtapes.ts
+┃ ┣ schema.ts
+┃ ┣ tracks.ts
 ┃ ┣ tsconfig.json
 ┃ ┗ user.ts
 ┣ hooks/
+┃ ┣ useCompareAlbumList.ts
 ┃ ┣ useGetAlbumData.ts
 ┃ ┣ useGetAlbumInfo.ts
 ┃ ┣ useGetAlbumList.ts
 ┃ ┣ useGetUserData.ts
 ┃ ┗ useMixtape.ts
 ┣ lib/
-┃ ┣ openaiConfig.ts
 ┃ ┗ utils.ts
 ┣ pages/
 ┃ ┣ albums/
+┃ ┃ ┣ [id].tsx
+┃ ┃ ┗ index.tsx
 ┃ ┣ api/
+┃ ┃ ┣ albums/
+┃ ┃ ┗ auth/
 ┃ ┣ _app.tsx
 ┃ ┣ _document.tsx
 ┃ ┣ dashboard.tsx
 ┃ ┣ index.tsx
+┃ ┣ matching.tsx
 ┃ ┗ mixtape.tsx
 ┣ public/
 ┃ ┣ diskogs-logo.gif
 ┃ ┣ favicon.png
 ┃ ┣ next.svg
 ┃ ┗ vercel.svg
+┣ services/
+┃ ┣ last.fm/
+┃ ┃ ┗ fetchData.ts
+┃ ┣ openai/
+┃ ┃ ┗ enrichArtistInfo.ts
+┃ ┗ spotify/
+┃   ┣ getAccessToken.ts
+┃   ┗ getAlbumId.ts
 ┣ styles/
 ┃ ┗ globals.css
+┣ types/
+┃ ┗ Mixtape.ts
 ┣ .env.local
 ┣ .env.local.sample
 ┣ .eslintrc.json
@@ -63,6 +101,10 @@ diskogsplus/
 ┣ tailwind.config.ts
 ┗ tsconfig.json
 ```
+## Usuario DEMO Discogs
+
+user: diskogsplus
+pass: diskogsplus
 
 ## Getting Started
 

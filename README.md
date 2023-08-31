@@ -1,5 +1,10 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Usuario DEMO Discogs
+
+- user: diskogsplus
+- pass: diskogsplus
+
 ## DiscogsPlus
 ```
 diskogsplus/
@@ -101,11 +106,6 @@ diskogsplus/
 ┣ tailwind.config.ts
 ┗ tsconfig.json
 ```
-## Usuario DEMO Discogs
-
-user: diskogsplus
-pass: diskogsplus
-
 ## Getting Started
 
 First, run the development server:

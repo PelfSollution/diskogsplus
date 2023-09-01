@@ -24,7 +24,6 @@ diskogsplus/
 ┃ ┃ ┣ next-font-manifest.js
 ┃ ┃ ┣ next-font-manifest.json
 ┃ ┃ ┣ pages-manifest.json
-┃ ┃ ┣ webpack-api-runtime.js
 ┃ ┃ ┗ webpack-runtime.js
 ┃ ┣ static/
 ┃ ┃ ┣ chunks/
@@ -39,28 +38,14 @@ diskogsplus/
 ┃ ┃ ┗ button.tsx
 ┃ ┣ Layout.tsx
 ┃ ┗ TopNavBar.tsx
-┣ convex/
-┃ ┣ _generated/
-┃ ┃ ┣ api.d.ts
-┃ ┃ ┣ api.js
-┃ ┃ ┣ dataModel.d.ts
-┃ ┃ ┣ server.d.ts
-┃ ┃ ┗ server.js
-┃ ┣ README.md
-┃ ┣ addUser.ts
-┃ ┣ mixtapes.ts
-┃ ┣ schema.ts
-┃ ┣ tracks.ts
-┃ ┣ tsconfig.json
-┃ ┗ user.ts
 ┣ hooks/
 ┃ ┣ useCompareAlbumList.ts
 ┃ ┣ useGetAlbumData.ts
 ┃ ┣ useGetAlbumInfo.ts
 ┃ ┣ useGetAlbumList.ts
-┃ ┣ useGetUserData.ts
-┃ ┗ useMixtape.ts
+┃ ┗ useGetUserData.ts
 ┣ lib/
+┃ ┣ supabase.ts
 ┃ ┗ utils.ts
 ┣ pages/
 ┃ ┣ albums/
@@ -74,7 +59,8 @@ diskogsplus/
 ┃ ┣ dashboard.tsx
 ┃ ┣ index.tsx
 ┃ ┣ matching.tsx
-┃ ┗ mixtape.tsx
+┃ ┣ mixtape.tsx
+┃ ┗ supabasetest.tsx
 ┣ public/
 ┃ ┣ diskogs-logo.gif
 ┃ ┣ favicon.png
@@ -85,9 +71,13 @@ diskogsplus/
 ┃ ┃ ┗ fetchData.ts
 ┃ ┣ openai/
 ┃ ┃ ┗ enrichArtistInfo.ts
-┃ ┗ spotify/
-┃   ┣ getAccessToken.ts
-┃   ┗ getAlbumId.ts
+┃ ┣ spotify/
+┃ ┃ ┣ getAccessToken.ts
+┃ ┃ ┣ getAlbumId.ts
+┃ ┃ ┗ getTrackId.ts
+┃ ┗ supabase/
+┃   ┣ addMixtape.ts
+┃   ┗ getMixtape.ts
 ┣ styles/
 ┃ ┗ globals.css
 ┣ types/
@@ -98,6 +88,7 @@ diskogsplus/
 ┣ .gitignore
 ┣ README.md
 ┣ components.json
+┣ functions.jsonl
 ┣ next-env.d.ts
 ┣ next.config.js
 ┣ package-lock.json

@@ -16,8 +16,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
-
-
+import addMixtape from '../../services/supabase/addMixtape';
 
 
 function AlbumDetails() {
@@ -29,14 +28,14 @@ function AlbumDetails() {
 
   const router = useRouter();
 
-  const { id, masterId } = router.query;
+  const { id: rawId, masterId } = router.query;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  
   const { data, isLoading, error } = useGetAlbumInfo(
     Number(id),
     Number(masterId)
   );
-  const albumInfo: AlbumInfoInterface = data;
-
-
+  const albumInfo: AlbumInfoInterface | null = data;
 
   if (isLoading) {
     return (
@@ -54,12 +53,23 @@ function AlbumDetails() {
     );
   }
 
-  
-  console.log("Data received:", data);
-  console.log("Album info:", albumInfo);
-  console.log("Album info released:", albumInfo.released);
-  console.log("Cover image:", albumInfo.coverImage);
-  console.log("Back cover image:", albumInfo.backCoverImage);
+  const handleAddToMixtape = () => {
+    if (!albumInfo || !id) return;
+
+    // Extraer la información relevante de albumInfo
+    const mixtapeEntry = {
+      username: "dayats",
+      artistname: albumInfo.artist,
+      trackname: albumInfo.title,
+      discogsalbumid: id,
+      spotifytrackid: albumInfo.tracklist[0]?.spotifyTrackId || null 
+    };
+
+    // Llamar a la función addMixtape para añadir a la base de datos
+    addMixtape(mixtapeEntry);
+  };
+
+
 
   return (
     <Layout centeredContent={false}>
@@ -163,10 +173,10 @@ function AlbumDetails() {
         {albumInfo.tracklist.map((track, index) => (
           <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
             <span>{track.title}</span>
-            <button 
-              className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
-              onClick={() => console.log("Añadir a mixtape")}
-            >
+          <button 
+            className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
+            onClick={handleAddToMixtape}
+          >
               Añadir a mixtape
             </button>
           </div>

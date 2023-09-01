@@ -16,19 +16,19 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
-import { useMixtape } from '@/hooks/useMixtape';
+
+
+
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
-  const { mixtape, addToMixtape, removeFromMixtape, isTrackInMixtape } = useMixtape();
-
-
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
 
   const router = useRouter();
+
   const { id, masterId } = router.query;
   const { data, isLoading, error } = useGetAlbumInfo(
     Number(id),
@@ -37,8 +37,6 @@ function AlbumDetails() {
   const albumInfo: AlbumInfoInterface = data;
 
 
-
-  console.log("Error:", error);
 
   if (isLoading) {
     return (
@@ -153,39 +151,31 @@ function AlbumDetails() {
 
 {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
   <Accordion>
-       <AccordionSummary
-          expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
+    <AccordionSummary
+      expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
+      aria-controls="panel1a-content"
+      id="panel1a-header"
+    >
       <Typography variant="h6">Tracklist</Typography>
     </AccordionSummary>
     <AccordionDetails>
       <Stack direction="column" spacing={1}>
-{albumInfo.tracklist.map((track, index) => (
-  <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
-    <span>{track.title}</span>
-    {isTrackInMixtape(id as string, track.position) ? (
-  <button 
-    className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
-    onClick={() => removeFromMixtape(id as string, track.position)}
-  >
-    Quitar de mixtape
-  </button>
-) : (
-  <button 
-    className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
-    onClick={() => addToMixtape(id as string, track)}
-  >
-    Añadir a mixtape
-  </button>
-)}
-  </div>
-))}
+        {albumInfo.tracklist.map((track, index) => (
+          <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
+            <span>{track.title}</span>
+            <button 
+              className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
+              onClick={() => console.log("Añadir a mixtape")}
+            >
+              Añadir a mixtape
+            </button>
+          </div>
+        ))}
       </Stack>
     </AccordionDetails>
   </Accordion>
 )}
+
         </Grid>
 
         {/* Columna de la derecha */}

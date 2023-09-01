@@ -72,6 +72,7 @@ export default function Mixtape() {
         <div className="tw-flex-1 tw-font-bold">ARTISTA</div>
         <div className="tw-flex-1 tw-font-bold">CANCIÓN</div>
         <div className="tw-flex-1 tw-font-bold">SPOTIFY</div>
+        <div className="tw-flex-1 tw-font-bold">USUARIO</div>
       </div>
 
       {/* Cuerpo */}
@@ -89,6 +90,7 @@ export default function Mixtape() {
                 "No está en Spotify"
               )}
             </div>
+            <div className="tw-flex-1 tw-italic tw-text-left">{data.username}</div> 
           </div>
         ))
       )}

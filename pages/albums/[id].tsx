@@ -14,13 +14,15 @@ import {
   AccordionDetails,
   CircularProgress,
 } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
-import addMixtape from '../../services/supabase/addMixtape';
-
+import addMixtape from "../../services/supabase/addMixtape";
+import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
+import useGetMixtape from "../../hooks/useGetMixtape";
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [tracksInMixtape, setTracksInMixtape] = useState<string[]>([]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -30,12 +32,29 @@ function AlbumDetails() {
 
   const { id: rawId, masterId } = router.query;
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
-  
+
   const { data, isLoading, error } = useGetAlbumInfo(
     Number(id),
     Number(masterId)
   );
   const albumInfo: AlbumInfoInterface | null = data;
+
+  const mixtape = useGetMixtape("dayats");
+
+  useEffect(() => {
+    if (mixtape.data) {
+      setTracksInMixtape(mixtape.data.map((song) => song.trackname));
+    }
+  }, [mixtape.data]);
+
+  const isSongInMixtape = (songTitle: string) => {
+    console.log("Verificando tracksInMixtape:", tracksInMixtape);
+    const match = tracksInMixtape.includes(songTitle);
+    if (match) {
+      console.log("¡Coincidencia encontrada para:", songTitle);
+    }
+    return match;
+  };
 
   if (isLoading) {
     return (
@@ -53,23 +72,50 @@ function AlbumDetails() {
     );
   }
 
-  const handleAddToMixtape = () => {
+  const handleDeleteFromMixtape = async (track: { title: string }) => {
+    if (!albumInfo || !id) return;
+    // Comprobar si el id es undefined
+    if (typeof id === "undefined") {
+      console.error("No se proporcionó un ID válido.");
+      return;
+    }
+
+    try {
+      await deleteFromMixtape("dayats", albumInfo.artist, track.title, id);
+      setTracksInMixtape((prevTracks) =>
+        prevTracks.filter((t) => t !== track.title)
+      );
+    } catch (error) {
+      console.error("Error al eliminar de la mixtape:", error);
+    }
+  };
+
+  const handleAddToMixtape = (track: {
+    title: string;
+    spotifyTrackId?: string;
+  }) => {
     if (!albumInfo || !id) return;
 
-    // Extraer la información relevante de albumInfo
+    // Comprobar si el id es undefined
+    if (typeof id === "undefined") {
+      console.error("No se proporcionó un ID válido.");
+      return;
+    }
+
+    // Extraer la información relevante de albumInfo y track
     const mixtapeEntry = {
+      //test hardcoded username
       username: "dayats",
       artistname: albumInfo.artist,
-      trackname: albumInfo.title,
+      trackname: track.title, // Aquí es donde usamos el nombre de la canción
       discogsalbumid: id,
-      spotifytrackid: albumInfo.tracklist[0]?.spotifyTrackId || null 
+      spotifytrackid: track.spotifyTrackId || null,
     };
 
     // Llamar a la función addMixtape para añadir a la base de datos
     addMixtape(mixtapeEntry);
+    setTracksInMixtape((prevTracks) => [...prevTracks, track.title]);
   };
-
-
 
   return (
     <Layout centeredContent={false}>
@@ -143,12 +189,13 @@ function AlbumDetails() {
 
           {albumInfo.enrichedInfo && (
             <Accordion defaultExpanded>
-                   <AccordionSummary
-          expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-                
+              <AccordionSummary
+                expandIcon={
+                  <ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />
+                }
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
                 <Typography variant="h6">Información extra</Typography>
               </AccordionSummary>
               <AccordionDetails>
@@ -159,58 +206,64 @@ function AlbumDetails() {
             </Accordion>
           )}
 
-{albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
-  <Accordion>
-    <AccordionSummary
-      expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
-      aria-controls="panel1a-content"
-      id="panel1a-header"
-    >
-      <Typography variant="h6">Tracklist</Typography>
-    </AccordionSummary>
-    <AccordionDetails>
-      <Stack direction="column" spacing={1}>
-        {albumInfo.tracklist.map((track, index) => (
-          <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
-            <span>{track.title}</span>
-          <button 
-            className="tw-px-2 tw-py-1 tw-border tw-border-gray-400 tw-rounded" 
-            onClick={handleAddToMixtape}
-          >
-              Añadir a mixtape
-            </button>
-          </div>
-        ))}
-      </Stack>
-    </AccordionDetails>
-  </Accordion>
-)}
-
+          {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
+            <Accordion>
+              <AccordionSummary
+                expandIcon={
+                  <ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />
+                }
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
+                <Typography variant="h6">Tracklist</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Stack direction="column" spacing={1}>
+                  {albumInfo.tracklist.map((track, index) => (
+                    <div
+                      key={index}
+                      className="tw-flex tw-justify-between tw-items-center tw-mb-2"
+                    >
+                      <span>{track.title}</span>
+                      {isSongInMixtape(track.title) ? (
+                        <button onClick={() => handleDeleteFromMixtape(track)}>
+                          Borrar de Mixtape
+                        </button>
+                      ) : (
+                        <button onClick={() => handleAddToMixtape(track)}>
+                          Añadir a Mixtape
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
+          )}
         </Grid>
 
         {/* Columna de la derecha */}
         <Grid item xs={12} md={5}>
-    <Typography variant="h6" gutterBottom>
-        Escucha ahora
-    </Typography>
+          <Typography variant="h6" gutterBottom>
+            Escucha ahora
+          </Typography>
 
-    {albumInfo.spotifyAlbumId ? (
-        <iframe
-            src={`https://open.spotify.com/embed/album/${albumInfo.spotifyAlbumId}`}
-            width="100%"
-            height="380"
-            frameBorder="0"
-            allow="encrypted-media"
-        ></iframe>
-    ) : (
-        <Typography variant="body1" color="textSecondary">
-            Este álbum no está disponible en Spotify.
-        </Typography>
-    )}
+          {albumInfo.spotifyAlbumId ? (
+            <iframe
+              src={`https://open.spotify.com/embed/album/${albumInfo.spotifyAlbumId}`}
+              width="100%"
+              height="380"
+              frameBorder="0"
+              allow="encrypted-media"
+            ></iframe>
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              Este álbum no está disponible en Spotify.
+            </Typography>
+          )}
 
-    {/* ... Resto de tu componente ... */}
-</Grid>
-
+          {/* ... Resto de tu componente ... */}
+        </Grid>
       </Grid>
     </Layout>
   );

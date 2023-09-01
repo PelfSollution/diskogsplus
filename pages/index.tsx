@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { useEffect } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { getCookie } from "cookies-next";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 
@@ -14,7 +13,7 @@ export default function Home() {
     if (getCookie("username")) {
       router.push("/dashboard");
     }
-  }, []);
+  }, [router]);
 
   return (
     <Layout allowPublicAccess={true}>

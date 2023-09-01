@@ -42,8 +42,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ spotifyTrackId }) 
 
 
 const Mixtape: NextPage = () => {
-  // @ts-ignore
-  const mixtape = useQuery(api.getMixtape.list);
+
 
   return (
     <Layout>
@@ -62,21 +61,7 @@ const Mixtape: NextPage = () => {
     </TableRow>
   </TableHead>
   <TableBody>
-    {mixtape &&
-      mixtape.map((mixtapeItem: Mixtape) => (
-        <TableRow key={mixtapeItem._id.toString()}>
-          <TableCell className="border px-4 py-2">{mixtapeItem.userName}</TableCell>
-          <TableCell className="border px-4 py-2">{mixtapeItem.artistName}</TableCell>
-          <TableCell className="border px-4 py-2">{mixtapeItem.trackName}</TableCell>
-          <TableCell className="border px-4 py-2">
-            {mixtapeItem.spotifyTrackId ? ( // Si existe spotifyTrackId, renderizamos el reproductor
-              <SpotifyPlayer spotifyTrackId={mixtapeItem.spotifyTrackId} />
-            ) : (
-              'No disponible' // Puedes dejar esto vacío o mostrar un mensaje que indique que no hay link a Spotify
-            )}
-          </TableCell>
-        </TableRow>
-      ))}
+
   </TableBody>
 </Table>
 

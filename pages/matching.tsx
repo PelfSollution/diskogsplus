@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from "react";
 import useCompareAlbumList from "@/hooks/useCompareAlbumList";
+import useGetUserData from "@/hooks/useGetUserData";
 import Layout from "@/components/Layout";
 import { TextField, Button } from "@mui/material";
 import Link from "next/link";
@@ -20,7 +21,8 @@ interface Album {
 }
 
 export default function Comparador() {
-  const [user1, setUser1] = useState("");
+  const { data: userData } = useGetUserData();
+  const user1 = userData?.userProfile?.username;
   const [user2, setUser2] = useState("");
   const [comparePressed, setComparePressed] = useState(false);
 
@@ -30,12 +32,12 @@ export default function Comparador() {
     error,
     size,
     setSize,
-  } = useCompareAlbumList(user1, user2);
+  } = useCompareAlbumList(user2, user1);
   console.log("Datos obtenidos de useCompareAlbumList:", albumsDifference);
 
   const handleLoadMore = () => {
     setSize(size + 1);
-};
+  };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,11 +54,12 @@ export default function Comparador() {
               variant="outlined"
               fullWidth
               value={user1}
-              onChange={(e) => setUser1(e.target.value)}
+              disabled={true}
               className="tw-mb-4"
               id="user1"
             />
           </div>
+          <div><p className="tw-mb-2 tw-font-bold">Comparar coleccion de vinilos con el usuario:</p></div>
           <div className="tw-flex tw-flex-col tw-gap-2">
             <TextField
               label="Usuario 2"
@@ -85,7 +88,7 @@ export default function Comparador() {
               {Array.isArray(albumsDifference[0]) && albumsDifference[0].map((album: Album) => (
 
                   <li key={album.id}>
-                    <Link href={`/albums/${album.id}`} passHref>
+                    <Link href={`/albums/${album.id}?from=compare`} passHref>
                       <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
                         <Image
                           src={album.basic_information.cover_image}

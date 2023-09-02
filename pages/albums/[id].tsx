@@ -30,6 +30,39 @@ function AlbumDetails() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { data: userData } = useGetUserData();
+
+  const handleAddToWantlist = async (username: string, albumId: number) => {
+    try {
+      const response = await fetch("/api/albums/addToWantlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          releaseId: albumId,
+          // Puedes agregar notas y rating si los tienes
+          // notes: "TuNotaAqui",
+          // rating: TuValorDeRatingAqui
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        handleOpenSnackbar(
+          `Álbum añadido a la wantlist!`
+        );
+
+      } else {
+        alert("Error al añadir el álbum: " + data.message);
+      }
+    } catch (error) {
+      console.error("Hubo un error al hacer la solicitud:", error);
+      alert("Error al añadir el álbum a la wantlist.");
+    }
+  };
+
   const username = userData?.userProfile?.username;
 
   const handleOpenSnackbar = (message: string) => {
@@ -47,16 +80,19 @@ function AlbumDetails() {
 
   const router = useRouter();
 
+  const fromCompare = router.query.from === "compare";
+
   const { id: rawId, masterId } = router.query;
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  const idNumber = parseInt(id || "0", 10); // Aquí se crea idNumber
+  console.log(idNumber);
 
   const { data, isLoading, error } = useGetAlbumInfo(
-    Number(id),
+    idNumber,
     Number(masterId)
   );
+
   const albumInfo: AlbumInfoInterface | null = data;
-
-
   const mixtape = useGetMixtape(username);
 
   useEffect(() => {
@@ -66,10 +102,10 @@ function AlbumDetails() {
   }, [mixtape.data]);
 
   const isSongInMixtape = (songTitle: string) => {
-  //  console.log("Verificando tracksInMixtape:", tracksInMixtape);
+    //  console.log("Verificando tracksInMixtape:", tracksInMixtape);
     const match = tracksInMixtape.includes(songTitle);
     if (match) {
-     // console.log("¡Coincidencia encontrada para:", songTitle);
+      // console.log("¡Coincidencia encontrada para:", songTitle);
     }
     return match;
   };
@@ -184,6 +220,14 @@ function AlbumDetails() {
               <Typography variant="h6">{albumInfo.title}</Typography>
             </div>
           </div>
+          {fromCompare && (
+            <button
+              className="tw-text-green-600 tw-border tw-border-green-600 tw-px-16 tw-py-1 tw-rounded"
+              onClick={() => handleAddToWantlist(username, idNumber)}
+            >
+              Añadir a wishlist
+            </button>
+          )}
           <Typography variant="subtitle1">
             Released in {albumInfo.released}
           </Typography>
@@ -259,7 +303,10 @@ function AlbumDetails() {
                     >
                       <span>{track.title}</span>
                       {isSongInMixtape(track.title) ? (
-                        <button onClick={() => handleDeleteFromMixtape(track)}>
+                        <button
+                          className="tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
+                          onClick={() => handleDeleteFromMixtape(track)}
+                        >
                           Borrar de Mixtape
                         </button>
                       ) : (

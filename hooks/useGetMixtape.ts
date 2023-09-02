@@ -9,7 +9,7 @@ function useGetMixtape(username: string) {
     useEffect(() => {
         async function fetchMixtape() {
             try {
-                const mixtapeData = await getMixtape();
+                const mixtapeData = await getMixtape(username); 
                 setData(mixtapeData.filter(entry => entry.username === username));
                 setIsLoading(false);
             } catch (err: any) {

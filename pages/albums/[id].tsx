@@ -16,27 +16,29 @@ import {
   Snackbar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 import addMixtape from "../../services/supabase/addMixtape";
 import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
+import useGetUserData from "@/hooks/useGetUserData";
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [tracksInMixtape, setTracksInMixtape] = useState<string[]>([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { data: userData } = useGetUserData();
 
-const handleOpenSnackbar = (message: string) => {
-  setSnackbarMessage(message);
-  setOpenSnackbar(true);
-};
+  const handleOpenSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
+  };
 
-const handleCloseSnackbar = () => {
-  setOpenSnackbar(false);
-};
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -87,19 +89,26 @@ const handleCloseSnackbar = () => {
   }
 
   const handleDeleteFromMixtape = async (track: { title: string }) => {
-    if (!albumInfo || !id) return;
+    if (!albumInfo || !id || !userData) return;
     // Comprobar si el id es undefined
     if (typeof id === "undefined") {
       console.error("No se proporcionó un ID válido.");
       return;
     }
 
+    const username = userData.userProfile.username;
+
     try {
-      await deleteFromMixtape("dayats", albumInfo.artist, track.title, id);
+      await deleteFromMixtape(username, albumInfo.artist, track.title, id);
       setTracksInMixtape((prevTracks) =>
         prevTracks.filter((t) => t !== track.title)
       );
-      handleOpenSnackbar("Canción eliminada de la mixtape con éxito.");
+      const trackname = track.title;
+      const artistname = albumInfo.artist;
+
+      handleOpenSnackbar(
+        `Canción "${trackname}" de "${artistname}" eliminada de la mixtape con éxito.`
+      );
     } catch (error) {
       console.error("Error al eliminar de la mixtape:", error);
       handleOpenSnackbar("Error al eliminar la canción de la mixtape.");
@@ -110,7 +119,7 @@ const handleCloseSnackbar = () => {
     title: string;
     spotifyTrackId?: string;
   }) => {
-    if (!albumInfo || !id) return;
+    if (!albumInfo || !id || !userData) return;
 
     // Comprobar si el id es undefined
     if (typeof id === "undefined") {
@@ -118,10 +127,11 @@ const handleCloseSnackbar = () => {
       return;
     }
 
+    const username = userData.userProfile.username;
     // Extraer la información relevante de albumInfo y track
     const mixtapeEntry = {
       //test hardcoded username
-      username: "dayats",
+      username: username,
       artistname: albumInfo.artist,
       trackname: track.title, // Aquí es donde usamos el nombre de la canción
       discogsalbumid: id,
@@ -131,7 +141,11 @@ const handleCloseSnackbar = () => {
     // Llamar a la función addMixtape para añadir a la base de datos
     addMixtape(mixtapeEntry);
     setTracksInMixtape((prevTracks) => [...prevTracks, track.title]);
-    handleOpenSnackbar("Canción añadida a la mixtape con éxito.");
+    const trackname = track.title;
+    const artistname = albumInfo.artist;
+    handleOpenSnackbar(
+      `Canción "${trackname}" de "${artistname}" añadida a la mixtape con éxito.`
+    );
   };
 
   return (
@@ -283,17 +297,21 @@ const handleCloseSnackbar = () => {
         </Grid>
       </Grid>
       <Snackbar
-  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-  open={openSnackbar}
-  autoHideDuration={3000} // Duración en milisegundos
-  onClose={handleCloseSnackbar}
-  message={snackbarMessage}
-  action={
-    <IconButton size="small" color="inherit" onClick={handleCloseSnackbar}>
-      <CloseIcon />
-    </IconButton>
-  }
-/>
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={openSnackbar}
+        autoHideDuration={3000} // Duración en milisegundos
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        action={
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={handleCloseSnackbar}
+          >
+            <CloseIcon />
+          </IconButton>
+        }
+      />
     </Layout>
   );
 }

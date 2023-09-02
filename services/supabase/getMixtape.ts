@@ -1,8 +1,9 @@
 import { supabase } from "../../lib/supabase";
 
-async function getMixtape() {
+async function getMixtape(username: string) {
   try {
-    const { data, error } = await supabase.from('mixtape').select('*');
+    const { data, error } = await supabase.from('mixtape').select('*').eq('username', username);
+
 
     if (error) {
       throw error;

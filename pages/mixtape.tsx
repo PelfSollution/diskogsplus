@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import getMixtape from '../services/supabase/getMixtape';
+import useGetUserData from "@/hooks/useGetUserData";
+import { CircularProgress } from "@mui/material";
 
 import {
   Table,
@@ -46,12 +48,21 @@ export default function Mixtape() {
   const [mixtape, setMixtapes] = useState<Mixtape[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
-
+  const { data: userData } = useGetUserData();
+  
   useEffect(() => {
     async function fetchData() {
+      const username = userData?.userProfile?.username;
+
+      if (!username) {
+       
+        console.error('No se pudo obtener el username del usuario.');
+        return;
+      }
+
       try {
-        const data = await getMixtape();
-  
+        const data = await getMixtape(username); 
+
         setMixtapes(data);
       } catch (err) {
         console.error('Error obteniendo datos:', err);
@@ -60,9 +71,23 @@ export default function Mixtape() {
         setLoading(false);
       }
     }
+    
+    if (userData) {  
+      fetchData();
+    }
+  }, [userData]); 
   
-    fetchData();
-  }, []);
+  console.log("userData", userData);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+          <CircularProgress />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

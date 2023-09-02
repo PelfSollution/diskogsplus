@@ -13,8 +13,11 @@ import {
   AccordionSummary,
   AccordionDetails,
   CircularProgress,
+  Snackbar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 import addMixtape from "../../services/supabase/addMixtape";
 import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
@@ -23,6 +26,17 @@ import useGetMixtape from "../../hooks/useGetMixtape";
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [tracksInMixtape, setTracksInMixtape] = useState<string[]>([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+const [snackbarMessage, setSnackbarMessage] = useState('');
+
+const handleOpenSnackbar = (message: string) => {
+  setSnackbarMessage(message);
+  setOpenSnackbar(true);
+};
+
+const handleCloseSnackbar = () => {
+  setOpenSnackbar(false);
+};
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -85,8 +99,10 @@ function AlbumDetails() {
       setTracksInMixtape((prevTracks) =>
         prevTracks.filter((t) => t !== track.title)
       );
+      handleOpenSnackbar("Canción eliminada de la mixtape con éxito.");
     } catch (error) {
       console.error("Error al eliminar de la mixtape:", error);
+      handleOpenSnackbar("Error al eliminar la canción de la mixtape.");
     }
   };
 
@@ -115,6 +131,7 @@ function AlbumDetails() {
     // Llamar a la función addMixtape para añadir a la base de datos
     addMixtape(mixtapeEntry);
     setTracksInMixtape((prevTracks) => [...prevTracks, track.title]);
+    handleOpenSnackbar("Canción añadida a la mixtape con éxito.");
   };
 
   return (
@@ -265,6 +282,18 @@ function AlbumDetails() {
           {/* ... Resto de tu componente ... */}
         </Grid>
       </Grid>
+      <Snackbar
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+  open={openSnackbar}
+  autoHideDuration={3000} // Duración en milisegundos
+  onClose={handleCloseSnackbar}
+  message={snackbarMessage}
+  action={
+    <IconButton size="small" color="inherit" onClick={handleCloseSnackbar}>
+      <CloseIcon />
+    </IconButton>
+  }
+/>
     </Layout>
   );
 }

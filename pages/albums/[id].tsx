@@ -30,6 +30,7 @@ function AlbumDetails() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { data: userData } = useGetUserData();
+  const username = userData?.userProfile?.username;
 
   const handleOpenSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -55,7 +56,8 @@ function AlbumDetails() {
   );
   const albumInfo: AlbumInfoInterface | null = data;
 
-  const mixtape = useGetMixtape("dayats");
+
+  const mixtape = useGetMixtape(username);
 
   useEffect(() => {
     if (mixtape.data) {
@@ -64,10 +66,10 @@ function AlbumDetails() {
   }, [mixtape.data]);
 
   const isSongInMixtape = (songTitle: string) => {
-    console.log("Verificando tracksInMixtape:", tracksInMixtape);
+  //  console.log("Verificando tracksInMixtape:", tracksInMixtape);
     const match = tracksInMixtape.includes(songTitle);
     if (match) {
-      console.log("¡Coincidencia encontrada para:", songTitle);
+     // console.log("¡Coincidencia encontrada para:", songTitle);
     }
     return match;
   };

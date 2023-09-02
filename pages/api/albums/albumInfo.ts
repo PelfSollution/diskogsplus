@@ -29,7 +29,7 @@ export default async function albumInfo(
 
       // Aquí está mi objeto accessData descifrado.
       const accessData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      console.log("Decrypted accessData:", accessData);
+      //console.log("Decrypted accessData:", accessData);
 
       // Me conecto a la base de datos de Discogs.
       var db = await new Discogs(accessData).database();
@@ -37,7 +37,7 @@ export default async function albumInfo(
       // Obtengo los datos de un lanzamiento específico del álbum.
       console.log("Making request to Discogs API...");
       const releaseData = await db.getRelease(id);
-      console.log("Received data from Discogs API:", releaseData);
+      //console.log("Received data from Discogs API:", releaseData);
 
       // Autenticación en Spotify para obtener el token de acceso.
       const accessToken = await getSpotifyAccessToken();
@@ -46,6 +46,7 @@ export default async function albumInfo(
         releaseData.artists[0].name,
         accessToken
       );
+      console.log("Spotify album ID:", spotifyAlbumId);
 
       // Algunos lanzamientos no tienen un maestro asociado.
       // Esto es evidente cuando Discogs devuelve '0' como el ID maestro.
@@ -73,18 +74,38 @@ export default async function albumInfo(
 
       const tracklistWithSpotifyIds = await Promise.all(
         selectedTracklist.map(async (track: any) => {
-          const spotifyTrackId = await getSpotifyTrackId(
+          // Obtener datos del track de Spotify
+          const spotifyTrackData = await getSpotifyTrackId(
             track.title,
             releaseData.artists[0].name,
+            releaseData.title,
             accessToken
           );
-          return {
-            ...track,
-            spotifyTrackId,
-          };
+      
+          console.log("Datos de Spotify para el track", track.title, ":", spotifyTrackData);
+      
+          // Si los datos del track de Spotify están disponibles y también tienen un URI...
+          if (spotifyTrackData && spotifyTrackData.uri) {
+            const spotifyTrackId = spotifyTrackData.uri.split(":")[2];
+            return {
+              ...track,
+              spotifyTrackId,
+              spotifyUri: spotifyTrackData.uri
+            };
+          } else {
+            return {
+              ...track,
+              spotifyTrackId: null,
+              spotifyUri: null
+            };
+          }
         })
       );
+      
 
+      
+      
+      console.log("Tracklist with Spotify IDs:", tracklistWithSpotifyIds);
       interface Image {
         type: string;
         uri: string;
@@ -101,9 +122,9 @@ export default async function albumInfo(
         releaseData.images.find((image: Image) => image.type === "secondary")
           ?.uri || frontCover;
 
-      console.log("CHIVATO");
-      console.log("Front cover:", frontCover);
-      console.log("Back cover:", backCover);
+      //console.log("CHIVATO");
+     // console.log("Front cover:", frontCover);
+      //console.log("Back cover:", backCover);
 
       // Recopilo la información del álbum.
       const albumInfo = {
@@ -156,7 +177,7 @@ export default async function albumInfo(
         spotifyAlbumId: spotifyAlbumId,
       };
 
-      console.log("Combined data:", combinedData);
+      //console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });
     } else {
       // Si no tengo datos de acceso, envío una respuesta vacía.

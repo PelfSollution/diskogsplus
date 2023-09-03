@@ -117,6 +117,12 @@ export default function Mixtape() {
     );
   }
 
+  const handleSpotifyAuth = () => {
+    // añadir la lógica para iniciar el proceso de autenticación
+    window.location.href = '/api/auth/authorizeSpotify'; // Asegúrate de tener una ruta configurada para manejar la autenticación
+  }
+  
+
   return (
     <Layout>
       <div className="tw-border tw-border-gray-200">
@@ -136,6 +142,10 @@ export default function Mixtape() {
           <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
         ))
       )}
+      <button className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer" onClick={handleSpotifyAuth}>
+  Iniciar sesión en Spotify para generar tu mixtape
+</button>
+
     </div>
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}

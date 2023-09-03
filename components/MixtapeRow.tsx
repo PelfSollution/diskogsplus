@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react";
+import { memo } from "react";
 
 type MixtapeRowProps = {
     data: Mixtape;
@@ -19,24 +19,27 @@ type MixtapeRowProps = {
   };
   
   
-  export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = memo(({ spotifyTrackId }) => {
+  const SpotifyPlayerComponent: React.FC<SpotifyPlayerProps> = ({ spotifyTrackId }) => {
     const embedUrl = `https://open.spotify.com/embed/track/${spotifyTrackId}`;
-  
+
     return (
-      <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
-        <iframe
-          src={embedUrl}
-          width="300"
-          height="80"
-          frameBorder="0"
-          allow="encrypted-media"
-        ></iframe>
-      </div>
+        <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
+            <iframe
+                src={embedUrl}
+                width="300"
+                height="80"
+                frameBorder="0"
+                allow="encrypted-media"
+            ></iframe>
+        </div>
     );
-  });
+};
+
+export const SpotifyPlayer = memo(SpotifyPlayerComponent);
+SpotifyPlayer.displayName = "SpotifyPlayer";
 
   
-  const MixtapeRow: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
+  const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
     return (
 <div className="tw-flex tw-border-b tw-p-2">
     <div className="tw-w-1/5 tw-flex tw-items-center tw-flex-1 tw-text-left tw-font-bold">{data.artistname}</div>
@@ -71,13 +74,10 @@ type MixtapeRowProps = {
     </div>
 </div>
 
-
-    
     );
-    MixtapeRow.displayName = "MixtapeRow";
+  
   };
   
-
-
-  export default MixtapeRow;
+  MixtapeRowComponent.displayName = "MixtapeRow";
+  export default memo(MixtapeRowComponent);
   

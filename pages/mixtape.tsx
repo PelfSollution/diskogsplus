@@ -36,6 +36,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = memo(({ spotifyTrackI
     </div>
   );
 });
+SpotifyPlayer.displayName = 'SpotifyPlayer';
 
 
 export default function Mixtape() {

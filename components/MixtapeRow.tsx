@@ -79,5 +79,7 @@ type MixtapeRowProps = {
     );
   };
   
+  MixtapeRow.displayName = 'MixtapeRow';
+
   export default MixtapeRow;
   

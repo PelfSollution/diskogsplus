@@ -226,7 +226,7 @@ function AlbumDetails() {
   };
 
   return (
-    <Layout centeredContent={false}>
+    <Layout centeredTopContent={true}>
       <Grid container spacing={3} className="tw-container tw-mx-auto tw-p-6">
         {/* Columna de la izquierda */}
         <Grid item xs={12} md={7}>

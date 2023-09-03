@@ -121,10 +121,11 @@ export default function Mixtape() {
       <div className="tw-border tw-border-gray-200">
         {/* Cabecera */}
         <div className="tw-flex tw-border-b tw-p-2 tw-bg-gray-100">
-          <div className="tw-flex-1 tw-font-bold">ARTISTA</div>
-          <div className="tw-flex-1 tw-font-bold">CANCIÓN</div>
-          <div className="tw-flex-1 tw-font-bold">SPOTIFY</div>
-          <div className="tw-flex-1 tw-font-bold">USUARIO</div>
+        <div className="tw-flex-1 tw-font-bold">ARTISTA</div>
+        <div className="tw-flex-1 tw-font-bold">CANCIÓN</div>
+        <div className="tw-w-[300px] tw-flex tw-justify-center tw-font-bold">SPOTIFY</div>
+        <div className="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-font-bold">USUARIO</div>
+        <div className="tw-flex-1 tw-font-bold"></div>
         </div>
         {/* Cuerpo */}
         {mixtape.length === 0 ? (

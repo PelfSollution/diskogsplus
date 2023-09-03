@@ -1,6 +1,7 @@
 // components/MixtapeRow.tsx
 
 import { useState, useEffect, memo } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 
 type MixtapeRowProps = {
     data: Mixtape;
@@ -40,26 +41,41 @@ type MixtapeRowProps = {
   
   const MixtapeRow: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
     return (
-      <div className="tw-flex tw-border-b tw-p-2">
-        <div className="tw-flex-1 tw-font-bold">{data.artistname}</div>
-        <div className="tw-flex-1 tw-italic tw-text-left">{data.trackname}</div>
-        <div className="tw-flex-1">
-          {data.spotifytrackid ? (
-            <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
-          ) : (
-            "No está en Spotify"
-          )}
-        </div>
-        <div className="tw-flex-1 tw-italic tw-text-left">{data.username}</div>
-        <div className="tw-flex tw-justify-center tw-items-center tw-flex-none">
-          <button
-            className="tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
-            onClick={() => onDelete(data)}
-          >
-            Eliminar
-          </button>
-        </div>
-      </div>
+<div className="tw-flex tw-border-b tw-p-2">
+    <div className="tw-w-1/5 tw-flex tw-items-center tw-flex-1 tw-text-left tw-font-bold">{data.artistname}</div>
+    <div className="tw-w-1/5 tw-flex tw-items-center tw-flex-1 tw-italic tw-text-left">
+        <a 
+          href={`/albums/${data.discogsalbumid}`} 
+          className="tw-text-gray-500 tw-underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {data.trackname}
+        </a>
+    </div>
+    <div className="tw-w-[300px] tw-flex tw-items-center tw-justify-center">
+    {data.spotifytrackid ? (
+        <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
+    ) : (
+        <span>No está en Spotify</span>
+    )}
+</div>
+
+    <div className="tw-w-1/5 tw-flex tw-items-center tw-flex-1 tw-italic tw-text-left tw-ml-4">
+        {data.username}
+    </div>
+    <div className="tw-w-1/5 tw-flex tw-justify-center tw-items-center tw-flex-none">
+        <button
+          className="tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
+          onClick={() => onDelete(data)}
+        >
+          Eliminar
+        </button>
+    </div>
+</div>
+
+
+    
     );
   };
   

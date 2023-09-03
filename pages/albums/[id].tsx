@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import {
   Grid,
+  Button,
   Typography,
   Chip,
   Stack,
@@ -30,8 +31,12 @@ function AlbumDetails() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { data: userData } = useGetUserData();
+  const [inWantlist, setInWantlist] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleAddToWantlist = async (username: string, albumId: number) => {
+    setLoading(true);
+
     try {
       const response = await fetch("/api/albums/addToWantlist", {
         method: "POST",
@@ -50,16 +55,50 @@ function AlbumDetails() {
       const data = await response.json();
 
       if (data.success) {
-        handleOpenSnackbar(
-          `Álbum añadido a la wantlist!`
-        );
-
+        handleOpenSnackbar(`Álbum añadido a la wantlist!`);
+        setInWantlist(true);
       } else {
         alert("Error al añadir el álbum: " + data.message);
       }
     } catch (error) {
       console.error("Hubo un error al hacer la solicitud:", error);
       alert("Error al añadir el álbum a la wantlist.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveFromWantlist = async (
+    username: string,
+    albumId: number
+  ) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/albums/removeFromWantlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          releaseId: albumId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        handleOpenSnackbar(`Álbum eliminado de la wantlist!`);
+        setInWantlist(false);
+      } else {
+        alert("Error al eliminar el álbum: " + data.message);
+      }
+    } catch (error) {
+      console.error("Hubo un error al hacer la solicitud:", error);
+      alert("Error al eliminar el álbum de la wantlist.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -221,13 +260,29 @@ function AlbumDetails() {
             </div>
           </div>
           {fromCompare && (
-            <button
-              className="tw-text-green-600 tw-border tw-border-green-600 tw-px-16 tw-py-1 tw-rounded"
-              onClick={() => handleAddToWantlist(username, idNumber)}
-            >
-              Añadir a wishlist
-            </button>
+            <>
+              {inWantlist ? (
+                <Button style={{ width: '250px' }}
+                color="error"
+                 variant="outlined" 
+                 
+                                   onClick={() => handleRemoveFromWantlist(username, idNumber)}
+                >
+                  {loading ? "Eliminando..." : "Quitar de la wishlist"}
+                </Button>
+              ) : (
+                <Button style={{ width: '250px' }}
+                color="success"
+                variant="outlined"
+                className="tw-w-48"
+                  onClick={() => handleAddToWantlist(username, idNumber)}
+                >
+                  {loading ? "Añadiendo..." : "Añadir a wishlist"}
+                </Button>
+              )}
+            </>
           )}
+
           <Typography variant="subtitle1">
             Released in {albumInfo.released}
           </Typography>
@@ -310,7 +365,10 @@ function AlbumDetails() {
                           Borrar de Mixtape
                         </button>
                       ) : (
-                        <button onClick={() => handleAddToMixtape(track)}>
+                        <button
+                          className="tw-text-green-600 tw-border tw-border-green-600 tw-px-2 tw-py-1 tw-rounded"
+                          onClick={() => handleAddToMixtape(track)}
+                        >
                           Añadir a Mixtape
                         </button>
                       )}

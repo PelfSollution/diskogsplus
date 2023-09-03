@@ -1,7 +1,4 @@
-// components/MixtapeRow.tsx
-
 import { useState, useEffect, memo } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 
 type MixtapeRowProps = {
     data: Mixtape;
@@ -77,9 +74,10 @@ type MixtapeRowProps = {
 
     
     );
+    MixtapeRow.displayName = "MixtapeRow";
   };
   
-  MixtapeRow.displayName = 'MixtapeRow';
+
 
   export default MixtapeRow;
   

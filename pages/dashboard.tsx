@@ -93,7 +93,7 @@ function Dashboard() {
                 )}
                 <Button
                   onClick={() => router.push("/albums")}
-                  className="tw-mt-4 tw-self-center"
+                  className="tw-opacity-100 hover:tw-opacity-70 tw-mt-4 tw-self-center"
                 >
                   Ver Vinilos
                 </Button>

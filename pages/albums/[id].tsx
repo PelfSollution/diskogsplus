@@ -151,16 +151,22 @@ function AlbumDetails() {
 
   if (isLoading) {
     return (
-      <Layout>
+      <Layout centeredContent={true}>
+         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+    
         <CircularProgress />
+        </div>
       </Layout>
     );
   }
 
   if (error || !albumInfo) {
     return (
-      <Layout>
+      <Layout centeredContent={true}>
+         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+    
         Error cargando datos. Por favor intenta de nuevo más tarde.
+        </div>
       </Layout>
     );
   }
@@ -359,14 +365,14 @@ function AlbumDetails() {
                       <span>{track.title}</span>
                       {isSongInMixtape(track.title) ? (
                         <button
-                          className="tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
+                          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
                           onClick={() => handleDeleteFromMixtape(track)}
                         >
                           Borrar de Mixtape
                         </button>
                       ) : (
                         <button
-                          className="tw-text-green-600 tw-border tw-border-green-600 tw-px-2 tw-py-1 tw-rounded"
+                          className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 tw-px-2 tw-py-1 tw-rounded"
                           onClick={() => handleAddToMixtape(track)}
                         >
                           Añadir a Mixtape

@@ -35,7 +35,7 @@ export default function Home() {
         <div className="tw-flex tw-flex-col tw-mt-8">
           <Button
             onClick={() => router.push("/api/auth/authorize")}
-            className="tw-self-center mx-auto block"
+            className="tw-opacity-100 hover:tw-opacity-70 tw-self-center mx-auto block"
           >
             Hacer Login con Discogs
           </Button>

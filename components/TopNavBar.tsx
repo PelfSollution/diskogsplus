@@ -37,12 +37,14 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
     <Button
       variant="outline"
       size={"sm"}
-      className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full tw-mb-2`}
+      className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full ${router.pathname === href ? 'tw-border-green-500 tw-text-green-500' : ''}`}
       onClick={() => router.push(href)}
     >
       {children}
     </Button>
   );
+  
+  
   
 
   const NavigationItems = ({ isDrawer = false }) => (
@@ -51,26 +53,27 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
       <NavigationButton href="/albums" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Álbumes</NavigationButton>
       <NavigationButton href="/mixtape" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Mixtape</NavigationButton>
       <NavigationButton href="/matching" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Matching</NavigationButton>
-      <li className={isDrawer ? "tw-w-full tw-mb-2" : ""}>
-        <Button
-          variant="destructive"
-          size={"sm"}
-          onClick={handleLogout}
-          className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-w-full tw-mb-2"
-        >
-          Logout
-        </Button>
-      </li>
+      <li className={`${isDrawer ? "tw-w-full tw-mb-2" : "tw-mr-4"}`}>
+    <Button
+      variant="destructive"
+      size={"sm"}
+      onClick={handleLogout}
+      className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-w-full tw-mr-4"
+    >
+      Logout
+    </Button>
+</li>
+<div className="tw-mr-4"></div>
     </>
   );
 
   return (
     <nav className="tw-w-full tw-bg-white tw-shadow-md tw-py-2 tw-fixed tw-top-0 tw-left-0 tw-z-10">
-      <div className="tw-container tw-mx-auto tw-flex tw-justify-between tw-items-center">
+      <div className="tw-max-w-screen-xl tw-mx-auto tw-flex tw-justify-between tw-items-center tw-px-4 lg:tw-px-0">
         <Image
           src="/diskogs-logo.gif"
           alt="Diskogs plus"
-           className="tw-w-24 tw-mx-auto tw-block tw-mb-4" 
+          className="lg:tw-ml-4 tw-w-24"  // Agregamos margen a la izquierda del logo en modo desktop
           width={200}
           height={60}
         />
@@ -85,11 +88,10 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
       </div>
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
         <div className="tw-space-y-4 tw-py-4 tw-px-8">
-          {/* Agregamos el logo aquí */}
           <Image
             src="/diskogs-logo.gif"
             alt="Diskogs plus"
-            className="tw-w-24 tw-mx-auto tw-block tw-mb-4"   // Agregamos un margen en la parte inferior para separarlo de los elementos de navegación
+            className="tw-w-24 tw-mx-auto tw-block tw-mb-4" 
             width={200}
             height={60}
           />
@@ -99,5 +101,5 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
         </div>
       </Drawer>
     </nav>
-  );
+);
 }

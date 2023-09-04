@@ -33,23 +33,23 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
     router.push("/");
   };
 
-  const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, className = '' }) => (
-    <Button
-      variant="outline"
-      size={"sm"}
-      className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full ${router.pathname === href ? 'tw-border-green-500 tw-text-green-500' : ''}`}
-      onClick={() => router.push(href)}
-    >
-      {children}
-    </Button>
-  );
-  
+const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, className = '' }) => (
+  <Button
+    variant="outline"
+    size={"sm"}
+    className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full ${router.pathname === href ? 'tw-border-blue-500 tw-text-blue-500' : ''}`}
+    onClick={() => router.push(href)}
+  >
+    {children}
+  </Button>
+);
+
   
   
 
   const NavigationItems = ({ isDrawer = false }) => (
     <>
-      <NavigationButton href="/dashboard" className={isDrawer ? "tw-w-full" : ""}>Home</NavigationButton>
+      <NavigationButton href="/dashboard" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Home</NavigationButton>
       <NavigationButton href="/albums" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Álbumes</NavigationButton>
       <NavigationButton href="/mixtape" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Mixtape</NavigationButton>
       <NavigationButton href="/matching" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Matching</NavigationButton>

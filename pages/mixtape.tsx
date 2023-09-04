@@ -125,14 +125,11 @@ export default function Mixtape() {
 
   return (
     <Layout>
-      <div className="tw-border tw-border-gray-200">
+      <div className="tw-border tw-border-gray-200 tw-mt-10">
         {/* Cabecera */}
         <div className="tw-flex tw-border-b tw-p-2 tw-bg-gray-100">
-        <div className="tw-flex-1 tw-font-bold">ARTISTA</div>
-        <div className="tw-flex-1 tw-font-bold">CANCIÓN</div>
-        <div className="tw-w-[300px] tw-flex tw-justify-center tw-font-bold">SPOTIFY</div>
-        <div className="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-font-bold">USUARIO</div>
-        <div className="tw-flex-1 tw-font-bold"></div>
+        <div className="tw-flex-1 tw-font-bold">INFO</div>
+        <div className="tw-min-w-[300px] tw-flex tw-justify-center tw-font-bold">SPOTIFY</div>
         </div>
         {/* Cuerpo */}
         {mixtape.length === 0 ? (
@@ -142,9 +139,11 @@ export default function Mixtape() {
           <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
         ))
       )}
+      <div className="tw-flex tw-justify-center">
       <button className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer" onClick={handleSpotifyAuth}>
   Iniciar sesión en Spotify para generar tu mixtape
 </button>
+</div>
 
     </div>
       <Snackbar

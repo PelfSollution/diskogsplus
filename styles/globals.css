@@ -73,5 +73,6 @@
   }
   body {
     @apply tw-bg-background tw-text-foreground;
+     overflow-y: scroll; 
   }
 }

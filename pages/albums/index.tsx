@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { CircularProgress } from "@mui/material";
+
 interface Artist {
   name: string;
 }

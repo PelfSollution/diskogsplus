@@ -35,13 +35,15 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
 
   const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, className = '' }) => (
     <Button
-    variant="outline"
-      className={`tw-w-full tw-mb-2 ${className}`}
+      variant="outline"
+      size={"sm"}
+      className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full tw-mb-2`}
       onClick={() => router.push(href)}
     >
       {children}
     </Button>
   );
+  
 
   const NavigationItems = ({ isDrawer = false }) => (
     <>
@@ -52,8 +54,9 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
       <li className={isDrawer ? "tw-w-full tw-mb-2" : ""}>
         <Button
           variant="destructive"
+          size={"sm"}
           onClick={handleLogout}
-          className="tw-bg-red-500 tw-hover:bg-red-600 tw-text-white tw-w-full tw-mb-2"
+          className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-w-full tw-mb-2"
         >
           Logout
         </Button>

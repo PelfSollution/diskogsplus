@@ -70,7 +70,7 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
         <Image
           src="/diskogs-logo.gif"
           alt="Diskogs plus"
-          className="tw-w-24"
+           className="tw-w-24 tw-mx-auto tw-block tw-mb-4" 
           width={200}
           height={60}
         />
@@ -84,9 +84,19 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
         </ul>
       </div>
       <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-        <ul className="tw-space-y-4 tw-py-4 tw-px-8">
-          <NavigationItems isDrawer={true} />
-        </ul>
+        <div className="tw-space-y-4 tw-py-4 tw-px-8">
+          {/* Agregamos el logo aquí */}
+          <Image
+            src="/diskogs-logo.gif"
+            alt="Diskogs plus"
+            className="tw-w-24 tw-mx-auto tw-block tw-mb-4"   // Agregamos un margen en la parte inferior para separarlo de los elementos de navegación
+            width={200}
+            height={60}
+          />
+          <ul>
+            <NavigationItems isDrawer={true} />
+          </ul>
+        </div>
       </Drawer>
     </nav>
   );

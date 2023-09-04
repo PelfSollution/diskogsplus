@@ -17,27 +17,32 @@ export default function Home() {
 
   return (
     <Layout allowPublicAccess={true}>
-      <header className="tw-text-center tw-mb-8">
-        <Image
-          src="/diskogs-logo.gif"
-          alt="Diskogs plus"
-          className="tw-w-full tw-max-w-full"
-          width={500}
-          height={149}
-        />
-        <p className="tw-text-xl tw-mt-2">Descripción de la app</p>
-      </header>
-
-      {/* si el usuario está loggeado, no mostrará el botón de inicio de sesión.
-       */}
-      <div className="tw-flex tw-flex-col">
-        <Button
-          onClick={() => router.push("/api/auth/authorize")}
-          className="tw-self-center mx-auto block"
-        >
-          Hacer Login con Discogs
-        </Button>
+      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-full">
+        <header className="tw-text-center tw-mb-8 tw-max-w-xl mx-auto">
+          <div className="tw-flex tw-flex-col tw-items-center tw-justify-center">
+            <Image
+              src="/diskogs-logo.gif"
+              alt="Diskogs plus"
+              className="tw-w-auto tw-max-w-md mx-auto block"
+              width={500}
+              height={149}
+            />
+            <p className="tw-text-xl tw-mt-2">Descripción de la app</p>
+          </div>
+        </header>
+    
+        {/* si el usuario está loggeado, no mostrará el botón de inicio de sesión. */}
+        <div className="tw-flex tw-flex-col tw-mt-8">
+          <Button
+            onClick={() => router.push("/api/auth/authorize")}
+            className="tw-self-center mx-auto block"
+          >
+            Hacer Login con Discogs
+          </Button>
+        </div>
       </div>
     </Layout>
   );
+  
+  
 }

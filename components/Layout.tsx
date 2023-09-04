@@ -49,8 +49,8 @@ const Layout: React.FC<LayoutProps> = ({
     return (
         <div className={`tw-min-h-screen tw-flex tw-flex-col ${containerClass} tw-bg-gray-100`}>
         <TopNavBar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-        <div className="tw-flex tw-justify-center tw-mt-10 tw-w-full">
-            <div className="tw-max-w-screen-xl tw-w-full">
+        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-10 tw-w-full">
+    <div className="tw-max-w-screen-xl tw-w-full">
                 {children}
             </div>
         </div>

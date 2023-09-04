@@ -12,6 +12,13 @@ interface TopNavBarProps {
   onLogout?: () => void;
 }
 
+interface NavigationButtonProps {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+
 export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
   const router = useRouter();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -26,45 +33,27 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
     router.push("/");
   };
 
+  const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, className = '' }) => (
+    <Button
+    variant="outline"
+      className={`tw-w-full tw-mb-2 ${className}`}
+      onClick={() => router.push(href)}
+    >
+      {children}
+    </Button>
+  );
+
   const NavigationItems = ({ isDrawer = false }) => (
     <>
-      <li
-        className={`tw-cursor-pointer tw-inline-flex tw-items-center ${
-          isDrawer ? "tw-w-full" : ""
-        }`}
-        onClick={() => router.push("/dashboard")}
-      >
-        Home
-      </li>
-      <li
-        className={`tw-cursor-pointer tw-inline-flex tw-items-center ${
-          isDrawer ? "tw-w-full tw-mb-2" : ""
-        }`}
-        onClick={() => router.push("/albums")}
-      >
-        Álbumes
-      </li>
-      <li
-        className={`tw-cursor-pointer tw-inline-flex tw-items-center ${
-          isDrawer ? "tw-w-full tw-mb-2" : ""
-        }`}
-        onClick={() => router.push("/mixtape")}
-      >
-        Mixtape
-      </li>
-      <li
-        className={`tw-cursor-pointer tw-inline-flex tw-items-center ${
-          isDrawer ? "tw-w-full tw-mb-2" : ""
-        }`}
-        onClick={() => router.push("/matching")}
-      >
-        Matching
-      </li>
+      <NavigationButton href="/dashboard" className={isDrawer ? "tw-w-full" : ""}>Home</NavigationButton>
+      <NavigationButton href="/albums" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Álbumes</NavigationButton>
+      <NavigationButton href="/mixtape" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Mixtape</NavigationButton>
+      <NavigationButton href="/matching" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Matching</NavigationButton>
       <li className={isDrawer ? "tw-w-full tw-mb-2" : ""}>
         <Button
           variant="destructive"
           onClick={handleLogout}
-          className="tw-bg-red-500 tw-hover:bg-red-600 tw-text-white tw-w-full"
+          className="tw-bg-red-500 tw-hover:bg-red-600 tw-text-white tw-w-full tw-mb-2"
         >
           Logout
         </Button>

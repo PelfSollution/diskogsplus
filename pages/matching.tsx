@@ -21,6 +21,7 @@ interface Album {
 }
 
 export default function Comparador() {
+
   const { data: userData } = useGetUserData();
   const user1 = userData?.userProfile?.username;
   const [user2, setUser2] = useState("");
@@ -57,6 +58,7 @@ export default function Comparador() {
               disabled={true}
               className="tw-mb-4"
               id="user1"
+              autoComplete="off"
             />
           </div>
           <div><p className="tw-mb-2 tw-font-bold">Comparar coleccion de vinilos con el usuario:</p></div>

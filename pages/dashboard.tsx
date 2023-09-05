@@ -35,7 +35,7 @@ function Dashboard() {
   console.log("Datos obtenidos de useGetUserData:", data);
 
   return (
-    <Layout centeredContent={true}>
+    <Layout centeredContent={true} title="Dashboard - Diskogs +" description="Tu página personal">
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-w-full">
         <header className="tw-text-center tw-mb-8">
           <div>

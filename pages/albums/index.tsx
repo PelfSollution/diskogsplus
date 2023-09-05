@@ -105,7 +105,7 @@ function Albums() {
     return (
       <Layout centeredContent={false}>
         <div className="tw-container tw-mx-auto tw-p-6">
-          <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Álbumes</h1>
+          <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Discos</h1>
           <p>No hay álbumes disponibles para mostrar.</p>
         </div>
       </Layout>
@@ -115,7 +115,7 @@ function Albums() {
   return (
     <Layout centeredContent={false}>
       <div className="tw-container tw-mx-auto tw-p-6">
-        <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Álbumes</h1>
+        <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Discos</h1>
         <div className="tw-my-4">
           <select
             onChange={(e) => setFilter(e.target.value as any)}

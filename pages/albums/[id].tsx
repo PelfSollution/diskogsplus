@@ -240,7 +240,7 @@ function AlbumDetails() {
           <div className="tw-flex tw-items-center tw-mb-4 tw-mt-4">
             {/* Componente de la portada del disco */}
             <div
-              className="relative cursor-pointer tw-w-64 tw-h-64"
+              className="relative cursor-pointer tw-w-32 tw-h-32 md:tw-w-64 md:tw-h-64"
               onClick={handleFlip}
             >
               <Card
@@ -362,7 +362,7 @@ function AlbumDetails() {
                       key={index}
                       className="tw-flex tw-justify-between tw-items-center tw-mb-2"
                     >
-                      <span>{track.title}</span>
+                      <span className="tw-max-w-[140px]">{track.title}</span>
                       {isSongInMixtape(track.title) ? (
                         <button
                           className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"

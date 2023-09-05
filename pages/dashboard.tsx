@@ -67,13 +67,18 @@ function Dashboard() {
                   </span>
                 </h1>
                 {data.userProfile.avatar_url && (
-                  <Image
-                    src={data.userProfile.avatar_url}
-                    alt={`${data.userProfile.username} profile pic`}
-                    width={300}
-                    height={300}
-                    className="tw-mt-4 tw-rounded-full"
-                  />
+    <div className="tw-relative tw-mt-4">
+    <Image
+        src={data.userProfile.avatar_url}
+        alt={`${data.userProfile.username} profile pic`}
+        width={300}
+        height={300}
+        className="tw-rounded-full"
+    />
+    <div className="tw-absolute tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-28 tw-h-28 tw-rounded-full tw-bg-gray-800"></div>
+    <div className="tw-absolute tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-6 tw-h-6 tw-rounded-full tw-bg-gray-200"></div>
+</div>
+
                 )}
 
                 {isDateValid(data.userProfile.registered) ? (

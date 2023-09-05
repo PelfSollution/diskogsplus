@@ -42,11 +42,22 @@ SpotifyPlayer.displayName = "SpotifyPlayer";
 
 const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
   return (
-    <div className="tw-flex tw-border-b tw-p-2">
+    <div className="tw-flex tw-justify-center tw-items-center tw-gap-x-8 tw-py-2 tw-px-2">
 
-      {/* Primera columna: Información y Botón */}
-      <div className="tw-w-1/2 tw-flex tw-flex-col tw-justify-center tw-items-start tw-pr-4">
-        <span className="tw-font-bold">{data.artistname}</span>
+      {/* Primera columna: Embed de Spotify o mensaje */}
+      <div className="tw-max-w-[350px] tw-w-full tw-flex tw-justify-center tw-items-center">
+        {data.spotifytrackid ? (
+          <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
+        ) : (
+          <div className="tw-border tw-border-green-500 tw-rounded-lg tw-min-w-[302px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
+            <span className="tw-text-green-500">No está en Spotify</span>
+          </div>
+        )}
+      </div>
+
+      {/* Segunda columna: Información y Botón */}
+      <div className="tw-max-w-[250px] tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-start">
+        <span className="tw-font-bold tw-break-all">{data.artistname}</span>
         <Link
           key={data.discogsalbumid}
           href={`/albums/${data.discogsalbumid}`}
@@ -56,7 +67,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
         >
           {data.trackname}
         </Link>
-        <span className="tw-italic">{data.username}</span>
+        {/*<span className="tw-italic">{data.username}</span>*/}
         <button
           className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded tw-mt-2 tw-self-start"
           onClick={() => onDelete(data)}
@@ -64,20 +75,10 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
           Eliminar
         </button>
       </div>
-
-      {/* Segunda columna: Embed de Spotify o mensaje */}
-      <div className="tw-w-1/2 tw-flex tw-items-center tw-justify-center tw-pr-4">
-        {data.spotifytrackid ? (
-          <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
-        ) : (
-          <div className="tw-border tw-border-green-500 tw-rounded-lg tw-min-w-[302px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
-            <span className="tw-text-green-500">No está en Spotify</span>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
+
 
 
 

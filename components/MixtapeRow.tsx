@@ -42,10 +42,10 @@ SpotifyPlayer.displayName = "SpotifyPlayer";
 
 const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
   return (
-    <div className="tw-flex tw-justify-center tw-items-center tw-gap-x-8 tw-py-2 tw-px-2">
+    <div className="tw-flex tw-flex-col md:tw-flex-row tw-justify-center tw-items-center tw-gap-y-4 md:tw-gap-x-8 tw-py-2 tw-px-2">
 
       {/* Primera columna: Embed de Spotify o mensaje */}
-      <div className="tw-max-w-[350px] tw-w-full tw-flex tw-justify-center tw-items-center">
+      <div className="tw-max-w-[350px] tw-w-full tw-flex tw-justify-center tw-items-center tw-mb-2 md:tw-mb-0">
         {data.spotifytrackid ? (
           <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
         ) : (
@@ -56,20 +56,19 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
       </div>
 
       {/* Segunda columna: Información y Botón */}
-      <div className="tw-max-w-[250px] tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-start">
-        <span className="tw-font-bold tw-break-all">{data.artistname}</span>
+      <div className="tw-max-w-[350px] tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-center md:tw-items-start">
+        <span className="tw-font-bold tw-text-center md:tw-text-left tw-break-all">{data.artistname}</span>
         <Link
           key={data.discogsalbumid}
           href={`/albums/${data.discogsalbumid}`}
-          className="tw-text-gray-500 tw-underline"
+          className="tw-text-gray-500 tw-underline tw-text-center md:tw-text-left"
           target="_blank"
           rel="noopener noreferrer"
         >
           {data.trackname}
         </Link>
-        {/*<span className="tw-italic">{data.username}</span>*/}
         <button
-          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded tw-mt-2 tw-self-start"
+          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded tw-mt-2 tw-w-full md:tw-w-auto tw-self-center md:tw-self-start"
           onClick={() => onDelete(data)}
         >
           Eliminar
@@ -78,6 +77,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
     </div>
   );
 };
+
 
 
 

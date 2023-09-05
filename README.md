@@ -1,4 +1,23 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+# Diskogs Plus: Enriqueciendo tu experiencia en Discogs
+
+Una aplicación web responsiva creada para los amantes de la música que usan Discogs. Desarrollada con Next.js y TypeScript, esta herramienta proporciona un conjunto robusto de funcionalidades para enriquecer la experiencia del usuario.
+
+## Funcionalidades Principales:
+
+- Exploración de Catálogo: No sólo puedes visualizar tu catálogo de Discogs, sino que también puedes acceder al detalle de cada álbum con información enriquecida a partir de otras APIs como Last.fm, Spotify y OpenAI.
+
+- Mixtape Personal: Crea tu propia mixtape seleccionando canciones de diferentes álbumes. Una vez que estés satisfecho, puedes exportar esta mixtape como una lista directamente a tu cuenta de Spotify.
+
+- Comparativa de Catálogos: Compara tu colección de discos con la de otros usuarios. Descubre y escucha álbumes que no posees y agrégales fácilmente a tu Wantlist.
+
+## Futuras Funcionalidades (Roadmap):
+
+- Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. Una aventura musical como ninguna otra.
+
+- Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
+
+- Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
 
 ## Usuario DEMO Discogs
 
@@ -7,42 +26,23 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ejemplo user para matching: dayats 
 
-## DiscogsPlus
+## Estructura de Carpetas
 ```
 diskogsplus/
 ┣ .next/
-┃ ┣ cache/
-┃ ┃ ┣ images/
-┃ ┃ ┣ swc/
-┃ ┃ ┗ webpack/
-┃ ┣ server/
-┃ ┃ ┣ pages/
-┃ ┃ ┣ _error.js
-┃ ┃ ┣ middleware-build-manifest.js
-┃ ┃ ┣ middleware-manifest.json
-┃ ┃ ┣ middleware-react-loadable-manifest.js
-┃ ┃ ┣ next-font-manifest.js
-┃ ┃ ┣ next-font-manifest.json
-┃ ┃ ┣ pages-manifest.json
-┃ ┃ ┗ webpack-runtime.js
-┃ ┣ static/
-┃ ┃ ┣ chunks/
-┃ ┃ ┣ development/
-┃ ┃ ┗ webpack/
-┃ ┣ build-manifest.json
-┃ ┣ package.json
-┃ ┣ react-loadable-manifest.json
-┃ ┗ trace
 ┣ components/
 ┃ ┣ ui/
 ┃ ┃ ┗ button.tsx
+┃ ┣ CustomHead.tsx
 ┃ ┣ Layout.tsx
+┃ ┣ MixtapeRow.tsx
 ┃ ┗ TopNavBar.tsx
 ┣ hooks/
 ┃ ┣ useCompareAlbumList.ts
 ┃ ┣ useGetAlbumData.ts
 ┃ ┣ useGetAlbumInfo.ts
 ┃ ┣ useGetAlbumList.ts
+┃ ┣ useGetMixtape.ts
 ┃ ┗ useGetUserData.ts
 ┣ lib/
 ┃ ┣ supabase.ts
@@ -77,6 +77,7 @@ diskogsplus/
 ┃ ┃ ┗ getTrackId.ts
 ┃ ┗ supabase/
 ┃   ┣ addMixtape.ts
+┃   ┣ deleteFromMixtape.ts
 ┃   ┗ getMixtape.ts
 ┣ styles/
 ┃ ┗ globals.css
@@ -99,17 +100,29 @@ diskogsplus/
 ┣ tailwind.config.ts
 ┗ tsconfig.json
 ```
-## Getting Started
 
-First, run the development server:
+## Stack Tecnológico
+
+- Frontend: Next.js
+- Estilos: Emotion, MUI, TailwindCSS 
+- Estado y Datos: Supabase, React Query, SWR.
+- APIs: Discogs, Last.fm, Spotify, OpenAI.
+- Otros: TypeScript, ESLint, Prettier, Husky, Lint-Staged, Commitlint, Vercel.
+
+
+## Inicialización del Proyecto
+
+1 - Primero, instala las dependencias:
+
+```bash
+npm install
+```
+2 -Inicia servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
+
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

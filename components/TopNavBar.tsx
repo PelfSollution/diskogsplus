@@ -50,7 +50,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, cla
   const NavigationItems = ({ isDrawer = false }) => (
     <>
       <NavigationButton href="/dashboard" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Home</NavigationButton>
-      <NavigationButton href="/albums" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Álbumes</NavigationButton>
+      <NavigationButton href="/albums" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Discos</NavigationButton>
       <NavigationButton href="/mixtape" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Mixtape</NavigationButton>
       <NavigationButton href="/matching" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Matching</NavigationButton>
       <li className={`${isDrawer ? "tw-w-full tw-mb-2" : "tw-mr-4"}`}>

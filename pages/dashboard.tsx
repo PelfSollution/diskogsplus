@@ -4,6 +4,7 @@ import useGetUserData from "@/hooks/useGetUserData";
 import Image from "next/image";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
+import { CircularProgress } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 
@@ -32,17 +33,32 @@ const isDateValid = (dateString: string): boolean => {
 function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, isValidating } = useGetUserData();
-  console.log("Datos obtenidos de useGetUserData:", data);
+  console.log("DATA:", data);
 
   return (
-    <Layout centeredContent={true} title="Dashboard - Diskogs +" description="Tu página personal">
+    <Layout
+      centeredContent={true}
+      title="Dashboard - Diskogs +"
+      description="Tu página personal"
+    >
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-w-full">
         <header className="tw-text-center tw-mb-8">
           <div>
-            {error && !isLoading && <div>Error: failed to load</div>}
-            {isLoading || (isValidating && <div>Loading...</div>)}
+            {error && !isLoading && (
+                    <Layout centeredContent={true}>
+                    <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+                    Error: No se pudo cargar la información.
+                    </div>
+                  </Layout>
+             
+            )}
+            {isLoading || (isValidating &&       <Layout centeredContent={true}>
+        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+          <CircularProgress />
+        </div>
+      </Layout>)}
 
-            {data?.userProfile && Object.keys(data).length > 0 ? (
+            {data?.userProfile && (
               <div>
                 <h1 className="tw-text-2xl">
                   Hola,{" "}
@@ -91,15 +107,17 @@ function Dashboard() {
                       ))}
                   </Stack>
                 )}
-                <Button
-                  onClick={() => router.push("/albums")}
-                  className="tw-opacity-100 hover:tw-opacity-70 tw-mt-4 tw-self-center"
-                >
-                  Ver Vinilos
-                </Button>
+                <div className="tw-mt-6">
+                  <Button
+                    variant="outline"
+                    size={"sm"}
+                    onClick={() => router.push("/albums")}
+                    className="tw-opacity-100 hover:tw-opacity-70 tw-mt-4 tw-self-center"
+                  >
+                    Ver tu Colección de Discos
+                  </Button>
+                </div>
               </div>
-            ) : (
-              <p>Inicie sesi&oacute;n para ver su perfil.</p>
             )}
           </div>
         </header>

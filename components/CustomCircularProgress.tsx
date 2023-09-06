@@ -8,7 +8,7 @@ const CustomCircularProgress: React.FC = () => {
         <div className="tw-flex tw-flex-col tw-items-center tw-justify-center min-h-screen">
             <div>  {/* Este div envuelve al TurnTable */}
                 <TurnTable />
-                <p className="tw-text-red-400 tw-mt-2">Cargando...</p>
+                <p className="tw-text-xs tw-text-red-400 tw-mt-2">Cargando...</p>
             </div>
         </div>
     );

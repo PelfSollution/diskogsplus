@@ -4,9 +4,9 @@ import useGetUserData from "@/hooks/useGetUserData";
 import Image from "next/image";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import { CircularProgress } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import CustomCircularProgress from '@/components/CustomCircularProgress';
 
 interface UserAlbums {
   releases: Album[];
@@ -54,7 +54,7 @@ function Dashboard() {
             )}
             {isLoading || (isValidating &&       <Layout centeredContent={true}>
         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-          <CircularProgress />
+          <CustomCircularProgress />
         </div>
       </Layout>)}
 

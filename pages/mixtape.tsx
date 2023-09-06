@@ -4,9 +4,10 @@ import getMixtape from "../services/supabase/getMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import deleteFromMixtape from "../services/supabase/deleteFromMixtape";
 import MixtapeRow from "@/components/MixtapeRow";
-import { CircularProgress, Snackbar } from "@mui/material";
+import { Snackbar } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import CustomCircularProgress from '@/components/CustomCircularProgress';
 
 type Mixtape = {
   id: number;
@@ -111,7 +112,7 @@ export default function Mixtape() {
     return (
       <Layout>
         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-          <CircularProgress />
+          <CustomCircularProgress />
         </div>
       </Layout>
     );

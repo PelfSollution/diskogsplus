@@ -13,7 +13,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  CircularProgress,
   Snackbar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -24,6 +23,7 @@ import addMixtape from "../../services/supabase/addMixtape";
 import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
+import CustomCircularProgress from '@/components/CustomCircularProgress';
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -154,7 +154,7 @@ function AlbumDetails() {
       <Layout centeredContent={true}>
          <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
     
-        <CircularProgress />
+         <CustomCircularProgress />
         </div>
       </Layout>
     );

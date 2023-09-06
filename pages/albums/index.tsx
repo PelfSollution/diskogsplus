@@ -3,7 +3,7 @@ import useGetAlbumList from "@/hooks/useGetAlbumList";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { CircularProgress } from "@mui/material";
+import CustomCircularProgress from '@/components/CustomCircularProgress';
 
 interface Artist {
   name: string;
@@ -91,7 +91,7 @@ function Albums() {
     return (
       <Layout>
         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-          <CircularProgress />
+        <CustomCircularProgress />
         </div>
       </Layout>
     );

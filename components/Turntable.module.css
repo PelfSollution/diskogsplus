@@ -1,0 +1,43 @@
+/* Turntable.module.css */
+
+.turntable {
+  @apply tw-relative tw-m-auto tw-w-20 tw-h-18 tw-bg-red-400 tw-rounded-lg tw-shadow-inner;
+}
+
+  
+.record {
+  @apply tw-absolute tw-left-2.25 tw-top-2.25 tw-w-12.5 tw-h-12.5 tw-bg-black tw-rounded-3xl tw-border-gray-100 tw-animate-spin;
+}
+
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .inner {
+    @apply tw-absolute tw-left-1/2 tw-top-1/2 tw-w-3.5 tw-h-3.5 tw-bg-gradient-to-br tw-bg-white tw-rounded-full tw-transform -tw-translate-x-1/2 -tw-translate-y-1/2;
+  }
+  
+  
+  .overlay {
+    @apply tw-absolute tw-left-2.25 tw-top-2.25 tw-w-12.5 tw-h-12.5 tw-rounded-3xl tw-opacity-60;
+    background: linear-gradient(45deg, transparent, transparent, white);
+  }
+  
+  
+  .armHolder {
+    @apply tw-absolute tw-right-1 tw-top-2.5 tw-w-2.5 tw-h-2.5 tw-bg-gray-800 tw-rounded-full;
+  }
+  
+  
+  .arm {
+    @apply tw-absolute tw-rotate-45 tw-bg-gradient-to-t tw-from-white tw-to-gray-300 tw-right-3 tw-top-0 tw-w-1.5 tw-h-8 tw-rounded-full;
+}
+
+
+
+  .dial {
+    @apply tw-absolute tw-right-1.50 tw-bottom-1.25 tw-w-1.5 tw-h-1.5 tw-bg-gray-50 tw-rounded-full;
+  }
+  

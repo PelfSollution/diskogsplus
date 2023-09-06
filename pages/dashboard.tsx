@@ -30,7 +30,7 @@ const isDateValid = (dateString: string): boolean => {
 function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, isValidating } = useGetUserData();
-  
+
   return (
     <Layout
       centeredContent={true}

@@ -1,7 +1,7 @@
-var Discogs = require('disconnect').Client;
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getCookie } from 'cookies-next';
-var CryptoJS = require('crypto-js');
+var Discogs = require("disconnect").Client;
+import { NextApiRequest, NextApiResponse } from "next";
+import { getCookie } from "cookies-next";
+var CryptoJS = require("crypto-js");
 
 export default async function identity(
   req: NextApiRequest,
@@ -9,8 +9,8 @@ export default async function identity(
 ) {
   try {
     // Obtener cookies cifradas
-    const usernameCipher = getCookie('usernameCipher', { req, res });
-    const accessDatacipherObj = getCookie('accessData', { req, res });
+    const usernameCipher = getCookie("usernameCipher", { req, res });
+    const accessDatacipherObj = getCookie("accessData", { req, res });
 
     // Si no existen las cookies, responder con un objeto vacío
     if (!usernameCipher || !accessDatacipherObj) {
@@ -44,11 +44,10 @@ export default async function identity(
     if (userProfile) {
       return res.send({ userProfile });
     } else {
-      return res.status(401).json({ error: 'Error. No such user.' });
+      return res.status(401).json({ error: "Error. No such user." });
     }
   } catch (err) {
     console.error(err);
     return res.status(500).send(err);
   }
 }
-

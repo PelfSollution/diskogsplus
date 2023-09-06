@@ -9,7 +9,6 @@ import {
   Stack,
   Card,
   CardMedia,
-  CardContent,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -23,8 +22,6 @@ import addMixtape from "../../services/supabase/addMixtape";
 import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
-import { getTrackAudioFeatures } from "../../services/spotify/getTrackAudioFeatures";
-
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 
 interface TrackInfo {
@@ -35,7 +32,6 @@ interface TrackInfo {
   spotifyUri?: string;
   tempo?: number;
   key?: number;
-  // ... cualquier otra propiedad que pueda existir en track.
 }
 
 function AlbumDetails() {
@@ -342,7 +338,7 @@ function AlbumDetails() {
             Released in {albumInfo.released}
           </Typography>
           <Typography variant="subtitle2">
-            Added to collection: July 30, 2019
+            {/*Added to collection: July 30, 2019*/}
             {/* Nota: Puedes reemplazar la fecha estática con la que desees */}
           </Typography>
 
@@ -405,56 +401,54 @@ function AlbumDetails() {
                 <Typography variant="h6">Tracklist</Typography>
               </AccordionSummary>
               <AccordionDetails>
-              <Stack direction="column" spacing={1}>
-  {albumInfo.tracklist.map((track: TrackInfo, index: number) => (
-    <div
-      key={index}
-      className="tw-flex tw-justify-between tw-items-center tw-mb-2"
-    >
-      <div className="tw-min-w-[200px]">{track.title}
-      <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
-        {track.tempo && (
-          <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
-            {track.tempo.toFixed(1)}
-          </div>
-        )}
-        {typeof track.key === "number" && (
-          <div
-            className={`tw-text-xs tw-text-white tw-opacity-75 tw-px-2 tw-py-1 tw-rounded-full ${
-              getKeyNotation(track.key).color
-            }`}
-          >
-            {getKeyNotation(track.key).notation}
-          </div>
-        )}
-      </div>
-      
-      
-      </div>
+                <Stack direction="column" spacing={1}>
+                  {albumInfo.tracklist.map(
+                    (track: TrackInfo, index: number) => (
+                      <div
+                        key={index}
+                        className="tw-flex tw-justify-between tw-items-center tw-mb-2"
+                      >
+                        <div className="tw-min-w-[200px] tw-max-w-[500px]">
+                          {track.title}
+                          <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
+                            {track.tempo && (
+                              <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
+                                {track.tempo.toFixed(1)}
+                              </div>
+                            )}
+                            {typeof track.key === "number" && (
+                              <div
+                                className={`tw-text-xs tw-text-white tw-opacity-75 tw-px-2 tw-py-1 tw-rounded-full ${
+                                  getKeyNotation(track.key).color
+                                }`}
+                              >
+                                {getKeyNotation(track.key).notation}
+                              </div>
+                            )}
+                          </div>
+                        </div>
 
- 
-
-      <div>
-        {isSongInMixtape(track.title) ? (
-          <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
-            onClick={() => handleDeleteFromMixtape(track)}
-          >
-            Borrar de Mixtape
-          </button>
-        ) : (
-          <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
-            onClick={() => handleAddToMixtape(track)}
-          >
-            Añadir a Mixtape
-          </button>
-        )}
-      </div>
-    </div>
-  ))}
-</Stack>
-
+                        <div>
+                          {isSongInMixtape(track.title) ? (
+                            <button
+                              className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+                              onClick={() => handleDeleteFromMixtape(track)}
+                            >
+                              Borrar de Mixtape
+                            </button>
+                          ) : (
+                            <button
+                              className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+                              onClick={() => handleAddToMixtape(track)}
+                            >
+                              Añadir a Mixtape
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </Stack>
               </AccordionDetails>
             </Accordion>
           )}
@@ -479,7 +473,6 @@ function AlbumDetails() {
               Este álbum no está disponible en Spotify.
             </Typography>
           )}
-
           {/* ... Resto de tu componente ... */}
         </Grid>
       </Grid>

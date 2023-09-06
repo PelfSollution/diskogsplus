@@ -1,5 +1,5 @@
-import useSWRInfinite from 'swr/infinite';
-import { KeyedMutator } from 'swr';
+import useSWRInfinite from "swr/infinite";
+import { KeyedMutator } from "swr";
 
 export interface AlbumDataInterface {
   // Esta es la estructura de los datos que espero obtener de la API de Discogs.
@@ -7,7 +7,6 @@ export interface AlbumDataInterface {
   id: number;
   title: string;
   artist: string;
-  // ...otros campos que podrían venir de la API.
 }
 
 // Función fetcher para realizar la llamada a la API y devolver los datos en formato JSON.
@@ -18,24 +17,17 @@ const useGetAlbumData = () => {
   const perPage = 20;
 
   // Uso el hook useSWRInfinite para manejar la paginación y la obtención de datos.
-  const {
-    data,
-    size,
-    setSize,
-    isLoading,
-    isValidating,
-    error,
-    mutate,
-  } = useSWRInfinite(
-    (page) =>
-      // Creo la URL para obtener datos, incluyendo el número de página y la cantidad de elementos por página.
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/albums/AlbumData?page=${
-        page + 1
-      }&per_page=${perPage}`,
-    fetcher,
-    // Establezco algunas opciones, como validar la primera página y realizar peticiones en paralelo.
-    { revalidateFirstPage: true, parallel: true }
-  );
+  const { data, size, setSize, isLoading, isValidating, error, mutate } =
+    useSWRInfinite(
+      (page) =>
+        // Creo la URL para obtener datos, incluyendo el número de página y la cantidad de elementos por página.
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/albums/AlbumData?page=${
+          page + 1
+        }&per_page=${perPage}`,
+      fetcher,
+      // Establezco algunas opciones, como validar la primera página y realizar peticiones en paralelo.
+      { revalidateFirstPage: true, parallel: true }
+    );
 
   // Devuelvo los datos y algunas funciones y propiedades útiles que puedo utilizar en mis componentes.
   return {
@@ -53,5 +45,3 @@ const useGetAlbumData = () => {
 };
 
 export default useGetAlbumData;
-
-

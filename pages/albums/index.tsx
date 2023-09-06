@@ -3,7 +3,7 @@ import useGetAlbumList from "@/hooks/useGetAlbumList";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import CustomCircularProgress from '@/components/CustomCircularProgress';
+import CustomCircularProgress from "@/components/CustomCircularProgress";
 
 interface Artist {
   name: string;
@@ -21,10 +21,8 @@ interface Album {
 
 function Albums() {
   const { data: albums, isLoading, error, size, setSize } = useGetAlbumList();
-  console.log("Datos obtenidos de useGetAlbumList:", albums);
 
   const allAlbums = albums ? albums.flatMap((page) => page.releases) : [];
-  console.log("Todos los álbumes:", allAlbums);
 
   const [filter, setFilter] = useState<
     "name" | "album" | "added" | "year" | ""
@@ -49,8 +47,6 @@ function Albums() {
     });
   }
 
-  console.log("searchTerm:", searchTerm);
-  console.log("Filtered albums:", filteredAlbums);
   switch (filter) {
     case "name":
       // Ordenar por nombre del artista
@@ -91,7 +87,7 @@ function Albums() {
     return (
       <Layout>
         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-        <CustomCircularProgress />
+          <CustomCircularProgress />
         </div>
       </Layout>
     );
@@ -119,9 +115,8 @@ function Albums() {
         <div className="tw-my-4">
           <select
             onChange={(e) => setFilter(e.target.value as any)}
-            className="tw-ml-4 tw-p-2"
+            className="tw-min-w-[20%] tw-ml-4 tw-p-2"
           >
-            <option value="">Selecciona un filtro</option>
             <option value="name">Nombre</option>
             <option value="album">Álbum</option>
           </select>
@@ -131,10 +126,13 @@ function Albums() {
             placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="tw-ml-4 tw-p-2 tw-border tw-rounded"
+            className="tw-min-w-[60%] tw-ml-4 tw-p-2 tw-border tw-rounded"
           />
 
-          <button onClick={() => setOrderAsc(!orderAsc)} className="tw-ml-4">
+          <button
+            onClick={() => setOrderAsc(!orderAsc)}
+            className="tw-min-w-[2%] tw-ml-4"
+          >
             {orderAsc ? "⬆️" : "⬇️"}
           </button>
         </div>

@@ -8,27 +8,27 @@ interface SpotifyTrackItem {
 const SPOTIFY_BASE_URL = "https://api.spotify.com";
 
 function getFirstWord(str: string): string {
-    return str.split(' ')[0];
-  }
-  
-  function compareStringsTolerantly(str1: string, str2: string): boolean {
-    const firstWordOfStr1 = getFirstWord(str1);
-    const firstWordOfStr2 = getFirstWord(str2);
-    console.log("Comparando:", firstWordOfStr1, "con", firstWordOfStr2);
-    return firstWordOfStr1.trim().toLowerCase() === firstWordOfStr2.trim().toLowerCase();
-  }
+  return str.split(" ")[0];
+}
+
+function compareStringsTolerantly(str1: string, str2: string): boolean {
+  const firstWordOfStr1 = getFirstWord(str1);
+  const firstWordOfStr2 = getFirstWord(str2);
+  return (
+    firstWordOfStr1.trim().toLowerCase() ===
+    firstWordOfStr2.trim().toLowerCase()
+  );
+}
 
 export async function getSpotifyTrackId(
   trackName: string,
   artistName: string,
   albumName: string,
-  accessToken: string,
+  accessToken: string
 ): Promise<{ id: string; uri: string } | null> {
   try {
-    console.log("Llamando a getSpotifyAlbumId..."); 
     const albumId = await getSpotifyAlbumId(albumName, artistName, accessToken);
 
-    console.log("ID del álbum obtenido:", albumId);
     if (!albumId) {
       return null;
     }
@@ -50,38 +50,36 @@ export async function getSpotifyTrackId(
 
     const { items, error } = await response.json();
 
-    // Log para ver la lista de canciones
-    console.log("Lista de canciones de Spotify:", items);
-
     if (error) {
       throw new Error(error.message);
     }
 
     let foundTrack = null;
-    for(let i = 0; i < items.length; i++) {
-      if(compareStringsTolerantly(items[i].name, trackName)) {
+    for (let i = 0; i < items.length; i++) {
+      if (compareStringsTolerantly(items[i].name, trackName)) {
         foundTrack = {
           id: items[i].id,
-          uri: items[i].uri
+          uri: items[i].uri,
         };
-        console.log("Track encontrado con ID:", foundTrack.id, "y URI:", foundTrack.uri);
+
         break;
       }
     }
 
     if (!foundTrack) {
-      console.log("No se encontró el track con el nombre:", trackName);
+      //  console.log("No se encontró el track con el nombre:", trackName);
     }
 
     return foundTrack;
-
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error("Error al buscar el ID de la canción en Spotify:", err.message);
+      console.error(
+        "Error al buscar el ID de la canción en Spotify:",
+        err.message
+      );
     } else {
       console.error("Ocurrió un error inesperado:", err);
     }
     return null;
   }
 }
-

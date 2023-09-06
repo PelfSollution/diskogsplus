@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import Head from 'next/head';
+import { FC } from "react";
+import Head from "next/head";
 
 interface CustomHeadProps {
   title?: string;
@@ -7,7 +7,11 @@ interface CustomHeadProps {
   favicon?: string;
 }
 
-const CustomHead: FC<CustomHeadProps> = ({ title = 'Discogs Plus', description = 'Descripción de la app', favicon = '/favicon.png' }) => {
+const CustomHead: FC<CustomHeadProps> = ({
+  title = "Discogs Plus",
+  description = "Descripción de la app",
+  favicon = "/favicon.png",
+}) => {
   return (
     <Head>
       <title>{title}</title>
@@ -16,6 +20,6 @@ const CustomHead: FC<CustomHeadProps> = ({ title = 'Discogs Plus', description =
       {/* Otros metadatos */}
     </Head>
   );
-}
+};
 
 export default CustomHead;

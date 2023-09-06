@@ -18,7 +18,6 @@ interface NavigationButtonProps {
   className?: string;
 }
 
-
 export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
   const router = useRouter();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -33,37 +32,60 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
     router.push("/");
   };
 
-const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, className = '' }) => (
-  <Button
-    variant="outline"
-    size={"sm"}
-    className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full ${router.pathname === href ? 'tw-border-blue-500 tw-text-blue-500' : ''}`}
-    onClick={() => router.push(href)}
-  >
-    {children}
-  </Button>
-);
-
-  
-  
+  const NavigationButton: React.FC<NavigationButtonProps> = ({
+    href,
+    children,
+    className = "",
+  }) => (
+    <Button
+      variant="outline"
+      size={"sm"}
+      className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full ${
+        router.pathname === href ? "tw-border-blue-500 tw-text-blue-500" : ""
+      }`}
+      onClick={() => router.push(href)}
+    >
+      {children}
+    </Button>
+  );
 
   const NavigationItems = ({ isDrawer = false }) => (
     <>
-      <NavigationButton href="/dashboard" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Home</NavigationButton>
-      <NavigationButton href="/albums" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Discos</NavigationButton>
-      <NavigationButton href="/mixtape" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Mixtape</NavigationButton>
-      <NavigationButton href="/matching" className={isDrawer ? "tw-w-full tw-mb-2" : ""}>Matching</NavigationButton>
+      <NavigationButton
+        href="/dashboard"
+        className={isDrawer ? "tw-w-full tw-mb-2" : ""}
+      >
+        Home
+      </NavigationButton>
+      <NavigationButton
+        href="/albums"
+        className={isDrawer ? "tw-w-full tw-mb-2" : ""}
+      >
+        Discos
+      </NavigationButton>
+      <NavigationButton
+        href="/mixtape"
+        className={isDrawer ? "tw-w-full tw-mb-2" : ""}
+      >
+        Mixtape
+      </NavigationButton>
+      <NavigationButton
+        href="/matching"
+        className={isDrawer ? "tw-w-full tw-mb-2" : ""}
+      >
+        Matching
+      </NavigationButton>
       <li className={`${isDrawer ? "tw-w-full tw-mb-2" : "tw-mr-4"}`}>
-    <Button
-      variant="destructive"
-      size={"sm"}
-      onClick={handleLogout}
-      className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-w-full tw-mr-4"
-    >
-      Logout
-    </Button>
-</li>
-<div className="tw-mr-4"></div>
+        <Button
+          variant="destructive"
+          size={"sm"}
+          onClick={handleLogout}
+          className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-w-full tw-mr-4"
+        >
+          Logout
+        </Button>
+      </li>
+      <div className="tw-mr-4"></div>
     </>
   );
 
@@ -73,7 +95,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, cla
         <Image
           src="/diskogs-logo.gif"
           alt="Diskogs plus"
-          className="lg:tw-ml-4 tw-w-24"  // Agregamos margen a la izquierda del logo en modo desktop
+          className="lg:tw-ml-4 tw-w-24" 
           width={200}
           height={60}
         />
@@ -91,7 +113,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, cla
           <Image
             src="/diskogs-logo.gif"
             alt="Diskogs plus"
-            className="tw-w-24 tw-mx-auto tw-block tw-mb-4" 
+            className="tw-w-24 tw-mx-auto tw-block tw-mb-4"
             width={200}
             height={60}
           />
@@ -101,5 +123,5 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({ href, children, cla
         </div>
       </Drawer>
     </nav>
-);
+  );
 }

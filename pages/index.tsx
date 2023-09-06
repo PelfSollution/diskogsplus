@@ -2,10 +2,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { getCookie } from "cookies-next";
 import Image from "next/image";
-
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-
 
 export default function Home() {
   const router = useRouter();
@@ -37,7 +35,6 @@ export default function Home() {
           </div>
         </header>
 
-        {/* si el usuario está loggeado, no mostrará el botón de inicio de sesión. */}
         <div className="tw-flex tw-flex-col tw-mt-8">
           <Button
             variant="outline"

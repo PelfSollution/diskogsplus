@@ -24,7 +24,6 @@ export interface UserIdentityDataProps {
   isValidating: boolean | undefined;
 }
 
-console.log(`Fetching from: ${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/identity`);
 
 const useGetUserData = () => {
   const { data, error, isLoading, isValidating }: UserIdentityDataProps =

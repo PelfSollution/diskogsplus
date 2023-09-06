@@ -7,7 +7,7 @@ class MyDocument extends Document {
       <Html>
         <Head>
           <link rel="shortcut icon" href="/favicon.png" />
-          {/* Si necesitas agregar fuentes o estilos globales, aquí es el lugar */}
+          {/* fuentes o estilos globales, aquí es el lugar */}
         </Head>
         <body>
           <Main />

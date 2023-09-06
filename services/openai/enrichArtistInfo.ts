@@ -24,7 +24,6 @@ export async function enrichArtistInfoWithChatGPT(
       temperature: 0,
     });
 
-    // Si la API devuelve alguna opción de finalización, devuelve la primera. De lo contrario, devuelve un mensaje de error.
     return completion.choices && completion.choices.length > 0
       ? completion.choices[0].text.trim()
       : "No se pudo obtener información adicional del artista.";

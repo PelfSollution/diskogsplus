@@ -21,7 +21,6 @@ interface Album {
 }
 
 export default function Comparador() {
-
   const { data: userData } = useGetUserData();
   const user1 = userData?.userProfile?.username;
   const [user2, setUser2] = useState("");
@@ -34,7 +33,6 @@ export default function Comparador() {
     size,
     setSize,
   } = useCompareAlbumList(user2, user1);
-  console.log("Datos obtenidos de useCompareAlbumList:", albumsDifference);
 
   const handleLoadMore = () => {
     setSize(size + 1);
@@ -61,7 +59,11 @@ export default function Comparador() {
               autoComplete="off"
             />
           </div>
-          <div><p className="tw-mb-2 tw-font-bold">Comparar coleccion de vinilos con el usuario:</p></div>
+          <div>
+            <p className="tw-mb-2 tw-font-bold">
+              Comparar coleccion de vinilos con el usuario:
+            </p>
+          </div>
           <div className="tw-flex tw-flex-col tw-gap-2">
             <TextField
               label="Usuario 2"
@@ -81,47 +83,53 @@ export default function Comparador() {
         {comparePressed && !isLoading && albumsDifference && (
           <div>
             <p className="tw-mb-4 tw-mt-4">
-              Vinilos que <span className="tw-font-bold">{user1}</span> tiene y <span className="tw-font-bold">{user2}</span> no tiene:  <span className="tw-font-bold tw-text-blue-500">
-              {albumsDifference[0].length}</span>
+              Vinilos que <span className="tw-font-bold">{user1}</span> tiene y{" "}
+              <span className="tw-font-bold">{user2}</span> no tiene:{" "}
+              <span className="tw-font-bold tw-text-blue-500">
+                {albumsDifference[0].length}
+              </span>
             </p>
 
             <ul>
               <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-6">
-              {Array.isArray(albumsDifference[0]) && albumsDifference[0].map((album: Album) => (
-
-                  <li key={album.id}>
-                    <Link href={`/albums/${album.id}?from=compare`} passHref>
-                      <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
-                        <Image
-                          src={album.basic_information.cover_image}
-                          alt={album.basic_information.title}
-                          width={500}
-                          height={240}
-                          className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
-                        />
-                        <h2 className="tw-text-xl">
-                          <span className="tw-font-bold">
-                            {album.basic_information.artists &&
-                            album.basic_information.artists.length > 0
-                              ? album.basic_information.artists[0].name
-                              : "Artista desconocido"}
-                          </span>
-                          - {album.basic_information.title}
-                        </h2>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
+                {Array.isArray(albumsDifference[0]) &&
+                  albumsDifference[0].map((album: Album) => (
+                    <li key={album.id}>
+                      <Link href={`/albums/${album.id}?from=compare`} passHref>
+                        <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
+                          <Image
+                            src={album.basic_information.cover_image}
+                            alt={album.basic_information.title}
+                            width={500}
+                            height={240}
+                            className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
+                          />
+                          <h2 className="tw-text-xl">
+                            <span className="tw-font-bold">
+                              {album.basic_information.artists &&
+                              album.basic_information.artists.length > 0
+                                ? album.basic_information.artists[0].name
+                                : "Artista desconocido"}
+                            </span>
+                            - {album.basic_information.title}
+                          </h2>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
               </div>
             </ul>
-             {/* Mostrar el botón "Cargar más" si es necesario */}
-        {albumsDifference[0] && albumsDifference[0].length === 48 && (
-            <Button variant="contained" color="secondary" onClick={handleLoadMore}>
+            {/* Mostrar el botón "Cargar más" si es necesario */}
+            {albumsDifference[0] && albumsDifference[0].length === 48 && (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleLoadMore}
+              >
                 Cargar más
-            </Button>
-        )}
+              </Button>
+            )}
           </div>
-          
         )}
       </div>
     </Layout>

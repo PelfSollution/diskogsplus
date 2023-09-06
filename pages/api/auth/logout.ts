@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getCookies, setCookie } from 'cookies-next';
-import Router from 'next/router';
+import { NextApiRequest, NextApiResponse } from "next";
+import { getCookies, setCookie } from "cookies-next";
+import Router from "next/router";
 
 //Removes cookies
 export default async function logout(
@@ -23,10 +23,10 @@ export default async function logout(
     };
 
     await deleteCookies();
-    Router.replace('/');
+    Router.replace("/");
 
     //Return success
-    return res.status(200).json({ message: 'logged out' });
+    return res.status(200).json({ message: "logged out" });
   } catch (err) {
     res.send(err);
   }

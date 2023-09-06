@@ -1,14 +1,12 @@
 import useSWR from "swr";
 
-// Defino la función que utilizaré para obtener los datos desde una URL.
-const fetcher = (url: string) => fetch(url).then((res) => {
-  if (!res.ok) {
-    throw new Error('Error fetching data');
-  }
-  return res.json();
-});
-
-// Esta es la estructura de los datos del álbum que espero obtener de la API.
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) {
+      throw new Error("Error fetching data");
+    }
+    return res.json();
+  });
 
 export interface AlbumInfoInterface {
   albumId: string;
@@ -28,14 +26,13 @@ export interface AlbumInfoInterface {
     title: string;
     duration: string;
     spotifyTrackId?: string;
-    bpm?:number; // Es opcional porque puede no estar presente en todos los tracks
+    bpm?: number; // Es opcional porque puede no estar presente en todos los tracks
   }[];
   lastfmTags?: string[];
   enrichedInfo?: string;
-  spotifyAlbumId?: string; 
+  spotifyAlbumId?: string;
 }
 
-// Defino la estructura de la respuesta que espero del hook.
 export interface AlbumInfoPropsInterface {
   data: {
     albumInfo: AlbumInfoInterface;
@@ -49,19 +46,15 @@ const useGetAlbumInfo = (id: number, masterId: number) => {
   const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/albums/albumInfo?id=${id}`;
   const { data, error, isValidating } = useSWR(url, fetcher);
 
-  // Imprimimos información útil para depuración.
-//  console.log("Fetching from URL:", url);
- // console.log("Data received:", data);
   if (error) console.error("Error fetching album info:", error);
 
-  // Asumimos que si no hay data y no hay error, estamos cargando.
   const isLoading = !data && !error;
 
   return {
-    data: data?.albumInfo, // Aquí accedemos directamente a albumInfo.
+    data: data?.albumInfo,
     error,
     isLoading,
-    isValidating
+    isValidating,
   };
 };
 

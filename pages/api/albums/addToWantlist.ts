@@ -22,16 +22,12 @@ export default async function addToWantlist(
 
       const userClient = new Discogs(accessData).user();
       const userWantlist = userClient.wantlist();
-      console.log("Conectado a la base de datos de Discogs.");
-      console.log(userClient);
 
-      console.log("Añadiendo el álbum a la wantlist en Discogs...");
       const wantlistResponse = await userWantlist.addRelease(
         username,
         releaseId,
         { notes, rating }
       );
-      console.log("wantlistResponse:", wantlistResponse);
       res.send({ success: true, data: wantlistResponse });
     } else {
       res.send({

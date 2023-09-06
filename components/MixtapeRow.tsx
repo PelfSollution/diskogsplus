@@ -43,7 +43,6 @@ SpotifyPlayer.displayName = "SpotifyPlayer";
 const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
   return (
     <div className="tw-flex tw-flex-col md:tw-flex-row tw-justify-center tw-items-center tw-gap-y-4 md:tw-gap-x-8 tw-py-2 tw-px-2">
-
       {/* Primera columna: Embed de Spotify o mensaje */}
       <div className="tw-max-w-[350px] tw-w-full tw-flex tw-justify-center tw-items-center tw-mb-2 md:tw-mb-0">
         {data.spotifytrackid ? (
@@ -57,7 +56,9 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
 
       {/* Segunda columna: Información y Botón */}
       <div className="tw-max-w-[350px] tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-center md:tw-items-start">
-        <span className="tw-font-bold tw-text-center md:tw-text-left tw-break-all">{data.artistname}</span>
+        <span className="tw-font-bold tw-text-center md:tw-text-left tw-break-all">
+          {data.artistname}
+        </span>
         <Link
           key={data.discogsalbumid}
           href={`/albums/${data.discogsalbumid}`}
@@ -77,10 +78,6 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
     </div>
   );
 };
-
-
-
-
 
 MixtapeRowComponent.displayName = "MixtapeRow";
 export default memo(MixtapeRowComponent);

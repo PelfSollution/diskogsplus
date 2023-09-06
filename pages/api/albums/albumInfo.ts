@@ -36,7 +36,6 @@ export default async function albumInfo(
       var db = await new Discogs(accessData).database();
 
       // Obtengo los datos de un lanzamiento específico del álbum.
-      console.log("Making request to Discogs API...");
       const releaseData = await db.getRelease(id);
       //console.log("Received data from Discogs API:", releaseData);
 
@@ -75,50 +74,45 @@ export default async function albumInfo(
 
       const tracklistWithSpotifyIds = await Promise.all(
         selectedTracklist.map(async (track: any) => {
-          // Obtener datos del track de Spotify
           const spotifyTrackData = await getSpotifyTrackId(
             track.title,
             releaseData.artists[0].name,
             releaseData.title,
             accessToken
           );
-      
-          console.log("Datos de Spotify para el track", track.title, ":", spotifyTrackData);
-      
-          // Si los datos del track de Spotify están disponibles y también tienen un URI...
+
           if (spotifyTrackData && spotifyTrackData.uri) {
             const spotifyTrackId = spotifyTrackData.uri.split(":")[2];
-            const trackFeatures = await getTrackAudioFeatures(spotifyTrackId, accessToken);
-      
-      let tempo = null; // Por defecto es nulo
-      let key = null; // Por defecto es nulo
+            const trackFeatures = await getTrackAudioFeatures(
+              spotifyTrackId,
+              accessToken
+            );
 
-      if (trackFeatures) {
-        tempo = trackFeatures.tempo|| null;  // Necesitas verificar qué propiedad contiene el BPM en SpotifyAudioFeatures.
-        key = trackFeatures.key || null;  // Necesitas verificar qué propiedad contiene la Key en SpotifyAudioFeatures.
-      }
+            let tempo = null;
+            let key = null;
+
+            if (trackFeatures) {
+              tempo = trackFeatures.tempo || null;
+              key = trackFeatures.key || null;
+            }
 
             return {
               ...track,
               spotifyTrackId,
               spotifyUri: spotifyTrackData.uri,
-              tempo, 
-              key
+              tempo,
+              key,
             };
           } else {
             return {
               ...track,
               spotifyTrackId: null,
-              spotifyUri: null
+              spotifyUri: null,
             };
           }
         })
       );
-      
 
-      
-      
-      console.log("Tracklist with Spotify IDs:", tracklistWithSpotifyIds);
       interface Image {
         type: string;
         uri: string;
@@ -135,10 +129,6 @@ export default async function albumInfo(
         releaseData.images.find((image: Image) => image.type === "secondary")
           ?.uri || frontCover;
 
-      //console.log("CHIVATO");
-     // console.log("Front cover:", frontCover);
-      //console.log("Back cover:", backCover);
-
       // Recopilo la información del álbum.
       const albumInfo = {
         label: releaseData.labels[0].name,
@@ -152,7 +142,7 @@ export default async function albumInfo(
         styles: hasValidMasterId
           ? masterReleaseData.styles
           : releaseData.styles,
-        tracklist: tracklistWithSpotifyIds, // Aquí reemplazamos tracklist con tracklistWithSpotifyIds
+        tracklist: tracklistWithSpotifyIds,
         coverImage: frontCover,
         backCoverImage: backCover,
         artist: releaseData.artists[0].name,
@@ -184,22 +174,19 @@ export default async function albumInfo(
       }
 
       const combinedData = {
-        ...albumInfo, // Incorporamos la información recopilada previamente
+        ...albumInfo,
         enrichedInfo: enrichedArtistInfo,
         lastfmTags: lastfmTags,
         spotifyAlbumId: spotifyAlbumId,
       };
 
-      //console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });
     } else {
-      // Si no tengo datos de acceso, envío una respuesta vacía.
       res.send({
         albumInfo: {},
       });
     }
   } catch (err: any) {
-    // Si ocurre algún error, lo envío con un código 400 y un mensaje específico.
     console.error("Error in albumInfo:", err);
     res.status(400).json({
       error_code: "album_info",

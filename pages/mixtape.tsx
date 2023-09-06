@@ -7,7 +7,7 @@ import MixtapeRow from "@/components/MixtapeRow";
 import { Snackbar } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import CustomCircularProgress from '@/components/CustomCircularProgress';
+import CustomCircularProgress from "@/components/CustomCircularProgress";
 
 type Mixtape = {
   id: number;
@@ -22,23 +22,24 @@ type SpotifyPlayerProps = {
   spotifyTrackId: string;
 };
 
-export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = memo(({ spotifyTrackId }) => {
-  const embedUrl = `https://open.spotify.com/embed/track/${spotifyTrackId}`;
+export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = memo(
+  ({ spotifyTrackId }) => {
+    const embedUrl = `https://open.spotify.com/embed/track/${spotifyTrackId}`;
 
-  return (
-    <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
-      <iframe
-        src={embedUrl}
-        width="300"
-        height="80"
-        frameBorder="0"
-        allow="encrypted-media"
-      ></iframe>
-    </div>
-  );
-});
-SpotifyPlayer.displayName = 'SpotifyPlayer';
-
+    return (
+      <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
+        <iframe
+          src={embedUrl}
+          width="300"
+          height="80"
+          frameBorder="0"
+          allow="encrypted-media"
+        ></iframe>
+      </div>
+    );
+  }
+);
+SpotifyPlayer.displayName = "SpotifyPlayer";
 
 export default function Mixtape() {
   const [mixtape, setMixtape] = useState<Mixtape[]>([]);
@@ -106,8 +107,6 @@ export default function Mixtape() {
     }
   }, [userData]);
 
-  console.log("userData", userData);
-
   if (loading) {
     return (
       <Layout>
@@ -119,36 +118,35 @@ export default function Mixtape() {
   }
 
   const handleSpotifyAuth = () => {
-    // añadir la lógica para iniciar el proceso de autenticación
-    window.location.href = '/api/auth/authorizeSpotify'; // Asegúrate de tener una ruta configurada para manejar la autenticación
-  }
-  
+    window.location.href = "/api/auth/authorizeSpotify";
+  };
 
   return (
     <Layout
-    centeredContent={true}
-    title="Mixtape - Diskogs +"
-    description="Tu Mixtape personal"
-  >
+      centeredContent={true}
+      title="Mixtape - Diskogs +"
+      description="Tu Mixtape personal"
+    >
       <div className="tw-border tw-border-gray-200 tw-mt-10">
         {/* Cabecera */}
-     
+
         {/* Cuerpo */}
         {mixtape.length === 0 ? (
-        <div className="tw-p-2">No hay datos disponibles</div>
-      ) : (
-        mixtape.map((data) => (
-          <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
-        ))
-      )}
-   
-
-    </div>
-    <div className="tw-flex tw-justify-center">
-      <button className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer" onClick={handleSpotifyAuth}>
-  Iniciar sesión en Spotify para generar tu mixtape
-</button>
-</div>
+          <div className="tw-p-2">No hay datos disponibles</div>
+        ) : (
+          mixtape.map((data) => (
+            <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
+          ))
+        )}
+      </div>
+      <div className="tw-flex tw-justify-center">
+        <button
+          className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer"
+          onClick={handleSpotifyAuth}
+        >
+          Iniciar sesión en Spotify para generar tu mixtape
+        </button>
+      </div>
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         open={openSnackbar}

@@ -13,22 +13,17 @@ export async function getSpotifyAlbumId(
       }
     );
 
-    console.log("Respuesta de Spotify:", response); // NUEVO LOG
-
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
 
-    console.log("Datos de Spotify:", data); // NUEVO LOG
-
     if (data.error) {
       throw new Error(data.error.message);
     }
 
     if (!data.albums || data.albums.items.length === 0) {
-      console.log("No se encontraron álbumes para:", albumName, "por el artista:", artistName); // NUEVO LOG
       return null;
     }
 
@@ -45,4 +40,3 @@ export async function getSpotifyAlbumId(
     return null;
   }
 }
-

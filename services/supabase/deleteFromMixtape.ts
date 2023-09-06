@@ -17,7 +17,6 @@ const deleteFromMixtape = async (username: string, artistname: string, trackname
 
   } catch (error) {
     console.error("Error eliminando de la mixtape:", error);
-    // Puedes manejar errores adicionales o devolver el error si lo prefieres
   }
 }
 

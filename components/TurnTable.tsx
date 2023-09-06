@@ -1,13 +1,12 @@
-import React from 'react';
-import styles from './Turntable.module.css';
+import React from "react";
+import styles from "./Turntable.module.css";
 
 interface TurnTableProps {
-  style?: React.CSSProperties;  // Aceptar props de estilo
+  style?: React.CSSProperties; // Aceptar props de estilo
 }
 
 const TurnTable: React.FC<TurnTableProps> = ({ style }) => {
   return (
-
     <div className={styles.turntable}>
       <div className={styles.record}>
         <div className={styles.inner}></div>
@@ -18,8 +17,7 @@ const TurnTable: React.FC<TurnTableProps> = ({ style }) => {
       </div>
       <div className={styles.dial}></div>
     </div>
- 
   );
-}
+};
 
 export default TurnTable;

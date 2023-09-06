@@ -27,7 +27,8 @@ export interface AlbumInfoInterface {
     position: string;
     title: string;
     duration: string;
-    spotifyTrackId?: string; // Es opcional porque puede no estar presente en todos los tracks
+    spotifyTrackId?: string;
+    bpm?:number; // Es opcional porque puede no estar presente en todos los tracks
   }[];
   lastfmTags?: string[];
   enrichedInfo?: string;
@@ -49,8 +50,8 @@ const useGetAlbumInfo = (id: number, masterId: number) => {
   const { data, error, isValidating } = useSWR(url, fetcher);
 
   // Imprimimos información útil para depuración.
-  console.log("Fetching from URL:", url);
-  console.log("Data received:", data);
+//  console.log("Fetching from URL:", url);
+ // console.log("Data received:", data);
   if (error) console.error("Error fetching album info:", error);
 
   // Asumimos que si no hay data y no hay error, estamos cargando.

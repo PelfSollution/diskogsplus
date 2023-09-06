@@ -7,6 +7,7 @@ import { fetchLastfmData } from "../../../services/last.fm/fetchData";
 import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken";
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 import { getSpotifyTrackId } from "../../../services/spotify/getTrackId";
+import { getTrackAudioFeatures } from "../../../services/spotify/getTrackAudioFeatures";
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -87,10 +88,22 @@ export default async function albumInfo(
           // Si los datos del track de Spotify están disponibles y también tienen un URI...
           if (spotifyTrackData && spotifyTrackData.uri) {
             const spotifyTrackId = spotifyTrackData.uri.split(":")[2];
+            const trackFeatures = await getTrackAudioFeatures(spotifyTrackId, accessToken);
+      
+      let tempo = null; // Por defecto es nulo
+      let key = null; // Por defecto es nulo
+
+      if (trackFeatures) {
+        tempo = trackFeatures.tempo|| null;  // Necesitas verificar qué propiedad contiene el BPM en SpotifyAudioFeatures.
+        key = trackFeatures.key || null;  // Necesitas verificar qué propiedad contiene la Key en SpotifyAudioFeatures.
+      }
+
             return {
               ...track,
               spotifyTrackId,
-              spotifyUri: spotifyTrackData.uri
+              spotifyUri: spotifyTrackData.uri,
+              tempo, 
+              key
             };
           } else {
             return {

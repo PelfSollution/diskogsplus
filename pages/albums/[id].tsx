@@ -23,7 +23,21 @@ import addMixtape from "../../services/supabase/addMixtape";
 import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
+import { getTrackAudioFeatures } from '../../services/spotify/getTrackAudioFeatures';
+
+
 import CustomCircularProgress from '@/components/CustomCircularProgress';
+
+interface TrackInfo {
+  position: string;
+  title: string;
+  duration: string;
+  spotifyTrackId?: string;
+  spotifyUri?: string;
+  tempo?: number;
+  key?: number;
+  // ... cualquier otra propiedad que pueda existir en track.
+}
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -33,6 +47,9 @@ function AlbumDetails() {
   const { data: userData } = useGetUserData();
   const [inWantlist, setInWantlist] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  
+  
 
   const handleAddToWantlist = async (username: string, albumId: number) => {
     setLoading(true);
@@ -104,6 +121,7 @@ function AlbumDetails() {
 
   const username = userData?.userProfile?.username;
 
+
   const handleOpenSnackbar = (message: string) => {
     setSnackbarMessage(message);
     setOpenSnackbar(true);
@@ -124,7 +142,7 @@ function AlbumDetails() {
   const { id: rawId, masterId } = router.query;
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const idNumber = parseInt(id || "0", 10); // Aquí se crea idNumber
-  console.log(idNumber);
+
 
   const { data, isLoading, error } = useGetAlbumInfo(
     idNumber,
@@ -132,7 +150,14 @@ function AlbumDetails() {
   );
 
   const albumInfo: AlbumInfoInterface | null = data;
+
+
+  
+
   const mixtape = useGetMixtape(username);
+
+
+
 
   useEffect(() => {
     if (mixtape.data) {
@@ -230,6 +255,32 @@ function AlbumDetails() {
       `Canción "${trackname}" de "${artistname}" añadida a la mixtape con éxito.`
     );
   };
+
+  function getKeyNotation(key: number) {
+    const pitchClasses = ["C", "C♯/D♭", "D", "D♯/E♭", "E", "F", "F♯/G♭", "G", "G♯/A♭", "A", "A♯/B♭", "B"];
+    const pitchClassColors: { [key: string]: string } = {
+      "C": "tw-bg-orange-300",
+      "C♯/D♭": "tw-bg-blue-300",
+      "D": "tw-bg-orange-400",
+      "D♯/E♭": "tw-bg-blue-400",
+      "E": "tw-bg-orange-500",
+      "F": "tw-bg-blue-500",
+      "F♯/G♭": "tw-bg-orange-600",
+      "G": "tw-bg-blue-600",
+      "G♯/A♭": "tw-bg-orange-700",
+      "A": "tw-bg-blue-700",
+      "A♯/B♭": "tw-bg-blue-800",
+      "B": "tw-bg-orange-800"
+  };
+  
+
+    const notation = pitchClasses[key] || "N/A";
+    return {
+        notation: notation,
+        color: pitchClassColors[notation] || "tw-bg-gray-400"
+    };
+}
+
 
   return (
     <Layout centeredTopContent={true}>
@@ -344,46 +395,60 @@ function AlbumDetails() {
             </Accordion>
           )}
 
-          {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
-            <Accordion>
-              <AccordionSummary
-                expandIcon={
-                  <ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />
-                }
-                aria-controls="panel1a-content"
-                id="panel1a-header"
+{albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
+  <Accordion>
+    <AccordionSummary
+      expandIcon={<ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />}
+      aria-controls="panel1a-content"
+      id="panel1a-header"
+    >
+      <Typography variant="h6">Tracklist</Typography>
+    </AccordionSummary>
+    <AccordionDetails>
+      <Stack direction="column" spacing={1}>
+      {albumInfo.tracklist.map((track: TrackInfo, index: number) => (
+
+          <div
+            key={index}
+            className="tw-flex tw-justify-between tw-items-center tw-mb-2"
+          >
+<div className="tw-flex tw-items-center tw-gap-2">
+    <span className="tw-max-w-[140px]">{track.title}</span>
+    {track.tempo && (
+        <div className="tw-text-xs tw-bg-gray-200  tw-rounded-full tw-px-2 tw-py-0.5">
+            {track.tempo.toFixed(1)}
+        </div>
+    )}
+
+    {typeof track.key === "number" && (
+        <div 
+            className={`tw-text-xs tw-text-white tw-opacity-75 tw-px-2 tw-py-0.5 tw-rounded-full ${getKeyNotation(track.key).color}`}>
+             {getKeyNotation(track.key).notation}
+        </div>
+    )}
+</div>
+
+            {isSongInMixtape(track.title) ? (
+              <button
+                className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
+                onClick={() => handleDeleteFromMixtape(track)}
               >
-                <Typography variant="h6">Tracklist</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Stack direction="column" spacing={1}>
-                  {albumInfo.tracklist.map((track, index) => (
-                    <div
-                      key={index}
-                      className="tw-flex tw-justify-between tw-items-center tw-mb-2"
-                    >
-                      <span className="tw-max-w-[140px]">{track.title}</span>
-                      {isSongInMixtape(track.title) ? (
-                        <button
-                          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded"
-                          onClick={() => handleDeleteFromMixtape(track)}
-                        >
-                          Borrar de Mixtape
-                        </button>
-                      ) : (
-                        <button
-                          className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 tw-px-2 tw-py-1 tw-rounded"
-                          onClick={() => handleAddToMixtape(track)}
-                        >
-                          Añadir a Mixtape
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </Stack>
-              </AccordionDetails>
-            </Accordion>
-          )}
+                Borrar de Mixtape
+              </button>
+            ) : (
+              <button
+                className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 tw-px-2 tw-py-1 tw-rounded"
+                onClick={() => handleAddToMixtape(track)}
+              >
+                Añadir a Mixtape
+              </button>
+            )}
+          </div>
+        ))}
+      </Stack>
+    </AccordionDetails>
+  </Accordion>
+)}
         </Grid>
 
         {/* Columna de la derecha */}

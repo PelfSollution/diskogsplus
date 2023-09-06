@@ -6,11 +6,8 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
-import CustomCircularProgress from '@/components/CustomCircularProgress';
-
-interface UserAlbums {
-  releases: Album[];
-}
+import CustomCircularProgress from "@/components/CustomCircularProgress";
+import styles from "./dashboard.module.css";
 
 interface Artist {
   name: string;
@@ -33,8 +30,7 @@ const isDateValid = (dateString: string): boolean => {
 function Dashboard() {
   const router = useRouter();
   const { data, error, isLoading, isValidating } = useGetUserData();
-  console.log("DATA:", data);
-
+  
   return (
     <Layout
       centeredContent={true}
@@ -45,18 +41,20 @@ function Dashboard() {
         <header className="tw-text-center tw-mb-8">
           <div>
             {error && !isLoading && (
-                    <Layout centeredContent={true}>
-                    <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-                    Error: No se pudo cargar la información.
-                    </div>
-                  </Layout>
-             
+              <Layout centeredContent={true}>
+                <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+                  Error: No se pudo cargar la información.
+                </div>
+              </Layout>
             )}
-            {isLoading || (isValidating &&       <Layout centeredContent={true}>
-        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-          <CustomCircularProgress />
-        </div>
-      </Layout>)}
+            {isLoading ||
+              (isValidating && (
+                <Layout centeredContent={true}>
+                  <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+                    <CustomCircularProgress />
+                  </div>
+                </Layout>
+              ))}
 
             {data?.userProfile && (
               <div>
@@ -67,18 +65,17 @@ function Dashboard() {
                   </span>
                 </h1>
                 {data.userProfile.avatar_url && (
-    <div className="tw-relative tw-mt-4">
-    <Image
-        src={data.userProfile.avatar_url}
-        alt={`${data.userProfile.username} profile pic`}
-        width={300}
-        height={300}
-        className="tw-rounded-full"
-    />
-    <div className="tw-absolute tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-28 tw-h-28 tw-rounded-full tw-bg-red-400"></div>
-    <div className="tw-absolute tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-6 tw-h-6 tw-rounded-full tw-bg-gray-200"></div>
-</div>
-
+                  <div className="tw-relative tw-mt-4">
+                    <Image
+                      src={data.userProfile.avatar_url}
+                      alt={`${data.userProfile.username} profile pic`}
+                      width={300}
+                      height={300}
+                      className={`${styles.spinCustom} tw-rounded-full`}
+                    />
+                    <div className="tw-absolute tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-28 tw-h-28 tw-rounded-full tw-bg-red-400"></div>
+                    <div className="tw-absolute tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-6 tw-h-6 tw-rounded-full tw-bg-gray-200"></div>
+                  </div>
                 )}
 
                 {isDateValid(data.userProfile.registered) ? (

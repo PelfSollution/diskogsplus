@@ -32,6 +32,7 @@ interface TrackInfo {
   spotifyUri?: string;
   tempo?: number;
   key?: number;
+  mode?: number;
 }
 
 function AlbumDetails() {
@@ -238,7 +239,10 @@ function AlbumDetails() {
     );
   };
 
-  function getKeyNotation(key: number) {
+  const isValidNumber = (value: any): value is number =>
+    typeof value === "number" && !isNaN(value);
+
+  function getKeyNotation(key: number, modeNumber: number) {
     const pitchClasses = [
       "C",
       "C♯/D♭",
@@ -253,27 +257,88 @@ function AlbumDetails() {
       "A♯/B♭",
       "B",
     ];
+
+    const mode = modeNumber === 1 ? "major" : "minor";
+
+    const camelotCodes: { [key: string]: string } = {
+      "C major": "8B",
+      "A minor": "8A",
+      "G major": "9B",
+      "E minor": "9A",
+      "D major": "10B",
+      "B minor": "10A",
+      "A major": "11B",
+      "F♯/G♭ minor": "11A",
+      "E major": "12B",
+      "C♯/D♭ minor": "12A",
+      "B major": "1B",
+      "G♯/A♭ minor": "1A",
+      "F♯/G♭ major": "2B",
+      "D♯/E♭ minor": "2A",
+      "C♯/D♭ major": "3B",
+      "A♯/B♭ minor": "3A",
+      "F major": "4B",
+      "D minor": "4A",
+      "B♭ major": "5B",
+      "G minor": "5A",
+      "A♭ major": "6B",
+      "F minor": "6A",
+      "E♭ major": "7B",
+      "C minor": "7A",
+    };
+
     const pitchClassColors: { [key: string]: string } = {
-      C: "tw-bg-orange-300",
-      "C♯/D♭": "tw-bg-blue-300",
-      D: "tw-bg-orange-400",
-      "D♯/E♭": "tw-bg-blue-400",
-      E: "tw-bg-orange-500",
-      F: "tw-bg-blue-500",
-      "F♯/G♭": "tw-bg-orange-600",
-      G: "tw-bg-blue-600",
-      "G♯/A♭": "tw-bg-orange-700",
-      A: "tw-bg-blue-700",
-      "A♯/B♭": "tw-bg-blue-800",
-      B: "tw-bg-orange-800",
+      "1A": "tw-bg-yellow-200",
+      "1B": "tw-bg-yellow-200",
+      "2A": "tw-bg-yellow-300",
+      "2B": "tw-bg-orange-200",
+      "3A": "tw-bg-orange-200",
+      "3B": "tw-bg-orange-200",
+      "4A": "tw-bg-orange-300",
+      "4B": "tw-bg-orange-300",
+      "5A": "tw-bg-red-200",
+      "5B": "tw-bg-red-200",
+      "6A": "tw-bg-rose-200",
+      "6B": "tw-bg-rose-200",
+      "7A": "tw-bg-pink-200",
+      "7B": "tw-bg-pink-200",
+      "8A": "tw-bg-purple-200",
+      "8B": "tw-bg-purple-200",
+      "9A": "tw-bg-blue-200",
+      "9B": "tw-bg-blue-200",
+      "10A": "tw-bg-cyan-200",
+      "10B": "tw-bg-cyan-200",
+      "11A": "tw-bg-green-200",
+      "11B": "tw-bg-green-200",
+      "12A": "tw-bg-green-300",
+      "12B": "tw-bg-green-300",
     };
 
     const notation = pitchClasses[key] || "N/A";
+
+    // Agregamos un log aquí para ver qué se está produciendo para cada pista
+    console.log(`Intentando encontrar: ${notation} ${mode} en 'camelotCodes'`);
+
+    if (!camelotCodes[`${notation} ${mode}`]) {
+      console.log(
+        `La combinación ${notation} ${mode} no se encuentra en 'camelotCodes'`
+      );
+      return {
+        notation: `${notation} (N/A)`,
+        color: "tw-bg-gray-400",
+      };
+    }
+
+    const camelotCode = camelotCodes[`${notation} ${mode}`];
+    console.log(`Camelot code encontrado: ${camelotCode}`);
+
     return {
-      notation: notation,
-      color: pitchClassColors[notation] || "tw-bg-gray-400",
+      notation: `${notation} (${camelotCode})`,
+      color: pitchClassColors[camelotCode] || "tw-bg-gray-400",
     };
   }
+
+  console.log("albumInfo.tracklist:", albumInfo.tracklist);
 
   return (
     <Layout centeredTopContent={true}>
@@ -401,54 +466,48 @@ function AlbumDetails() {
                 <Typography variant="h6">Tracklist</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Stack direction="column" spacing={1}>
-                  {albumInfo.tracklist.map(
-                    (track: TrackInfo, index: number) => (
-                      <div
-                        key={index}
-                        className="tw-flex tw-justify-between tw-items-center tw-mb-2"
-                      >
-                        <div className="tw-min-w-[200px] tw-max-w-[500px]">
-                          {track.title}
-                          <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
-                            {track.tempo && (
-                              <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
-                                {track.tempo.toFixed(1)}
-                              </div>
-                            )}
-                            {typeof track.key === "number" && (
-                              <div
-                                className={`tw-text-xs tw-text-white tw-opacity-75 tw-px-2 tw-py-1 tw-rounded-full ${
-                                  getKeyNotation(track.key).color
-                                }`}
-                              >
-                                {getKeyNotation(track.key).notation}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+              <Stack direction="column" spacing={1}>
+  {albumInfo.tracklist.map((track: TrackInfo, index: number) => (
+    <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
+      <div className="tw-min-w-[200px] tw-max-w-[500px]">
+        {track.title}
+        <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
+          {track.tempo && (
+            <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
+              {track.tempo.toFixed(1)}
+            </div>
+          )}
 
-                        <div>
-                          {isSongInMixtape(track.title) ? (
-                            <button
-                              className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
-                              onClick={() => handleDeleteFromMixtape(track)}
-                            >
-                              Borrar de Mixtape
-                            </button>
-                          ) : (
-                            <button
-                              className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
-                              onClick={() => handleAddToMixtape(track)}
-                            >
-                              Añadir a Mixtape
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </Stack>
+          {typeof track.key === 'number' && track.key !== null && typeof track.mode === 'number' && track.mode !== null ? (
+            <div className={`tw-text-xs tw-text-white tw-px-2 tw-py-1 tw-rounded-full ${getKeyNotation(track.key, track.mode).color}`}>
+              {getKeyNotation(track.key, track.mode).notation}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div>
+        {isSongInMixtape(track.title) ? (
+          <button
+            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+            onClick={() => handleDeleteFromMixtape(track)}
+          >
+            Borrar de Mixtape
+          </button>
+        ) : (
+          <button
+            className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+            onClick={() => handleAddToMixtape(track)}
+          >
+            Añadir a Mixtape
+          </button>
+        )}
+      </div>
+    </div>
+  ))}
+</Stack>
+
+
               </AccordionDetails>
             </Accordion>
           )}

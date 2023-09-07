@@ -74,44 +74,59 @@ export default async function albumInfo(
 
       const tracklistWithSpotifyIds = await Promise.all(
         selectedTracklist.map(async (track: any) => {
-          const spotifyTrackData = await getSpotifyTrackId(
-            track.title,
-            releaseData.artists[0].name,
-            releaseData.title,
-            accessToken
-          );
-
-          if (spotifyTrackData && spotifyTrackData.uri) {
+          try {
+            // Asegurarse de que releaseData.artists tenga al menos un artista y obtener el primer nombre.
+            const primaryArtistName = releaseData.artists && releaseData.artists.length > 0 
+              ? releaseData.artists[0].name 
+              : '';
+      
+            const spotifyTrackData = await getSpotifyTrackId(
+              track.title,
+              primaryArtistName,
+              releaseData.title,
+              accessToken
+            );
+      
+            // Si no tenemos datos de Spotify o la URI no tiene la estructura esperada, retornamos el track sin cambios.
+            if (!spotifyTrackData || !spotifyTrackData.uri || spotifyTrackData.uri.split(":").length !== 3) {
+              return {
+                ...track,
+                spotifyTrackId: null,
+                spotifyUri: null,
+              };
+            }
+      
             const spotifyTrackId = spotifyTrackData.uri.split(":")[2];
             const trackFeatures = await getTrackAudioFeatures(
               spotifyTrackId,
               accessToken
             );
-
+      
             let tempo = null;
             let key = null;
-
+            let mode = null;
+      
             if (trackFeatures) {
-              tempo = trackFeatures.tempo || null;
-              key = trackFeatures.key || null;
+              tempo = trackFeatures.tempo ?? null; // Usamos el operador 'nullish coalescing' para manejar undefined y null.
+              key = trackFeatures.key ?? null;
+              mode = trackFeatures.mode ?? null;
             }
-
+      
             return {
               ...track,
               spotifyTrackId,
               spotifyUri: spotifyTrackData.uri,
               tempo,
               key,
+              mode
             };
-          } else {
-            return {
-              ...track,
-              spotifyTrackId: null,
-              spotifyUri: null,
-            };
+          } catch (error) {
+            console.error(`Error procesando el track ${track.title}:`, error);
+            return { ...track }; // En caso de error, retornamos el track sin cambios.
           }
         })
       );
+      
 
       interface Image {
         type: string;

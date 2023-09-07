@@ -43,7 +43,17 @@ const config: Config = {
         '40': '40px',
       },
       colors: {
-        /* tus colores aquí... */
+        cyan: {
+          100: '#E0FEFE',
+          200: '#B2FCFC',
+          300: '#80F8F8',
+          400: '#40F2F2',
+          500: '#00ECEC',
+          600: '#00D4D4',
+          700: '#00BABA',
+          800: '#009C9C',
+          900: '#007D7D',
+        },
       },
       borderRadius: {
         /* tus valores de borderRadius aquí... */

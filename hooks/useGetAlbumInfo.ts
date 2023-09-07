@@ -26,7 +26,10 @@ export interface AlbumInfoInterface {
     title: string;
     duration: string;
     spotifyTrackId?: string;
-    bpm?: number; // Es opcional porque puede no estar presente en todos los tracks
+    spotifyUri?: string;
+    tempo?: number;
+    key?: number;
+    mode?: number;
   }[];
   lastfmTags?: string[];
   enrichedInfo?: string;

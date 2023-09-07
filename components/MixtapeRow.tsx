@@ -63,8 +63,6 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
           key={data.discogsalbumid}
           href={`/albums/${data.discogsalbumid}`}
           className="tw-text-gray-500 tw-underline tw-text-center md:tw-text-left"
-          target="_blank"
-          rel="noopener noreferrer"
         >
           {data.trackname}
         </Link>

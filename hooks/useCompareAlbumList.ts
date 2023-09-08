@@ -1,6 +1,16 @@
 import useSWRInfinite from "swr/infinite";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`API Error: ${errorData.message}`);
+  }
+
+  return response.json();
+};
+
 
 const useCompareAlbumList = (user1: string, user2: string) => {
   const perPage = 50;

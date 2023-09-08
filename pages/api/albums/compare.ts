@@ -13,6 +13,7 @@ interface Album {
 async function getVinylCollection(
   username: string,
   accessData: any,
+  page: number,
   per_page: number
 ) {
   var dis = new Discogs(accessData);
@@ -25,7 +26,7 @@ async function getVinylCollection(
       .user()
       .collection()
       .getReleases(username, 0, {
-        page: currentPage,
+        page: page,
         per_page: per_page,
         sort: "artist",
         sort_order: "asc",
@@ -73,12 +74,14 @@ export default async function compare(
     const collection1 = await getVinylCollection(
       user1,
       accessData,
-      per_page as unknown as number
+      Number(page),
+      Number(per_page)
     );
     const collection2 = await getVinylCollection(
       user2,
       accessData,
-      per_page as unknown as number
+      Number(page),
+      Number(per_page)
     );
 
     const diff = collection1.filter(

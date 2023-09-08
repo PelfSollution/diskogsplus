@@ -164,7 +164,7 @@ function Albums() {
           onClick={loadMoreAlbums}
           className="tw-mt-4 tw-w-full tw-bg-blue-500 tw-text-white tw-py-2 tw-rounded-full"
         >
-          Cargar más álbumes
+          Cargar más Discos
         </button>
       </div>
     </Layout>

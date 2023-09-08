@@ -146,7 +146,7 @@ const handleCloseSnackbar = () => {
         </form>
 
         {comparePressed && isLoading && (
-          <Layout centeredContent={true}>
+          <Layout centeredTopContent={true}>
             <CustomCircularProgress />
           </Layout>
         )}

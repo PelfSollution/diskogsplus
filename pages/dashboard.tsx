@@ -5,9 +5,10 @@ import Image from "next/image";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import { Button } from "@/components/ui/button";
+import styles from "./dashboard.module.css";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-import styles from "./dashboard.module.css";
+
 
 interface Artist {
   name: string;

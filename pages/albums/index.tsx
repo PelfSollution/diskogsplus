@@ -4,6 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  IconButton,
+  TextField,
+  Snackbar,
+} from "@mui/material";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import CloseIcon from "@mui/icons-material/Close";
+
 
 interface Artist {
   name: string;
@@ -20,6 +33,9 @@ interface Album {
 }
 
 function Albums() {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const { data: albums, isLoading, error, size, setSize } = useGetAlbumList();
 
   const allAlbums = albums ? albums.flatMap((page) => page.releases) : [];
@@ -93,11 +109,22 @@ function Albums() {
     );
   }
 
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
+  const mostrarMensaje = (mensaje: string) => {
+    setSnackbarMessage(mensaje);
+    setSnackbarOpen(true);
+  };
+
   if (error || !allAlbums) {
+    mostrarMensaje("Error al cargar los álbumes.");
     return <Layout>Error al cargar los álbumes.</Layout>;
   }
 
   if (allAlbums.length === 0) {
+    mostrarMensaje("No hay álbumes disponibles para mostrar.");
     return (
       <Layout centeredContent={false}>
         <div className="tw-container tw-mx-auto tw-p-6">
@@ -112,30 +139,42 @@ function Albums() {
     <Layout centeredContent={false}>
       <div className="tw-container tw-mx-auto tw-p-6">
         <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Discos</h1>
-        <div className="tw-my-4">
-          <select
-            onChange={(e) => setFilter(e.target.value as any)}
-            className="tw-min-w-[20%] tw-ml-4 tw-p-2"
+        <div className="tw-flex tw-items-center tw-gap-4 tw-my-4">
+          <FormControl
+            variant="outlined"
+            size="small"
+            className="tw-min-w-[20%] tw-ml-4"
           >
-            <option value="name">Nombre</option>
-            <option value="album">Álbum</option>
-          </select>
+            <InputLabel>Filtro</InputLabel>
+            <Select
+              onChange={(e) => setFilter(e.target.value as any)}
+              label="Filtro"
+              sx={{ width: "120px" }}
+              className="tw-mr-4"
+            >
+              <MenuItem value="name">Nombre</MenuItem>
+              <MenuItem value="album">Álbum</MenuItem>
+            </Select>
+          </FormControl>
 
-          <input
-            type="text"
+          <TextField
             placeholder="Buscar..."
+            variant="outlined"
             value={searchTerm}
+            fullWidth
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="tw-min-w-[60%] tw-ml-4 tw-p-2 tw-border tw-rounded"
+            size="small"
+            className="tw-min-w-[60%] tw-ml-4"
           />
 
-          <button
+          <IconButton
             onClick={() => setOrderAsc(!orderAsc)}
             className="tw-min-w-[2%] tw-ml-4"
           >
-            {orderAsc ? "⬆️" : "⬇️"}
-          </button>
+            {orderAsc ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
+          </IconButton>
         </div>
+
         <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-6">
           {filteredAlbums.map((album: Album) => (
             <Link key={album.id} href={`/albums/${album.id}`} passHref>
@@ -166,6 +205,22 @@ function Albums() {
         >
           Cargar más Discos
         </button>
+        <Snackbar
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          open={snackbarOpen}
+          autoHideDuration={3000} // Duración en milisegundos
+          onClose={() => setSnackbarOpen(false)}
+          message={snackbarMessage}
+          action={
+            <IconButton
+              size="small"
+              color="inherit"
+              onClick={handleCloseSnackbar}
+            >
+              <CloseIcon />
+            </IconButton>
+          }
+        />
       </div>
     </Layout>
   );

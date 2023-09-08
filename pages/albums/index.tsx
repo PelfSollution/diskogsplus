@@ -143,17 +143,15 @@ function Albums() {
           <FormControl
             variant="outlined"
             size="small"
-            className="tw-min-w-[20%] tw-ml-4"
           >
-            <InputLabel>Filtro</InputLabel>
+            <InputLabel>Filtrar por:</InputLabel>
             <Select
               onChange={(e) => setFilter(e.target.value as any)}
-              label="Filtro"
-              sx={{ width: "120px" }}
-              className="tw-mr-4"
+              label="Filtrar por:"
+              className="tw-min-w-[110%] tw-mr-20 sm:tw-mr-20"
             >
-              <MenuItem value="name">Nombre</MenuItem>
-              <MenuItem value="album">Álbum</MenuItem>
+              <MenuItem value="name">Artista</MenuItem>
+              <MenuItem value="album">Disco</MenuItem>
             </Select>
           </FormControl>
 
@@ -199,12 +197,14 @@ function Albums() {
             </Link>
           ))}
         </div>
-        <button
-          onClick={loadMoreAlbums}
-          className="tw-mt-4 tw-w-full tw-bg-blue-500 tw-text-white tw-py-2 tw-rounded-full"
-        >
-          Cargar más Discos
-        </button>
+        {searchTerm === "" && (
+  <button
+    onClick={loadMoreAlbums}
+    className="tw-mt-4 tw-w-full tw-bg-blue-500 tw-text-white tw-py-2 tw-rounded-full"
+  >
+    Cargar más Discos
+  </button>
+)}
         <Snackbar
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           open={snackbarOpen}

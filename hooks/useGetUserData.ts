@@ -1,4 +1,5 @@
-import useSWR from 'swr';
+import useSWR from "swr";
+import { useCallback } from "react";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -24,12 +25,20 @@ export interface UserIdentityDataProps {
   isValidating: boolean | undefined;
 }
 
-
 const useGetUserData = () => {
-  const { data, error, isLoading, isValidating }: UserIdentityDataProps =
-    useSWR(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/identity`, fetcher);
+  const memoizedFetcher = useCallback(fetcher, []); // Paso 1: Memoización de fetcher
+
+  const {
+    data = { userProfile: {} },
+    error = false,
+    isLoading = false,
+    isValidating = false,
+  } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/identity`,
+    memoizedFetcher
+  ); // Paso 2: Desestructuración directa
+
   return { data, error, isLoading, isValidating };
 };
 
 export default useGetUserData;
-

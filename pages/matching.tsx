@@ -155,8 +155,8 @@ const handleCloseSnackbar = () => {
         {comparePressed && !isLoading && albumsDifference && (
           <div>
             <p className="tw-mb-4 tw-mt-4">
-              Discos que <span className="tw-font-bold">{user1}</span> tiene y{" "}
-              <span className="tw-font-bold">{user2}</span> no tiene:{" "}
+              Discos que <span className="tw-font-bold">{user2}</span> tiene y tu{" "}
+              <span className="tw-font-bold">"{user1}"</span> no tienes:{" "}
               <span className="tw-font-bold tw-text-blue-500">
                 {albumsDifference[0].length}
               </span>

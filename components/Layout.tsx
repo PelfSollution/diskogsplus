@@ -1,6 +1,7 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useCallback } from "react";
 import { useRouter } from "next/router";
 import { getCookie } from "cookies-next";
+import CustomCircularProgress from "@/components/CustomCircularProgress";
 import TopNavBar from "@/components/TopNavBar";
 import CustomHead from "./CustomHead";
 
@@ -11,6 +12,7 @@ interface LayoutProps {
   centeredContent?: boolean;
   centeredTopContent?: boolean;
   allowPublicAccess?: boolean;
+  initialLoggedInState?: boolean; // Prop para inicializar isLoggedIn
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -18,26 +20,39 @@ const Layout: React.FC<LayoutProps> = ({
   title,
   description,
   centeredContent = true,
-  centeredTopContent = false, // Por defecto lo ponemos a false
+  centeredTopContent = false,
   allowPublicAccess = false,
+  initialLoggedInState = false, // Inicializado a false por defecto
 }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(
+    initialLoggedInState || null
+  );
   const router = useRouter();
 
+  const handleLogout = useCallback(() => {
+    // Usa useCallback aquí
+    setIsLoggedIn(false);
+    router.push("/"); // Si solo estás redirigiendo al inicio, este push está bien. Si no, considera usar "replace"
+  }, [router]);
+
   useEffect(() => {
-    if (!getCookie("username") && !allowPublicAccess) {
-      router.push("/"); // Redirigir al inicio si la cookie no existe y no es acceso público
+    if (typeof window === "undefined") return; // Evitamos que se ejecute en SSR
+
+    const isUserLoggedIn = !!getCookie("username");
+    if (!isUserLoggedIn && !allowPublicAccess) {
+      router.replace("/"); // Usa "replace" aquí para no agregar al historial
       return;
     }
-    setIsLoggedIn(!!getCookie("username"));
+    setIsLoggedIn(isUserLoggedIn);
   }, [allowPublicAccess, router]);
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    router.push("/");
-  };
-
-  if (isLoggedIn === null) return null;
+  if (isLoggedIn === null) {
+    return (
+      <div className="tw-flex tw-justify-center tw-items-center tw-min-h-screen">
+        <CustomCircularProgress />
+      </div>
+    );
+  }
 
   let containerClass = "";
   if (centeredTopContent) {

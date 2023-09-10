@@ -23,7 +23,9 @@ import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-import { getKeyNotation } from '../../lib/musicNotation';
+import { getKeyNotation } from '../../lib/musicNotation'; 
+
+
 
 
 
@@ -244,8 +246,7 @@ function AlbumDetails() {
       duration: track.duration || null,
     };
 
-
-
+    
     // Llamar a la función addMixtape para añadir a la base de datos
     addMixtape(mixtapeEntry);
     setTracksInMixtape((prevTracks) => [...prevTracks, track.title]);

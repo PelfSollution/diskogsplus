@@ -37,7 +37,7 @@ export default async function albumInfo(
 
       // Obtengo los datos de un lanzamiento específico del álbum.
       const releaseData = await db.getRelease(id);
-      //console.log("Received data from Discogs API:", releaseData);
+     console.log("Received data from Discogs API:", releaseData);
 
       // Autenticación en Spotify para obtener el token de acceso.
       const accessToken = await getSpotifyAccessToken();
@@ -60,6 +60,7 @@ export default async function albumInfo(
       }
 
       let selectedTracklist = releaseData.tracklist;
+      console.log("Selected tracklist:", selectedTracklist);
 
       // Si el lanzamiento tiene duraciones de pista, las uso.
       // Si no, intento con el lanzamiento maestro.
@@ -72,6 +73,12 @@ export default async function albumInfo(
         }
       }
 
+      const millisToMinutesAndSeconds = (millis: number): string => {
+        let minutes = Math.floor(millis / 60000);
+        let seconds = ((millis % 60000) / 1000).toFixed(0);
+        return `${minutes}:${seconds.padStart(2, "0")}`;
+    };
+    
       const tracklistWithSpotifyIds = await Promise.all(
         selectedTracklist.map(async (track: any) => {
           try {
@@ -105,11 +112,13 @@ export default async function albumInfo(
             let tempo = null;
             let key = null;
             let mode = null;
+            let duration = null;
       
             if (trackFeatures) {
               tempo = trackFeatures.tempo ?? null; // Usamos el operador 'nullish coalescing' para manejar undefined y null.
               key = trackFeatures.key ?? null;
               mode = trackFeatures.mode ?? null;
+              duration = trackFeatures.duration_ms ?? null;
             }
       
             return {
@@ -118,7 +127,8 @@ export default async function albumInfo(
               spotifyUri: spotifyTrackData.uri,
               tempo,
               key,
-              mode
+              mode,
+              duration: duration !== null ? millisToMinutesAndSeconds(duration) : null
             };
           } catch (error) {
             console.error(`Error procesando el track ${track.title}:`, error);
@@ -194,6 +204,7 @@ export default async function albumInfo(
         lastfmTags: lastfmTags,
         spotifyAlbumId: spotifyAlbumId,
       };
+      console.log("Combined data:", combinedData);
 
       res.send({ albumInfo: combinedData });
     } else {

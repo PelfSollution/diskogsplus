@@ -31,7 +31,9 @@ export default function Home() {
               width={500}
               height={149}
             />
-            <p className="tw-text-xl tw-mt-2">Descripción de la app</p>
+            <p className="tw-text-xl tw-mt-2">Connect your  <a href="https://discogs.com/" target="_blank" rel="noopener noreferrer" className="tw-text-blue-500 tw-hover:underline">
+                Discogs
+            </a> account and delve into your vinyl collection in an enriched manner with <strong>Diskogs Plus</strong>.</p>
           </div>
         </header>
 

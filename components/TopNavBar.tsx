@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import Link from "next/link";
 
 interface TopNavBarProps {
   isLoggedIn: boolean;
@@ -41,7 +42,7 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
       variant="outline"
       size={"sm"}
       className={`${className} tw-opacity-100 hover:tw-opacity-70 tw-w-full ${
-        router.pathname === href ? "tw-border-blue-500 tw-text-blue-500" : ""
+        router.pathname === href ? "tw-border-blue-400 tw-text-blue-400" : ""
       }`}
       onClick={() => router.push(href)}
     >
@@ -80,7 +81,7 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
           variant="destructive"
           size={"sm"}
           onClick={handleLogout}
-          className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-w-full tw-mr-4"
+          className="tw-opacity-100 hover:tw-opacity-70 tw-bg-red-400 hover:tw-bg-red-400 tw-text-white tw-w-full tw-mr-4"
         >
           Logout
         </Button>
@@ -92,13 +93,16 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
   return (
     <nav className="tw-w-full tw-bg-white tw-shadow-md tw-py-2 tw-fixed tw-top-0 tw-left-0 tw-z-10">
       <div className="tw-max-w-screen-xl tw-mx-auto tw-flex tw-justify-between tw-items-center tw-px-4 lg:tw-px-0">
-        <Image
-          src="/diskogs-logo.gif"
-          alt="Diskogs plus"
-          className="lg:tw-ml-4 tw-w-24" 
-          width={200}
-          height={60}
-        />
+      <Link href="/dashboard" className="lg:tw-ml-4">
+    <Image
+        src="/diskogs-logo.gif"
+        alt="Diskogs plus"
+        className="lg:tw-ml-4 tw-w-24" 
+        width={200}
+        height={60}
+    />
+</Link>
+
         <div className="lg:tw-hidden">
           <IconButton onClick={() => setIsDrawerOpen(true)}>
             <MenuIcon />

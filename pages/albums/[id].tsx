@@ -317,12 +317,12 @@ function AlbumDetails() {
     const notation = pitchClasses[key] || "N/A";
 
     // Agregamos un log aquí para ver qué se está produciendo para cada pista
-    console.log(`Intentando encontrar: ${notation} ${mode} en 'camelotCodes'`);
+   // console.log(`Intentando encontrar: ${notation} ${mode} en 'camelotCodes'`);
 
     if (!camelotCodes[`${notation} ${mode}`]) {
-      console.log(
+     /* console.log(
         `La combinación ${notation} ${mode} no se encuentra en 'camelotCodes'`
-      );
+      );*/
       return {
         notation: `${notation} (N/A)`,
         color: "tw-bg-gray-400",
@@ -330,7 +330,7 @@ function AlbumDetails() {
     }
 
     const camelotCode = camelotCodes[`${notation} ${mode}`];
-    console.log(`Camelot code encontrado: ${camelotCode}`);
+    //console.log(`Camelot code encontrado: ${camelotCode}`);
 
     return {
       notation: `${notation} (${camelotCode})`,
@@ -470,7 +470,7 @@ function AlbumDetails() {
   {albumInfo.tracklist.map((track: TrackInfo, index: number) => (
     <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
       <div className="tw-min-w-[200px] tw-max-w-[500px]">
-        {track.title}
+        {track.title} - {track.duration}
         <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
           {track.tempo && (
             <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
@@ -489,14 +489,14 @@ function AlbumDetails() {
       <div>
         {isSongInMixtape(track.title) ? (
           <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
             onClick={() => handleDeleteFromMixtape(track)}
           >
             Borrar de Mixtape
           </button>
         ) : (
           <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-600 tw-border tw-border-green-600 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+            className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-400 tw-border tw-border-green-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
             onClick={() => handleAddToMixtape(track)}
           >
             Añadir a Mixtape

@@ -28,7 +28,7 @@ const SpotifyPlayerComponent: React.FC<SpotifyPlayerProps> = ({
     <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
       <iframe
         src={embedUrl}
-        width="300"
+        width="350"
         height="80"
         frameBorder="0"
         allow="encrypted-media"
@@ -48,8 +48,8 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
         {data.spotifytrackid ? (
           <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
         ) : (
-          <div className="tw-border tw-border-green-500 tw-rounded-lg tw-min-w-[302px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
-            <span className="tw-text-green-500">No está en Spotify</span>
+          <div className="tw-border tw-border-green-400 tw-rounded-lg tw-min-w-[302px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
+            <span className="tw-text-green-400">No está en Spotify</span>
           </div>
         )}
       </div>
@@ -67,7 +67,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
           {data.trackname}
         </Link>
         <button
-          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-600 tw-border tw-border-red-600 tw-px-2 tw-py-1 tw-rounded tw-mt-2 tw-w-full md:tw-w-auto tw-self-center md:tw-self-start"
+          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 tw-px-2 tw-py-1 tw-rounded tw-mt-2 tw-w-full md:tw-w-auto tw-self-center md:tw-self-start"
           onClick={() => onDelete(data)}
         >
           Eliminar

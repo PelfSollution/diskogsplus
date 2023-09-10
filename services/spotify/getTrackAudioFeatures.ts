@@ -7,6 +7,7 @@ interface SpotifyAudioFeatures {
   tempo: number;
 //Mode indicates the modality (major or minor) of a track, the type of scale from which its melodic content is derived. Major is represented by 1 and minor is 0.
   mode: number;
+  duration_ms: number;
 }
 
 const SPOTIFY_BASE_URL = "https://api.spotify.com";
@@ -31,13 +32,13 @@ export async function getTrackAudioFeatures(
       );
     }
 
-    const { key, tempo, mode, error } = await response.json();
+    const { key, tempo, mode, duration_ms, error } = await response.json();
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return { key, tempo, mode };
+    return { key, tempo, mode, duration_ms };
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(

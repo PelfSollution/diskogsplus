@@ -195,7 +195,7 @@ const handleCloseSnackbar = () => {
             {getDisplayedAlbums().length && (currentPage * 50) < albumsDifference[0].length && (
   <button
     onClick={handleLoadMore}
-    className="tw-mt-4 tw-w-full tw-bg-blue-500 tw-text-white tw-py-2 tw-rounded-full"
+    className="tw-mt-4 tw-w-full tw-bg-blue-400 tw-text-white tw-py-2 tw-rounded-full"
   >
     Cargar más Discos
   </button>

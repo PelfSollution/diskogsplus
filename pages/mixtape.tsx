@@ -8,6 +8,7 @@ import { Snackbar } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+import { getKeyNotation } from "../lib/musicNotation";
 
 type Mixtape = {
   id: number;
@@ -16,6 +17,10 @@ type Mixtape = {
   trackname: string;
   discogsalbumid: string;
   spotifytrackid?: string | null;
+  tempo?: number | null;
+  key?: number | null;
+  mode?: number | null;
+  duration?: string | null;
 };
 
 type SpotifyPlayerProps = {
@@ -48,6 +53,10 @@ export default function Mixtape() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { data: userData } = useGetUserData();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchBPM, setSearchBPM] = useState<number | null>(null);
+  const [searchKey, setSearchKey] = useState<number | null>(null);
+  const [bpmOrder, setBpmOrder] = useState<"ASC" | "DESC" | null>(null);
 
   const handleOpenSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -117,35 +126,107 @@ export default function Mixtape() {
     );
   }
 
+  const toggleBpmOrder = () => {
+    if (bpmOrder === null || bpmOrder === "DESC") {
+      setBpmOrder("ASC");
+    } else {
+      setBpmOrder("DESC");
+    }
+  };
+
+
+
+  
+
+  const filteredAndSortedMixtape = [...mixtape]
+  .filter((track) => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    return (
+      (!searchTerm ||
+        track.trackname.toLowerCase().includes(lowerCaseSearchTerm) ||
+        track.artistname.toLowerCase().includes(lowerCaseSearchTerm)) &&
+      (!searchBPM || track.tempo === searchBPM) &&
+      (searchKey === null || track.key === searchKey)
+    );
+  })
+  
+  
+    .sort((a, b) => {
+      if (!bpmOrder) return 0;
+      return bpmOrder === "ASC"
+        ? (a.tempo ?? 0) - (b.tempo ?? 0)
+        : (b.tempo ?? 0) - (a.tempo ?? 0);
+    });
+
   const handleSpotifyAuth = () => {
     window.location.href = "/api/auth/authorizeSpotify";
   };
 
   return (
     <Layout
-      centeredContent={true}
+      centeredTopContent={true}
       title="Mixtape - Diskogs +"
       description="Tu Mixtape personal"
     >
-      <div className="tw-border tw-border-gray-200 tw-mt-10">
-        {/* Cabecera */}
-
-        {/* Cuerpo */}
-        {mixtape.length === 0 ? (
-          <div className="tw-p-2">No hay datos disponibles</div>
-        ) : (
-          mixtape.map((data) => (
-            <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
-          ))
-        )}
-      </div>
-      <div className="tw-flex tw-justify-center">
-        <button
-          className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer"
-          onClick={handleSpotifyAuth}
+     <div className="tw-container tw-mx-auto tw-p-6">
+      <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Mixtape</h1>
+      <div className="tw-flex tw-gap-4 tw-mb-4">
+        <input
+          type="text"
+          placeholder="Buscar por nombre"
+          className="tw-border tw-rounded tw-p-2"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        
+        <select
+          value={searchKey ?? ""}
+          onChange={(e) =>
+            setSearchKey(e.target.value ? Number(e.target.value) : null)
+          }
+          className="tw-border tw-rounded tw-p-2"
         >
-          Iniciar sesión en Spotify para generar tu mixtape
+            <option value="">Escala crómatica - Camelot</option>
+            {Array.from({ length: 12 }).map((_, key) =>
+              [1, 2].map((modeNumber) => {
+                const { notation, color } = getKeyNotation(key, modeNumber);
+                return (
+                  <option
+                    value={key}
+                    key={`${key}-${modeNumber}`}
+                    style={{ color: color }} // convertir clase de fondo a clase de texto
+                  >
+                    {notation}
+                  </option>
+                );
+              })
+            )}
+          </select>
+          <button onClick={toggleBpmOrder}>
+          {bpmOrder === "ASC" ? "⬆️" : "⬇️"} 
         </button>
+        </div>
+
+        <div className="tw-border tw-border-gray-200 tw-mt-10">
+          {/* Cabecera */}
+
+          {/* Cuerpo */}
+          {filteredAndSortedMixtape.length === 0 ? (
+            <div className="tw-p-2">No hay datos disponibles</div>
+          ) : (
+            filteredAndSortedMixtape.map((data) => (
+              <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
+            ))
+          )}
+        </div>
+        <div className="tw-flex tw-justify-center">
+          <button
+            className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer"
+            onClick={handleSpotifyAuth}
+          >
+            Iniciar sesión en Spotify para generar tu mixtape
+          </button>
+        </div>
       </div>
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}

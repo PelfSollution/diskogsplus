@@ -146,7 +146,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
   return (
 
     
-    <div className="tw-flex tw-flex-col md:tw-flex-row tw-justify-center tw-items-center tw-gap-y-4 md:tw-gap-x-8 tw-py-2 tw-px-2">
+    <div className="tw-flex tw-flex-col md:tw-flex-row tw-justify-center tw-items-center tw-gap-y-4 md:tw-gap-x-8 tw-py-2 tw-px-2 tw-border tw-border-gray-200">
       {/* Primera columna: Embed de Spotify o mensaje */}
       <div className="tw-max-w-[350px] tw-w-full tw-flex tw-justify-center tw-items-center tw-mb-2 md:tw-mb-0">
         {data.spotifytrackid ? (
@@ -159,7 +159,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
       </div>
 
       {/* Segunda columna: Información y Botón */}
-      <div className="tw-max-w-[350px] tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-center md:tw-items-start">
+      <div className=" tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-center md:tw-items-start">
         <span className="tw-font-bold tw-text-center md:tw-text-left tw-break-all">
           {data.artistname}
         </span>
@@ -170,7 +170,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
         >
           {data.trackname}
         </Link>
-        <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
+        <div className="tw-flex tw-item-center tw-gap-2 tw-items-start tw-max-w-[100] tw-mt-2">
           {data.tempo && (
             <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
               {data.tempo.toFixed(1)}

@@ -1,5 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { setCookie } from "cookies-next";
+import { saveMixtapeURL } from "../../../../services/supabase/saveMixtapeURL";
+import { generateMixtape } from "../../../../services/spotify/getSpotifyMixtape";
+
+const getUserData = async () => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/identity`);
+  const data = await response.json();
+
+  console.log('Respuesta de la API:', data); // <-- Agrega esta línea
+
+  if (!response.ok) {
+    throw new Error('Error al obtener los datos del usuario.');
+  }
+
+  return data;
+};
+
+
 
 export default async function callbackSpotify(
   req: NextApiRequest,
@@ -7,6 +24,7 @@ export default async function callbackSpotify(
 ) {
   if (req.method === "GET") {
     const code = req.query.code as string;
+    const username = req.query.state as string;
 
     if (!code) {
       res
@@ -18,7 +36,6 @@ export default async function callbackSpotify(
     const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
     const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID as string;
     const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET as string;
-
     const REDIRECT_URI = `${process.env.BASE_URL}/api/auth/callback/spotify`;
 
     const tokenData = new URLSearchParams();
@@ -46,7 +63,6 @@ export default async function callbackSpotify(
         );
       }
 
-      // Aquí tienes el token de acceso y el token de refresco. Puedes guardarlos como cookies o en una base de datos según tu preferencia.
       const cookieOptions = {
         req,
         res,
@@ -61,7 +77,27 @@ export default async function callbackSpotify(
         cookieOptions
       );
 
-      res.redirect("/spotify");
+    
+      // Obten el nombre de usuario del usuario autenticado
+  
+      console.log('Nombre de usuario:', username); // <-- Agrega esta línea
+      
+
+      if (!username) {
+        throw new Error("No se pudo obtener el nombre de usuario del usuario autenticado.");
+      }
+
+      // Generar mixtape con el token de acceso
+      const embedUrl = await generateMixtape(
+        tokenResult.access_token,
+        username
+    );
+
+    await saveMixtapeURL(username, embedUrl);
+    
+      console.log('Nombre de usuario 2:', username); 
+      // Redirigir al usuario a la página que muestra la mixtape
+      res.redirect(`/mixtapeplayer?embedUrl=${encodeURIComponent(embedUrl)}`);
     } catch (err: unknown) {
       if (!res.writableEnded) {
         res.status(500).json({

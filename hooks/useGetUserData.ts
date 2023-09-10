@@ -26,8 +26,6 @@ export interface UserIdentityDataProps {
 }
 
 const useGetUserData = () => {
-  const memoizedFetcher = useCallback(fetcher, []); // Paso 1: Memoización de fetcher
-
   const {
     data = { userProfile: {} },
     error = false,
@@ -35,8 +33,8 @@ const useGetUserData = () => {
     isValidating = false,
   } = useSWR(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/identity`,
-    memoizedFetcher
-  ); // Paso 2: Desestructuración directa
+    fetcher
+  );
 
   return { data, error, isLoading, isValidating };
 };

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import Link from "next/link";
-import { getKeyNotation } from "../lib/musicNotation";
+import { getKeyNotation } from "../lib/musicnotation";
 
 type MixtapeRowProps = {
   data: Mixtape;

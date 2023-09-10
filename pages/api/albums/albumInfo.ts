@@ -148,11 +148,11 @@ export default async function albumInfo(
       }
 
       const frontCover =
-        releaseData.images.find((image: Image) => image.type === "primary")
-          ?.uri || "";
-      const backCover =
-        releaseData.images.find((image: Image) => image.type === "secondary")
-          ?.uri || frontCover;
+      releaseData.images.find((image: Image) => image.type === "primary")?.uri;
+  const backCover =
+      releaseData.images.find((image: Image) => image.type === "secondary")?.uri;
+  
+
 
       // Recopilo la información del álbum.
       const albumInfo = {

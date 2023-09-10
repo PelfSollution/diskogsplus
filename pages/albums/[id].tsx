@@ -23,11 +23,7 @@ import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-import { getKeyNotation } from '../../lib/musicNotation'; 
-
-
-
-
+import { getKeyNotation } from "../../lib/musicNotation";
 
 interface TrackInfo {
   position: string;
@@ -38,7 +34,6 @@ interface TrackInfo {
   tempo?: number;
   key?: number;
   mode?: number;
-
 }
 
 type TrackType = {
@@ -48,8 +43,7 @@ type TrackType = {
   key?: number;
   mode?: number;
   duration?: string;
-}
-
+};
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -246,7 +240,6 @@ function AlbumDetails() {
       duration: track.duration || null,
     };
 
-    
     // Llamar a la función addMixtape para añadir a la base de datos
     addMixtape(mixtapeEntry);
     setTracksInMixtape((prevTracks) => [...prevTracks, track.title]);
@@ -260,9 +253,16 @@ function AlbumDetails() {
   const isValidNumber = (value: any): value is number =>
     typeof value === "number" && !isNaN(value);
 
-  
-
-
+    const getImageComponent = (imageURL: string | undefined, altText: string) => {
+      const defaultImage = "/no-portada.gif"; 
+    
+      if (imageURL && imageURL !== "") {
+        return <CardMedia component="img" image={imageURL} alt={altText} />;
+      } else {
+        return <CardMedia component="img" image={defaultImage} alt="Imagen no disponible" />;
+      }
+    };
+    
 
   return (
     <Layout centeredTopContent={true}>
@@ -278,17 +278,17 @@ function AlbumDetails() {
             >
               <Card
                 className={`absolute w-full h-full transform transition-transform duration-700 
-               ${isFlipped ? "rotate-180" : "rotate-0"}`}
+        ${isFlipped ? "rotate-180" : "rotate-0"}`}
               >
-                <CardMedia
-                  component="img"
-                  image={
-                    isFlipped ? albumInfo.backCoverImage : albumInfo.coverImage
-                  }
-                  alt={`${albumInfo.artist} - ${albumInfo.title} ${
-                    isFlipped ? "back cover" : "front cover"
-                  }`}
-                />
+                {isFlipped
+                  ? getImageComponent(
+                      albumInfo.backCoverImage,
+                      `${albumInfo.artist} - ${albumInfo.title} back cover`
+                    )
+                  : getImageComponent(
+                      albumInfo.coverImage,
+                      `${albumInfo.artist} - ${albumInfo.title} front cover`
+                    )}
               </Card>
             </div>
 
@@ -390,48 +390,58 @@ function AlbumDetails() {
                 <Typography variant="h6">Tracklist</Typography>
               </AccordionSummary>
               <AccordionDetails>
-              <Stack direction="column" spacing={1}>
-  {albumInfo.tracklist.map((track: TrackInfo, index: number) => (
-    <div key={index} className="tw-flex tw-justify-between tw-items-center tw-mb-2">
-      <div className="tw-min-w-[200px] tw-max-w-[500px]">
-        {track.title} - {track.duration}
-        <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
-          {track.tempo && (
-            <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
-              {track.tempo.toFixed(1)}
-            </div>
-          )}
+                <Stack direction="column" spacing={1}>
+                  {albumInfo.tracklist.map(
+                    (track: TrackInfo, index: number) => (
+                      <div
+                        key={index}
+                        className="tw-flex tw-justify-between tw-items-center tw-mb-2"
+                      >
+                        <div className="tw-min-w-[200px] tw-max-w-[500px]">
+                          {track.title} - {track.duration}
+                          <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
+                            {track.tempo && (
+                              <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
+                                {track.tempo.toFixed(1)}
+                              </div>
+                            )}
 
-          {typeof track.key === 'number' && track.key !== null && typeof track.mode === 'number' && track.mode !== null ? (
-            <div className={`tw-text-xs tw-text-white tw-px-2 tw-py-1 tw-rounded-full ${getKeyNotation(track.key, track.mode).color}`}>
-              {getKeyNotation(track.key, track.mode).notation}
-            </div>
-          ) : null}
-        </div>
-      </div>
+                            {typeof track.key === "number" &&
+                            track.key !== null &&
+                            typeof track.mode === "number" &&
+                            track.mode !== null ? (
+                              <div
+                                className={`tw-text-xs tw-text-white tw-px-2 tw-py-1 tw-rounded-full ${
+                                  getKeyNotation(track.key, track.mode).color
+                                }`}
+                              >
+                                {getKeyNotation(track.key, track.mode).notation}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
 
-      <div>
-        {isSongInMixtape(track.title) ? (
-          <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
-            onClick={() => handleDeleteFromMixtape(track)}
-          >
-            Borrar de Mixtape
-          </button>
-        ) : (
-          <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-400 tw-border tw-border-green-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
-            onClick={() => handleAddToMixtape(track)}
-          >
-            Añadir a Mixtape
-          </button>
-        )}
-      </div>
-    </div>
-  ))}
-</Stack>
-
-
+                        <div>
+                          {isSongInMixtape(track.title) ? (
+                            <button
+                              className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+                              onClick={() => handleDeleteFromMixtape(track)}
+                            >
+                              Borrar de Mixtape
+                            </button>
+                          ) : (
+                            <button
+                              className="tw-opacity-100 hover:tw-opacity-70 tw-text-green-400 tw-border tw-border-green-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+                              onClick={() => handleAddToMixtape(track)}
+                            >
+                              Añadir a Mixtape
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </Stack>
               </AccordionDetails>
             </Accordion>
           )}

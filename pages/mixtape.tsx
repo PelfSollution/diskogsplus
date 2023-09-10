@@ -4,9 +4,12 @@ import getMixtape from "../services/supabase/getMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import deleteFromMixtape from "../services/supabase/deleteFromMixtape";
 import MixtapeRow from "@/components/MixtapeRow";
-import { Snackbar } from "@mui/material";
+import { Snackbar, FormControl, InputLabel, MenuItem, TextField, Select} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import { getKeyNotation } from "../lib/musicNotation";
 
@@ -153,7 +156,7 @@ export default function Mixtape() {
   
     .sort((a, b) => {
       if (!bpmOrder) return 0;
-      return bpmOrder === "ASC"
+      return bpmOrder === "DESC"
         ? (a.tempo ?? 0) - (b.tempo ?? 0)
         : (b.tempo ?? 0) - (a.tempo ?? 0);
     });
@@ -163,87 +166,86 @@ export default function Mixtape() {
   };
 
   return (
-    <Layout
-      centeredTopContent={true}
-      title="Mixtape - Diskogs +"
-      description="Tu Mixtape personal"
-    >
-     <div className="tw-container tw-mx-auto tw-p-6">
-      <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Mixtape</h1>
-      <div className="tw-flex tw-gap-4 tw-mb-4">
-        <input
-          type="text"
-          placeholder="Buscar por nombre"
-          className="tw-border tw-rounded tw-p-2"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        
-        <select
+    <Layout centeredTopContent={true} title="Mixtape - Diskogs +" description="Tu Mixtape personal">
+  <div className="tw-container tw-mx-auto tw-p-6">
+    <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Mixtape</h1>
+    <div className="tw-flex tw-items-center tw-gap-4 tw-mb-4">
+      <FormControl variant="outlined" size="small">
+        <InputLabel>Filtrar por:</InputLabel>
+        <Select
           value={searchKey ?? ""}
-          onChange={(e) =>
-            setSearchKey(e.target.value ? Number(e.target.value) : null)
-          }
-          className="tw-border tw-rounded tw-p-2"
+          onChange={(e) => setSearchKey(e.target.value ? Number(e.target.value) : null)}
+          label="Filtrar por:"
+          className="tw-min-w-[110%] tw-mr-20 sm:tw-mr-20"
         >
-            <option value="">Escala crómatica - Camelot</option>
-            {Array.from({ length: 12 }).map((_, key) =>
-              [1, 2].map((modeNumber) => {
-                const { notation, color } = getKeyNotation(key, modeNumber);
-                return (
-                  <option
-                    value={key}
-                    key={`${key}-${modeNumber}`}
-                    style={{ color: color }} // convertir clase de fondo a clase de texto
-                  >
-                    {notation}
-                  </option>
-                );
-              })
-            )}
-          </select>
-          <button onClick={toggleBpmOrder}>
-          {bpmOrder === "ASC" ? "⬆️" : "⬇️"} 
-        </button>
-        </div>
-
-        <div className="tw-border tw-border-gray-200 tw-mt-10">
-          {/* Cabecera */}
-
-          {/* Cuerpo */}
-          {filteredAndSortedMixtape.length === 0 ? (
-            <div className="tw-p-2">No hay datos disponibles</div>
-          ) : (
-            filteredAndSortedMixtape.map((data) => (
-              <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
-            ))
+          <MenuItem value="">
+            <em>Escala crómatica - Camelot</em>
+          </MenuItem>
+          {Array.from({ length: 12 }).map((_, key) =>
+            [1, 2].map((modeNumber) => {
+              const { notation } = getKeyNotation(key, modeNumber);
+              return (
+                <MenuItem value={key} key={`${key}-${modeNumber}`}>
+                  {notation}
+                </MenuItem>
+              );
+            })
           )}
-        </div>
-        <div className="tw-flex tw-justify-center">
-          <button
-            className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer"
-            onClick={handleSpotifyAuth}
-          >
-            Iniciar sesión en Spotify para generar tu mixtape
-          </button>
-        </div>
-      </div>
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        open={openSnackbar}
-        autoHideDuration={3000} // Duración en milisegundos
-        onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-        action={
-          <IconButton
-            size="small"
-            color="inherit"
-            onClick={handleCloseSnackbar}
-          >
-            <CloseIcon />
-          </IconButton>
-        }
+        </Select>
+      </FormControl>
+
+      <TextField
+        placeholder="Buscar por nombre"
+        variant="outlined"
+        value={searchTerm}
+        fullWidth
+        onChange={(e) => setSearchTerm(e.target.value)}
+        size="small"
+        className="tw-min-w-[60%] tw-ml-4"
       />
-    </Layout>
+
+      <IconButton onClick={toggleBpmOrder} className="tw-min-w-[2%] tw-ml-4">
+        {bpmOrder === "ASC" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
+      </IconButton>
+    </div>
+
+    <div className="tw-border tw-border-gray-200 tw-mt-10">
+      {/* Cabecera */}
+
+      {/* Cuerpo */}
+      {filteredAndSortedMixtape.length === 0 ? (
+        <div className="tw-p-2">No hay datos disponibles</div>
+      ) : (
+        filteredAndSortedMixtape.map((data) => (
+          <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
+        ))
+      )}
+    </div>
+    <div className="tw-flex tw-justify-center">
+      <button
+        className="tw-mt-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer"
+        onClick={handleSpotifyAuth}
+      >
+        Iniciar sesión en Spotify para generar tu mixtape
+      </button>
+    </div>
+  </div>
+  <Snackbar
+    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+    open={openSnackbar}
+    autoHideDuration={3000} // Duración en milisegundos
+    onClose={handleCloseSnackbar}
+    message={snackbarMessage}
+    action={
+      <IconButton
+        size="small"
+        color="inherit"
+        onClick={handleCloseSnackbar}
+      >
+        <CloseIcon />
+      </IconButton>
+    }
+  />
+</Layout>
   );
 }

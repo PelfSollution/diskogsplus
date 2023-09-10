@@ -1,3 +1,4 @@
+import { cleanInput } from '@/lib/stringUtils'; 
 import { getSpotifyAlbumId } from "./getAlbumId";
 
 interface SpotifyTrackItem {
@@ -27,14 +28,19 @@ export async function getSpotifyTrackId(
   accessToken: string
 ): Promise<{ id: string; uri: string } | null> {
   try {
-    const albumId = await getSpotifyAlbumId(albumName, artistName, accessToken);
+    // Limpiar las entradas
+    const cleanedTrackName = cleanInput(trackName);
+    const cleanedArtistName = cleanInput(artistName);
+    const cleanedAlbumName = cleanInput(albumName);
+
+    const albumId = await getSpotifyAlbumId(cleanedAlbumName, cleanedArtistName, accessToken);
 
     if (!albumId) {
       return null;
     }
 
     const response = await fetch(
-      `${SPOTIFY_BASE_URL}/v1/albums/${albumId}/tracks`,
+      `${SPOTIFY_BASE_URL}/v1/albums/${albumId}/tracks?offset=0&limit=50`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

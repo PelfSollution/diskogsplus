@@ -1,11 +1,18 @@
+import { cleanInput } from '@/lib/stringUtils'; 
+
+
 export async function getSpotifyAlbumId(
   albumName: string,
   artistName: string,
   accessToken: string
 ): Promise<string | null> {
   try {
+    // Limpiar las entradas
+    const cleanedAlbumName = cleanInput(albumName);
+    const cleanedArtistName = cleanInput(artistName);
+
     const response = await fetch(
-      `https://api.spotify.com/v1/search?q=album:${albumName} artist:${artistName}&type=album`,
+      `https://api.spotify.com/v1/search?q=album:${cleanedAlbumName} artist:${cleanedArtistName}&type=album&offset=0&limit=50`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

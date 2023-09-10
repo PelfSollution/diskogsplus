@@ -31,6 +31,7 @@ export async function generateMixtape(spotifyToken: string, username: string): P
   }
 }
 
+
 async function getSpotifyUserId(accessToken: string): Promise<string> {
   const response = await fetch(`${SPOTIFY_BASE_URL}/v1/me`, {
     headers: {

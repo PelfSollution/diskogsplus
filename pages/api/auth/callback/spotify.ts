@@ -3,18 +3,7 @@ import { setCookie } from "cookies-next";
 import { saveMixtapeURL } from "../../../../services/supabase/saveMixtapeURL";
 import { generateMixtape } from "../../../../services/spotify/getSpotifyMixtape";
 
-const getUserData = async () => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/identity`);
-  const data = await response.json();
 
-  console.log('Respuesta de la API:', data); // <-- Agrega esta línea
-
-  if (!response.ok) {
-    throw new Error('Error al obtener los datos del usuario.');
-  }
-
-  return data;
-};
 
 
 

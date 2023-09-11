@@ -3,8 +3,20 @@ import { setCookie } from "cookies-next";
 import { saveMixtapeURL } from "../../../../services/supabase/saveMixtapeURL";
 import { generateMixtape } from "../../../../services/spotify/getSpotifyMixtape";
 
-
-
+async function getSpotifyProfile(accessToken: string): Promise<string> {
+  const response = await fetch("https://api.spotify.com/v1/me", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error("Error al obtener el perfil de Spotify");
+  }
+  
+  const data = await response.json();
+  return data.id;  // Retorna el nombre de usuario de Spotify
+}
 
 
 export default async function callbackSpotify(
@@ -64,6 +76,7 @@ export default async function callbackSpotify(
         "spotifyRefreshToken",
         tokenResult.refresh_token,
         cookieOptions
+       // secure: true  // Asegura que la cookie se envíe solo a través de conexiones HTTPS
       );
 
     
@@ -76,15 +89,20 @@ export default async function callbackSpotify(
         throw new Error("No se pudo obtener el nombre de usuario del usuario autenticado.");
       }
 
+      const spotifyAccessToken = tokenResult.access_token;
+      // Obtiene el nombre de usuario de Spotify
+      const spotifyUsername = await getSpotifyProfile(spotifyAccessToken);
+
       // Generar mixtape con el token de acceso
       const embedUrl = await generateMixtape(
-        tokenResult.access_token,
+        spotifyAccessToken,
         username
     );
 
-    await saveMixtapeURL(username, embedUrl);
+ 
+    await saveMixtapeURL(username, embedUrl, spotifyUsername);
     
-      console.log('Nombre de usuario 2:', username); 
+
       // Redirigir al usuario a la página que muestra la mixtape
       res.redirect(`/mixtapeplayer?embedUrl=${encodeURIComponent(embedUrl)}`);
     } catch (err: unknown) {

@@ -8,6 +8,7 @@ import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken"
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 import { getSpotifyTrackId } from "../../../services/spotify/getTrackId";
 import { getTrackAudioFeatures } from "../../../services/spotify/getTrackAudioFeatures";
+import { getMostPopularAlbum } from "../../../services/spotify/getMostPopularAlbum";
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -37,16 +38,27 @@ export default async function albumInfo(
 
       // Obtengo los datos de un lanzamiento específico del álbum.
       const releaseData = await db.getRelease(id);
-     console.log("Received data from Discogs API:", releaseData);
+    
+
 
       // Autenticación en Spotify para obtener el token de acceso.
       const accessToken = await getSpotifyAccessToken();
-      const spotifyAlbumId = await getSpotifyAlbumId(
+      let spotifyAlbumId = await getSpotifyAlbumId(
         releaseData.title,
         releaseData.artists[0].name,
         accessToken
       );
-      console.log("Spotify album ID:", spotifyAlbumId);
+
+      let isPopularAlbum = false; // Esta variable determinará si estamos usando el álbum más popular.
+
+  // Si no encontramos el ID del álbum en Spotify, entonces intentamos obtener el álbum más popular del artista.
+if (!spotifyAlbumId && releaseData.artists[0].name) {
+  const popularAlbumId = await getMostPopularAlbum(releaseData.artists[0].name, accessToken);
+  if (popularAlbumId) {
+    spotifyAlbumId = popularAlbumId;
+    isPopularAlbum = true; // Si encontramos el álbum popular, actualizamos la variable a true.
+  }
+}
 
       // Algunos lanzamientos no tienen un maestro asociado.
       // Esto es evidente cuando Discogs devuelve '0' como el ID maestro.
@@ -203,6 +215,7 @@ export default async function albumInfo(
         enrichedInfo: enrichedArtistInfo,
         lastfmTags: lastfmTags,
         spotifyAlbumId: spotifyAlbumId,
+        isPopularAlbum: isPopularAlbum
       };
       console.log("Combined data:", combinedData);
 

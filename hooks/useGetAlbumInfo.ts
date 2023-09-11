@@ -34,6 +34,7 @@ export interface AlbumInfoInterface {
   lastfmTags?: string[];
   enrichedInfo?: string;
   spotifyAlbumId?: string;
+  isPopularAlbum?: boolean;
 }
 
 export interface AlbumInfoPropsInterface {

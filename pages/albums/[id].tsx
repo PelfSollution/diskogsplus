@@ -13,6 +13,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Snackbar,
+  List, ListItem,ListItemText
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import IconButton from "@mui/material/IconButton";
@@ -152,7 +153,18 @@ function AlbumDetails() {
 
   const albumInfo: AlbumInfoInterface | null = data;
 
+  useEffect(() => {
+    if (albumInfo && albumInfo.isPopularAlbum) {
+      handleOpenSnackbar(
+        `El disco de ${albumInfo.artist} que tienes en vinilo, no se encontró en Spotify.`
+      );
+    }
+  }, [albumInfo]);
+  
+
   const mixtape = useGetMixtape(username);
+
+  
 
   useEffect(() => {
     if (mixtape.data) {
@@ -544,25 +556,38 @@ function AlbumDetails() {
         </Grid>
 
         {/* Columna de la derecha */}
-        <Grid item xs={12} md={5}>
-          <Typography variant="h6" gutterBottom>
-            Escucha ahora
-          </Typography>
+<Grid item xs={12} md={5}>
+  <Typography variant="h6" gutterBottom>
+    Escucha ahora
+  </Typography>
+  {albumInfo.spotifyAlbumId ? (
+  <>
+    {albumInfo.isPopularAlbum && (
+      <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4">
+        <Typography variant="body2" color="textSecondary">
+          El disco de {albumInfo.artist} que tienes en vinilo, no se encontró en Spotify. Mostrando uno de los discos más populares:
+        </Typography>
+      </div>
+    )}
+    <iframe
+      src={`https://open.spotify.com/embed/album/${albumInfo.spotifyAlbumId}`}
+      width="100%"
+      height="380"
+      frameBorder="0"
+      allow="encrypted-media"
+    ></iframe>
+  </>
+) : (
+  <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4">
+    <Typography variant="body2" color="textSecondary">
+      Este artista no está disponible en Spotify.
+    </Typography>
+  </div>
+)}
 
-          {albumInfo.spotifyAlbumId ? (
-            <iframe
-              src={`https://open.spotify.com/embed/album/${albumInfo.spotifyAlbumId}`}
-              width="100%"
-              height="380"
-              frameBorder="0"
-              allow="encrypted-media"
-            ></iframe>
-          ) : (
-            <Typography variant="body1" color="textSecondary">
-              Este álbum no está disponible en Spotify.
-            </Typography>
-          )}
-          {/* ... Resto de tu componente ... */}
+
+
+
         </Grid>
       </Grid>
       <Snackbar

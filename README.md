@@ -7,17 +7,17 @@ Una aplicación web responsiva creada para los amantes de la música que usan Di
 
 - Exploración de Catálogo: No sólo puedes visualizar tu catálogo de Discogs, sino que también puedes acceder al detalle de cada álbum con información enriquecida a partir de otras APIs como Last.fm, Spotify y OpenAI.
 
-- Mixtape Personal: Crea tu propia mixtape seleccionando canciones de diferentes álbumes. Una vez que estés satisfecho, puedes exportar esta mixtape como una lista directamente a tu cuenta de Spotify.
+- Mixtape Personal: Crea tu propia mixtape seleccionando canciones de diferentes álbumes. También puedes filtrar y ordenar las canciones por BPM, clave y escala camelot para facilitar el trabajo a los DJs preparando listas para tus sessiones. Una vez que estés satisfecho, puedes exportar esta mixtape como una lista directamente a tu cuenta de Spotify y compartir en redes sociales.
 
 - Comparativa de Catálogos: Compara tu colección de discos con la de otros usuarios. Descubre y escucha álbumes que no posees y agrégales fácilmente a tu Wantlist.
 
 ## Futuras Funcionalidades (Roadmap):
 
-- Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. Una aventura musical como ninguna otra.
+- [] Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. Una aventura musical como ninguna otra.
 
-- Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
+- [x] Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
 
-- Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
+- [] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
 
 ## Usuario DEMO Discogs
 
@@ -33,10 +33,13 @@ diskogsplus/
 ┣ components/
 ┃ ┣ ui/
 ┃ ┃ ┗ button.tsx
+┃ ┣ CustomCircularProgress.tsx
 ┃ ┣ CustomHead.tsx
 ┃ ┣ Layout.tsx
 ┃ ┣ MixtapeRow.tsx
-┃ ┗ TopNavBar.tsx
+┃ ┣ TopNavBar.tsx
+┃ ┣ TurnTable.tsx
+┃ ┗ Turntable.module.css
 ┣ hooks/
 ┃ ┣ useCompareAlbumList.ts
 ┃ ┣ useGetAlbumData.ts
@@ -45,6 +48,8 @@ diskogsplus/
 ┃ ┣ useGetMixtape.ts
 ┃ ┗ useGetUserData.ts
 ┣ lib/
+┃ ┣ musicnotation.ts
+┃ ┣ stringUtils.ts
 ┃ ┣ supabase.ts
 ┃ ┗ utils.ts
 ┣ pages/
@@ -54,17 +59,23 @@ diskogsplus/
 ┃ ┣ api/
 ┃ ┃ ┣ albums/
 ┃ ┃ ┗ auth/
+┃ ┣ 404.tsx
 ┃ ┣ _app.tsx
 ┃ ┣ _document.tsx
+┃ ┣ _error.tsx
+┃ ┣ dashboard.module.css
 ┃ ┣ dashboard.tsx
 ┃ ┣ index.tsx
 ┃ ┣ matching.tsx
 ┃ ┣ mixtape.tsx
+┃ ┣ mixtapeplayer.tsx
+┃ ┣ spotify.tsx
 ┃ ┗ supabasetest.tsx
 ┣ public/
 ┃ ┣ diskogs-logo.gif
 ┃ ┣ favicon.png
 ┃ ┣ next.svg
+┃ ┣ no-portada.gif
 ┃ ┗ vercel.svg
 ┣ services/
 ┃ ┣ last.fm/
@@ -74,11 +85,18 @@ diskogsplus/
 ┃ ┣ spotify/
 ┃ ┃ ┣ getAccessToken.ts
 ┃ ┃ ┣ getAlbumId.ts
+┃ ┃ ┣ getMostPopularAlbum.ts
+┃ ┃ ┣ getSpotifyMixtape.ts
+┃ ┃ ┣ getTrackAudioFeatures.ts
 ┃ ┃ ┗ getTrackId.ts
 ┃ ┗ supabase/
 ┃   ┣ addMixtape.ts
 ┃   ┣ deleteFromMixtape.ts
-┃   ┗ getMixtape.ts
+┃   ┣ deleteMixtapeURL.ts
+┃   ┣ getMixtape.ts
+┃   ┣ getMixtapeURLs.ts
+┃   ┣ getSongsFromSupabase.ts
+┃   ┗ saveMixtapeURL.ts
 ┣ styles/
 ┃ ┗ globals.css
 ┣ types/

@@ -13,11 +13,11 @@ Una aplicación web responsiva creada para los amantes de la música que usan Di
 
 ## Futuras Funcionalidades (Roadmap):
 
-- [] Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. Una aventura musical como ninguna otra.
+- [ ] Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. Una aventura musical como ninguna otra.
 
 - [x] Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
 
-- [] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
+- [ ] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
 
 ## Usuario DEMO Discogs
 
@@ -118,7 +118,23 @@ diskogsplus/
 ┣ tailwind.config.ts
 ┗ tsconfig.json
 ```
-
+## Diagrama de Entidades y Relaciones (ER):
+````
++-----------------+       +---------------------+
+|     mixtape     |       |     mixtape_urls    |
++-----------------+       +---------------------+
+| id (PK)         |       | id (PK)             |
+| username (FK)   |-----> | username (FK)       |
+| discogsalbumid  |       | mixtape_url         |
+| spotifytrackid  |       | fecha_creacion      |
+| artistname      |       | spotify_username    |
+| trackname       |       +---------------------+
+| tempo           |
+| key             |
+| mode            |
+| duration        |
++-----------------+
+```
 ## Stack Tecnológico
 
 - Frontend: Next.js

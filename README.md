@@ -119,7 +119,7 @@ diskogsplus/
 ┗ tsconfig.json
 ```
 ## Diagrama de Entidades y Relaciones (ER):
-````
+```
 +-----------------+       +---------------------+
 |     mixtape     |       |     mixtape_urls    |
 +-----------------+       +---------------------+
@@ -134,14 +134,17 @@ diskogsplus/
 | mode            |
 | duration        |
 +-----------------+
+
 ```
+
 ## Stack Tecnológico
 
 - Frontend: Next.js
 - Estilos: Emotion, MUI, TailwindCSS 
 - Estado y Datos: Supabase, React Query, SWR.
 - APIs: Discogs, Last.fm, Spotify, OpenAI.
-- Otros: TypeScript, ESLint, Prettier, Husky, Lint-Staged, Commitlint, Vercel.
+- Deploy: Vercel.
+- Otros: TypeScript, ESLint, Prettier, Husky, Lint-Staged, Commitlint, Vercel AI SDK.
 
 
 ## Inicialización del Proyecto

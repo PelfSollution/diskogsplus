@@ -9,6 +9,10 @@ import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 import { getSpotifyTrackId } from "../../../services/spotify/getTrackId";
 import { getTrackAudioFeatures } from "../../../services/spotify/getTrackAudioFeatures";
 import { getMostPopularAlbum } from "../../../services/spotify/getMostPopularAlbum";
+import { fetchOrGenerateImage } from "../../../services/supabase/imageService";
+
+
+
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -163,7 +167,13 @@ if (!spotifyAlbumId && releaseData.artists[0].name) {
       releaseData.images.find((image: Image) => image.type === "primary")?.uri;
   const backCover =
       releaseData.images.find((image: Image) => image.type === "secondary")?.uri;
+
+    
   
+    const generatedFrontCover = frontCover || await fetchOrGenerateImage(releaseData.artists[0].name, 'front');
+    const generatedBackCover = backCover || await fetchOrGenerateImage(releaseData.artists[0].name, 'back');
+    
+
 
 
       // Recopilo la información del álbum.
@@ -180,9 +190,11 @@ if (!spotifyAlbumId && releaseData.artists[0].name) {
           ? masterReleaseData.styles
           : releaseData.styles,
         tracklist: tracklistWithSpotifyIds,
-        coverImage: frontCover,
-        backCoverImage: backCover,
-        artist: releaseData.artists[0].name,
+        //coverImage: frontCover,
+        //backCoverImage: backCover,
+        coverImage: generatedFrontCover,
+        backCoverImage: generatedBackCover,
+      artist: releaseData.artists[0].name,
         title: releaseData.title,
       };
 

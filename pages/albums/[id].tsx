@@ -24,6 +24,8 @@ import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+//[test]import { generateImageFromPrompt } from '../../services/openai/generateImageFromPrompt';
+
 
 
 interface TrackInfo {
@@ -54,6 +56,7 @@ function AlbumDetails() {
   const { data: userData } = useGetUserData();
   const [inWantlist, setInWantlist] = useState(false);
   const [loading, setLoading] = useState(false);
+
 
   
 
@@ -154,6 +157,8 @@ function AlbumDetails() {
   );
 
   const albumInfo: AlbumInfoInterface | null = data;
+
+  
 
   const redirectToChat = () => {
     if (albumInfo && username) {

@@ -55,6 +55,8 @@ function AlbumDetails() {
   const [inWantlist, setInWantlist] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  
+
   const handleAddToWantlist = async (username: string, albumId: number) => {
     setLoading(true);
 
@@ -153,6 +155,15 @@ function AlbumDetails() {
 
   const albumInfo: AlbumInfoInterface | null = data;
 
+  const redirectToChat = () => {
+    if (albumInfo && username) {
+      const query = `?artista=${encodeURIComponent(albumInfo.artist)}&album=${encodeURIComponent(albumInfo.title)}&username=${encodeURIComponent(username)}`;
+      router.push(`/chat${query}`);
+    }
+  }
+  
+  
+
   useEffect(() => {
     if (albumInfo && albumInfo.isPopularAlbum) {
       handleOpenSnackbar(
@@ -164,6 +175,7 @@ function AlbumDetails() {
 
   const mixtape = useGetMixtape(username);
 
+  
   
 
   useEffect(() => {
@@ -405,12 +417,19 @@ function AlbumDetails() {
               <Typography variant="h5">{albumInfo.artist}</Typography>
               <Typography variant="h6">{albumInfo.title}</Typography>
             </div>
+  
           </div>
+          {/* Botón para preguntar sobre el disco */}
+  <div>
+  <Button onClick={redirectToChat} variant="outlined"  style={{ width: "250px", marginBottom: "5px"  }}>
+  🤖 Ask to Discobot 
+  </Button>
+  </div>
           {fromCompare && (
             <>
               {inWantlist ? (
                 <Button
-                  style={{ width: "250px" }}
+                  style={{ width: "250px", marginBottom: "5px"  }}
                   color="error"
                   variant="outlined"
                   onClick={() => handleRemoveFromWantlist(username, idNumber)}
@@ -419,7 +438,7 @@ function AlbumDetails() {
                 </Button>
               ) : (
                 <Button
-                  style={{ width: "250px" }}
+                  style={{ width: "250px", marginBottom: "5px"  }}
                   color="success"
                   variant="outlined"
                   className="tw-w-48"

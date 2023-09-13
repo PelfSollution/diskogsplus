@@ -135,8 +135,17 @@ diskogsplus/
 | duration        |
 +-----------------+
 
-```
++-----------------------+
+|   generated_images    |
++-----------------------+
+| id (PK)               |
+| artist_name           |
+| cover_type            |
+| image_url             |
+| created_at            |
++-----------------------+
 
+```
 ## Stack Tecnológico
 
 - Frontend: Next.js

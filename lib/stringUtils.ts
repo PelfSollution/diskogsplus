@@ -17,6 +17,12 @@ export function removeAllSubstringsInParenthesis(input: string): string {
   return input.replace(/[^\w\s]/gi, '');
 }
 
+export function sanitizeFileName(input: string): string {
+  // Reemplaza espacios con guiones bajos y elimina caracteres no alfanuméricos excepto guiones bajos y puntos.
+  return input.replace(/\s+/g, '_').replace(/[^\w.-]/g, '');
+}
+
+
   
 function removeStopWords(input: string, stopWords: string[]): string {
     const words = input.split(' ');

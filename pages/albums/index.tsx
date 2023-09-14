@@ -16,6 +16,8 @@ import {
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CloseIcon from "@mui/icons-material/Close";
+import  { removeAllSubstringsInParenthesis }  from "@/lib/stringUtils";
+
 
 
 interface Artist {
@@ -184,15 +186,15 @@ function Albums() {
                   height={240}
                   className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
                 />
-                <h2 className="tw-text-xl">
-                  <span className="tw-font-bold">
-                    {album.basic_information.artists &&
-                    album.basic_information.artists.length > 0
-                      ? album.basic_information.artists[0].name
-                      : "Artista desconocido"}
-                  </span>{" "}
-                  - {album.basic_information.title}
-                </h2>
+     <h2 className="tw-text-xl">
+  <span className="tw-font-bold">
+    {album.basic_information.artists && album.basic_information.artists.length > 0
+      ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
+      : "Artista desconocido"}
+  </span>{" "}
+  - {album.basic_information.title}
+</h2>
+
               </div>
             </Link>
           ))}

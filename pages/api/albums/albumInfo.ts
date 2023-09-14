@@ -10,6 +10,7 @@ import { getSpotifyTrackId } from "../../../services/spotify/getTrackId";
 import { getTrackAudioFeatures } from "../../../services/spotify/getTrackAudioFeatures";
 import { getMostPopularAlbum } from "../../../services/spotify/getMostPopularAlbum";
 import { fetchOrGenerateImage } from "../../../services/supabase/imageService";
+import  { removeAllSubstringsInParenthesis }  from "@/lib/stringUtils";
 
 
 
@@ -178,7 +179,7 @@ if (!spotifyAlbumId && releaseData.artists[0].name) {
 
       // Recopilo la información del álbum.
       const albumInfo = {
-        label: releaseData.labels[0].name,
+        label: removeAllSubstringsInParenthesis(releaseData.labels[0].name),
         catalogNo: releaseData.labels[0].catno,
         rating: releaseData.community.rating.average,
         released: releaseData.released,
@@ -194,8 +195,9 @@ if (!spotifyAlbumId && releaseData.artists[0].name) {
         //backCoverImage: backCover,
         coverImage: generatedFrontCover,
         backCoverImage: generatedBackCover,
-      artist: releaseData.artists[0].name,
+        artist: removeAllSubstringsInParenthesis(releaseData.artists[0].name),
         title: releaseData.title,
+      
       };
 
       // Enriquece la información del artista usando ChatGPT
@@ -224,9 +226,9 @@ if (!spotifyAlbumId && releaseData.artists[0].name) {
 
       const combinedData = {
         ...albumInfo,
-        enrichedInfo: enrichedArtistInfo,
+        enrichedInfo: removeAllSubstringsInParenthesis(enrichedArtistInfo), //ojo con esto
         lastfmTags: lastfmTags,
-        spotifyAlbumId: spotifyAlbumId,
+        spotifyAlbumId: spotifyAlbumId, 
         isPopularAlbum: isPopularAlbum
       };
       console.log("Combined data:", combinedData);

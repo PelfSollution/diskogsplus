@@ -4,11 +4,11 @@ function cleanString(input: string): string {
     return input.trim().replace(/\s+/g, ' ');
   }
 
-  export function convertToLowercase(input: string): string {
+function convertToLowercase(input: string): string {
     return input.toLowerCase();
 }
 
-function removeAllSubstringsInParenthesis(input: string): string {
+export function removeAllSubstringsInParenthesis(input: string): string {
     return input.replace(/\(.*?\)/g, '').trim();
   }
   

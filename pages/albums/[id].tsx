@@ -24,8 +24,6 @@ import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
 import useGetMixtape from "../../hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-//[test]import { generateImageFromPrompt } from '../../services/openai/generateImageFromPrompt';
-
 
 
 interface TrackInfo {
@@ -257,7 +255,6 @@ function AlbumDetails() {
     const username = userData.userProfile.username;
     // Extraer la información relevante de albumInfo y track
     const mixtapeEntry = {
-      //test hardcoded username
       username: username,
       artistname: albumInfo.artist,
       trackname: track.title, // Aquí es donde usamos el nombre de la canción

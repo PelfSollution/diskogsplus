@@ -12,7 +12,8 @@ export async function generateImageFromPrompt(
   }
 
   try {
-    const image = await openai.images.generate({ prompt } as any);
+    const image = await openai.images.generate({ prompt,
+      size: "512x512" } as any);
 
     return image.data && image.data.length > 0 && image.data[0].url
       ? image.data[0].url

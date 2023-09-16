@@ -1,14 +1,18 @@
 import format from "date-fns/format";
 import React from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import useGetUserData from "@/hooks/useGetUserData";
 import Image from "next/image";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import { Button } from "@/components/ui/button";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import styles from "./dashboard.module.css";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+import { getChatLogsUser } from "@/services/supabase/getChatLogsUser";
+import { getMixtapeURLs } from "../services/supabase/getMixtapeURLs";
 
 interface Artist {
   name: string;
@@ -24,6 +28,12 @@ interface Album {
   };
 }
 
+export interface ChatLog {
+  artista: string;
+  album: string;
+  disco_id: number;
+}
+
 interface LoadingOrErrorLayoutProps {
   message: React.ReactNode;
 }
@@ -34,8 +44,52 @@ const isDateValid = (dateString: string): boolean => {
 
 const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const [isImageLoaded, setImageLoaded] = React.useState(false);
+  const [chatLogs, setChatLogs] = React.useState<ChatLog[]>([]);
+  const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
+  const [loadingMixtapes, setLoadingMixtapes] = useState(false);
+  const { data: userData } = useGetUserData();
 
   const router = useRouter();
+
+  useEffect(() => {
+    async function loadMixtapes() {
+      setLoadingMixtapes(true);
+      try {
+        const urls = await getMixtapeURLs(userData?.userProfile?.username);
+        setLoadedMixtapeUrls(
+          urls.map((u: { mixtape_url: string }) => u.mixtape_url)
+        );
+      } catch (error) {
+        console.error("Error al cargar mixtapes:", error);
+      } finally {
+        setLoadingMixtapes(false);
+      }
+    }
+
+    if (userData?.userProfile?.username) {
+      loadMixtapes();
+    }
+  }, [userData]);
+
+  React.useEffect(() => {
+    async function fetchChatLogs() {
+      if (data?.userProfile) {
+        const logs = await getChatLogsUser(data.userProfile.username);
+        if (logs) {
+          setChatLogs(logs);
+        }
+      }
+    }
+
+    fetchChatLogs();
+  }, [data]);
+
+  const handleChatSelection = (value: number) => {
+    const selectedChat = chatLogs[value];
+    router.push(
+      `/chat?artista=${selectedChat.artista}&album=${selectedChat.album}&username=${data?.userProfile.username}&disco_id=${selectedChat.disco_id}`
+    );
+  };
 
   return (
     <div>
@@ -93,8 +147,73 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
             ))}
         </Stack>
       )}
-
-      <div className="tw-mt-6">
+      <div className="tw-mt-4">
+        <FormControl
+          variant="outlined"
+          size="small"
+          className="tw-mt-4 md:tw-mt-0"
+        >
+          <InputLabel id="chat-label">Tus ChatsLogs:</InputLabel>
+          <Select
+            size="small"
+            labelId="chat-label"
+            onChange={(e) => handleChatSelection(e.target.value as number)}
+            label="Tus ChatsLogs:"
+            className="tw-min-w-[300px]"
+          >
+            {chatLogs.length > 0 ? (
+              chatLogs
+                .filter(
+                  (chat) => chat.artista !== null && chat.artista !== undefined
+                )
+                .map((chat, index) => (
+                  <MenuItem key={index} value={index}>
+                    {chat.artista} - {chat.album}
+                  </MenuItem>
+                ))
+            ) : (
+              <MenuItem value="">
+                <em>No hay chats disponibles</em>
+              </MenuItem>
+            )}
+          </Select>
+        </FormControl>
+      </div>
+      <div className="tw-mt-4">
+        {/* Selector (solo se muestra si hay loadedMixtapeUrls) */}
+        {loadedMixtapeUrls.length > 0 && (
+          <FormControl
+            variant="outlined"
+            size="small"
+            className="tw-mt-4 md:tw-mt-0"
+          >
+            <InputLabel id="mixtape-label">Tus Mixtapes:</InputLabel>
+            <Select
+              labelId="mixtape-label"
+              onChange={(e) => {
+                const embedUrl = e.target.value as string;
+                if (!embedUrl) return;
+                const newPath = `/mixtapeplayer?embedUrl=${encodeURIComponent(
+                  embedUrl
+                )}`;
+                router.push(newPath);
+              }}
+              label="Tus Mixtapes:"
+              className="tw-min-w-[300px]"
+            >
+              <MenuItem value="">
+                <em>Selecciona una mixtape...</em>
+              </MenuItem>
+              {loadedMixtapeUrls.map((url: string, index: number) => (
+                <MenuItem key={index} value={url}>
+                  {`Mixtape ${index + 1}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+      </div>
+      <div className="tw-mt-2">
         <Button
           variant="outline"
           size={"sm"}

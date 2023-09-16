@@ -5,7 +5,8 @@ type ChatLog = {
   prompt: string;
   response?: string;
   artista?: string; 
-  album?: string;   
+  album?: string;  
+  disco_id?: number; 
 };
 
 

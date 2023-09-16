@@ -17,7 +17,7 @@ Una aplicación web responsiva creada para los amantes de la música que usan Di
 
 - [x] Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
 
-- [x ] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
+- [x] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
 
 ## Usuario DEMO Discogs
 

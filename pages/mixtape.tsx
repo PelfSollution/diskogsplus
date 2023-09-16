@@ -367,48 +367,51 @@ export default function Mixtape() {
           )}
         </div>
         <div className="tw-flex tw-flex-col tw-items-center tw-justify-center md:tw-flex-row md:tw-space-x-4">
-  {/* Botón */}
-  <button
-    className="tw-mt-4 tw-mb-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer tw-max-w-[400px]"
-    onClick={handleGenerateMixtape}
-    disabled={loading}
-  >
-    {loading
-      ? "Procesando..."
-      : "Iniciar sesión en Spotify para generar tu mixtape"}
-  </button>
+          {/* Botón */}
+          <button
+            className="tw-mt-4 tw-mb-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer tw-max-w-[400px]"
+            onClick={handleGenerateMixtape}
+            disabled={loading}
+          >
+            {loading
+              ? "Procesando..."
+              : "Iniciar sesión en Spotify para generar tu mixtape"}
+          </button>
 
-  {/* Selector (solo se muestra si hay loadedMixtapeUrls) */}
-  {loadedMixtapeUrls.length > 0 && (
-    <FormControl variant="outlined" size="small" className="tw-mt-4 md:tw-mt-0">
-      <InputLabel id="mixtape-label">Selecciona una mixtape</InputLabel>
-      <Select
-        labelId="mixtape-label"
-        onChange={(e) => {
-          const embedUrl = e.target.value as string;
-          const newPath = `/mixtapeplayer?embedUrl=${encodeURIComponent(embedUrl)}`;
-          router.push(newPath);
-        }}
-        label="Selecciona una mixtape"
-        className="tw-min-w-[400px]"
-      >
-        <MenuItem value="">
-          <em>Selecciona una mixtape...</em>
-        </MenuItem>
-        {loadedMixtapeUrls.map((url: string, index: number) => (
-          <MenuItem key={index} value={url}>
-            {`Mixtape ${index + 1}`}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  )}
-</div>
-
-
-
-</div>
-
+          {/* Selector (solo se muestra si hay loadedMixtapeUrls) */}
+          {loadedMixtapeUrls.length > 0 && (
+            <FormControl
+              variant="outlined"
+              size="small"
+              className="tw-mt-4 md:tw-mt-0"
+            >
+              <InputLabel id="mixtape-label">Selecciona una mixtape</InputLabel>
+              <Select
+                labelId="mixtape-label"
+                onChange={(e) => {
+                  const embedUrl = e.target.value as string;
+                  if (!embedUrl) return;
+                  const newPath = `/mixtapeplayer?embedUrl=${encodeURIComponent(
+                    embedUrl
+                  )}`;
+                  router.push(newPath);
+                }}
+                label="Selecciona una mixtape"
+                className="tw-min-w-[400px]"
+              >
+                <MenuItem value="">
+                  <em>Selecciona una mixtape...</em>
+                </MenuItem>
+                {loadedMixtapeUrls.map((url: string, index: number) => (
+                  <MenuItem key={index} value={url}>
+                    {`Mixtape ${index + 1}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        </div>
+      </div>
 
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}

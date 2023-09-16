@@ -87,8 +87,11 @@ export default async function albumInfo(
         }
       }
 
-      const tracklistWithSpotifyIds = await getTracklistWithSpotifyIds(selectedTracklist, releaseData, accessToken);
-
+      const tracklistWithSpotifyIds = await getTracklistWithSpotifyIds(
+        selectedTracklist,
+        releaseData,
+        accessToken
+      );
 
       interface Image {
         type: string;
@@ -106,15 +109,15 @@ export default async function albumInfo(
         (image: Image) => image.type === "secondary"
       )?.uri;
 
-    const generatedFrontCover =
+      const generatedFrontCover =
         frontCover ||
         (await getArtistImageFromSupabase(releaseData.artists[0].name));
       const generatedBackCover =
         backCover ||
-        (await getArtistImageFromSupabase(releaseData.artists[0].name)); 
+        (await getArtistImageFromSupabase(releaseData.artists[0].name));
 
-        console.log("Front cover T:", generatedFrontCover);
-        console.log("Back cover T:", generatedBackCover);
+      console.log("Front cover T:", generatedFrontCover);
+      console.log("Back cover T:", generatedBackCover);
       // Recopilo la información del álbum.
       const albumInfo = {
         label: removeAllSubstringsInParenthesis(releaseData.labels[0].name),
@@ -129,9 +132,9 @@ export default async function albumInfo(
           ? masterReleaseData.styles
           : releaseData.styles,
         tracklist: tracklistWithSpotifyIds,
-       // coverImage: frontCover,
-       // backCoverImage: backCover,
-       coverImage: generatedFrontCover,
+        // coverImage: frontCover,
+        // backCoverImage: backCover,
+        coverImage: generatedFrontCover,
         backCoverImage: generatedBackCover,
         artist: removeAllSubstringsInParenthesis(releaseData.artists[0].name),
         title: releaseData.title,

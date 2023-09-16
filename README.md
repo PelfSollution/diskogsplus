@@ -13,11 +13,11 @@ Una aplicación web responsiva creada para los amantes de la música que usan Di
 
 ## Futuras Funcionalidades (Roadmap):
 
-- [ ] Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. Una aventura musical como ninguna otra.
+- [x] Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. 
 
 - [x] Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
 
-- [ ] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
+- [x ] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
 
 ## Usuario DEMO Discogs
 
@@ -30,6 +30,9 @@ ejemplo user para matching: dayats
 ```
 diskogsplus/
 ┣ .next/
+┣ app/
+┃ ┗ api/
+┃   ┗ chat/
 ┣ components/
 ┃ ┣ ui/
 ┃ ┃ ┗ button.tsx
@@ -58,11 +61,13 @@ diskogsplus/
 ┃ ┃ ┗ index.tsx
 ┃ ┣ api/
 ┃ ┃ ┣ albums/
-┃ ┃ ┗ auth/
+┃ ┃ ┣ auth/
+┃ ┃ ┗ images/
 ┃ ┣ 404.tsx
 ┃ ┣ _app.tsx
 ┃ ┣ _document.tsx
 ┃ ┣ _error.tsx
+┃ ┣ chat.tsx
 ┃ ┣ dashboard.module.css
 ┃ ┣ dashboard.tsx
 ┃ ┣ index.tsx
@@ -81,22 +86,32 @@ diskogsplus/
 ┃ ┣ last.fm/
 ┃ ┃ ┗ fetchData.ts
 ┃ ┣ openai/
-┃ ┃ ┗ enrichArtistInfo.ts
+┃ ┃ ┣ enrichArtistInfo.ts
+┃ ┃ ┗ generateImageFromPrompt.ts
 ┃ ┣ spotify/
 ┃ ┃ ┣ getAccessToken.ts
 ┃ ┃ ┣ getAlbumId.ts
 ┃ ┃ ┣ getMostPopularAlbum.ts
 ┃ ┃ ┣ getSpotifyMixtape.ts
 ┃ ┃ ┣ getTrackAudioFeatures.ts
-┃ ┃ ┗ getTrackId.ts
+┃ ┃ ┣ getTrackId.ts
+┃ ┃ ┗ getTracklistWithSpotifyIds.ts
 ┃ ┗ supabase/
+┃   ┣ addChatLogs.ts
 ┃   ┣ addMixtape.ts
+┃   ┣ deleteChatLogs.ts
 ┃   ┣ deleteFromMixtape.ts
 ┃   ┣ deleteMixtapeURL.ts
+┃   ┣ getArtistImageFromSupabase.ts
+┃   ┣ getChatLogsUser.ts
+┃   ┣ getLastChatLogForUser.ts
 ┃   ┣ getMixtape.ts
 ┃   ┣ getMixtapeURLs.ts
 ┃   ┣ getSongsFromSupabase.ts
-┃   ┗ saveMixtapeURL.ts
+┃   ┣ getUserChats.ts
+┃   ┣ imageService.ts
+┃   ┣ saveMixtapeURL.ts
+┃   ┗ updateChatLogs.ts
 ┣ styles/
 ┃ ┗ globals.css
 ┣ types/
@@ -120,30 +135,47 @@ diskogsplus/
 ```
 ## Diagrama de Entidades y Relaciones (ER):
 ```
-+-----------------+       +---------------------+
-|     mixtape     |       |     mixtape_urls    |
-+-----------------+       +---------------------+
-| id (PK)         |       | id (PK)             |
-| username (FK)   |-----> | username (FK)       |
-| discogsalbumid  |       | mixtape_url         |
-| spotifytrackid  |       | fecha_creacion      |
-| artistname      |       | spotify_username    |
-| trackname       |       +---------------------+
-| tempo           |
-| key             |
-| mode            |
-| duration        |
-+-----------------+
++-------------+       +---------------------+       +------------------+
+|   users     |       |     mixtape_urls    |       |      mixtape     |
++-------------+       +---------------------+       +------------------+
+| username(PK)|------>| username (FK)       |<----- | username (FK)    |
+| email       |       | id (PK)             |       | id (PK)          |
++-------------+       | mixtape_url         |       | discogsalbumid   |
+                      | fecha_creacion      |       | spotifytrackid   |
+                      | spotify_username    |       | artistname       |
+                      +---------------------+       | trackname        |
+                                                    | tempo            |
+                                                    | key              |
+                                                    | mode             |
+                                                    | duration         |
+                                                    +------------------+
 
-+-----------------------+
-|   generated_images    |
-+-----------------------+
-| id (PK)               |
-| artist_name           |
-| cover_type            |
-| image_url             |
-| created_at            |
-+-----------------------+
++-----------------------+       +-------------------+
+|   generated_images_   |       |     chat_logs     |
+|     metadata          |       +-------------------+
++-----------------------+       | id (PK)           |
+| id (PK)               |       | username (FK)     |
+| artist_name           |<------| prompt            |
+| image_url             |       | response          |
+| generated_at          |       | created_at        |
++-----------------------+       | artista           |
+                                | album             |
+                                | disco_id          |
+                                +-------------------+
+
++-----------------+       +-----------------+       +-----------------+
+|  storage.buckets|       | storage.objects |       | storage.migrate |
++-----------------+       +-----------------+       +-----------------+
+| id (PK)         |<------| bucket_id (FK)  |       | id (PK)         |
+| name            |       | id (PK)         |       | name            |
+| owner           |<------| owner (FK)      |       | hash            |
+| created_at      |       | name            |       | executed_at     |
++-----------------+       | created_at      |       +-----------------+
+                          | updated_at      |
+                          | last_accessed_at|
+                          | metadata        |
+                          +-----------------+
+
 
 ```
 ## Stack Tecnológico
@@ -168,25 +200,3 @@ npm install
 ```bash
 npm run dev
 ```
-
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

@@ -142,8 +142,11 @@ function AlbumDetails() {
   };
 
   const handleFlip = () => {
-    setIsFlipped(!isFlipped);
+    if (!isGenerating) {
+      setIsFlipped(!isFlipped);
+    }
   };
+  
 
   const router = useRouter();
 
@@ -300,6 +303,7 @@ function AlbumDetails() {
         body: JSON.stringify({
           artistName: albumInfo.artist,
           coverType: isFlipped ? "back" : "front",
+          title: albumInfo.title
         }),
       });
 
@@ -333,18 +337,18 @@ function AlbumDetails() {
           />
           {!imageURL && (
             <div className="tw-h-0">
-              <Button
-                aria-label="Genera imagen"
-                onClick={() => {
-                  handleGenerateImage();
-                 
-                }}
-                
-                className="tw-text-white tw-top-[-40px]"
-                style={{ color: "white" }}
-              >
-                {isGenerating ? "Generando..." : "Genera Imagen"}
-              </Button>
+     <Button
+  aria-label="Genera imagen"
+  onClick={(e) => {
+    e.stopPropagation(); // Detiene la propagación del evento
+    handleGenerateImage();
+  }}
+  className="tw-text-white tw-top-[-40px]"
+  style={{ color: "white" }}
+>
+  {isGenerating ? "Generando..." : "Genera Imagen"}
+</Button>
+
             </div>
           )}
         </div>
@@ -457,9 +461,9 @@ function AlbumDetails() {
           <div className="tw-flex tw-items-center tw-mb-4 tw-mt-4">
             {/* Componente de la portada del disco */}
             <div
-              className="relative cursor-pointer tw-w-32 tw-h-32 md:tw-w-64 md:tw-h-64"
-              onClick={handleFlip}
-            >
+  className={`relative cursor-pointer tw-w-32 tw-h-32 md:tw-w-64 md:tw-h-64 ${isGenerating ? "cursor-not-allowed" : ""}`}
+  onClick={handleFlip}
+>
               <Card
                 className={`absolute w-full h-full transform transition-transform duration-700 ${
                   isFlipped ? "rotate-180" : "rotate-0"

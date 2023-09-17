@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import {
+  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -37,6 +38,7 @@ interface Album {
 function Albums() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [hasMoreDiscs, setHasMoreDiscs] = useState(true);
 
   const { data: albums, isLoading, error, size, setSize } = useGetAlbumList();
 
@@ -101,6 +103,11 @@ function Albums() {
     setSize(size + 1);
   };
 
+  const allAlbumsAreValid = filteredAlbums.every(album => 
+    album && album.id && album.basic_information
+  );
+  
+
   if (isLoading) {
     return (
       <Layout>
@@ -124,18 +131,11 @@ function Albums() {
     mostrarMensaje("Error al cargar los álbumes.");
     return <Layout>Error al cargar los álbumes.</Layout>;
   }
+  
 
-  if (allAlbums.length === 0) {
-    mostrarMensaje("No hay álbumes disponibles para mostrar.");
-    return (
-      <Layout centeredContent={false}>
-        <div className="tw-container tw-mx-auto tw-p-6">
-          <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Discos</h1>
-          <p>No hay álbumes disponibles para mostrar.</p>
-        </div>
-      </Layout>
-    );
-  }
+
+
+
 
   return (
     <Layout centeredContent={false}>
@@ -176,37 +176,45 @@ function Albums() {
         </div>
 
         <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-6">
-          {filteredAlbums.map((album: Album) => (
-            <Link key={album.id} href={`/albums/${album.id}`} passHref>
-              <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
-                <Image
-                  src={album.basic_information.cover_image}
-                  alt={album.basic_information.title}
-                  width={500}
-                  height={240}
-                  className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
-                />
-     <h2 className="tw-text-xl">
-  <span className="tw-font-bold">
-    {album.basic_information.artists && album.basic_information.artists.length > 0
-      ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
-      : "Artista desconocido"}
-  </span>{" "}
-  - {album.basic_information.title}
-</h2>
-
-              </div>
-            </Link>
-          ))}
+          {filteredAlbums.map((album: Album) => {
+            if (!album || !album.id || !album.basic_information) {
+  
+              return null;
+            }
+            return (
+              <Link key={album.id} href={`/albums/${album.id}`} passHref>
+                <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
+                  <Image
+                    src={album.basic_information.cover_image}
+                    alt={album.basic_information.title}
+                    width={500}
+                    height={240}
+                    className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
+                  />
+                  <h2 className="tw-text-xl">
+                    <span className="tw-font-bold">
+                      {album.basic_information.artists && album.basic_information.artists.length > 0
+                        ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
+                        : "Artista desconocido"}
+                    </span>{" "}
+                    - {album.basic_information.title}
+                  </h2>
+                </div>
+              </Link>
+            );
+          })}
         </div>
-        {searchTerm === "" && (
-  <button
-    onClick={loadMoreAlbums}
-    className="tw-mt-4 tw-w-full tw-bg-blue-400 tw-text-white tw-py-2 tw-rounded-full"
-  >
-    Cargar más Discos
-  </button>
-)}
+
+        {searchTerm === "" && allAlbumsAreValid && (
+              <div className="tw-flex tw-flex-col tw-gap-2 tw-mt-8">
+               <Button type="submit" variant="outlined"  onClick={loadMoreAlbums}>
+                Cargar más Discos
+             </Button>
+      </div>
+  
+        )}
+
+
         <Snackbar
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           open={snackbarOpen}

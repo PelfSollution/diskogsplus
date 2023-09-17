@@ -39,6 +39,7 @@ export default async function albumInfo(
 
       // Obtengo los datos de un lanzamiento específico del álbum.
       const releaseData = await db.getRelease(id);
+      console.log("ID de lanzamiento:", id);
 
       // Autenticación en Spotify para obtener el token de acceso.
       const accessToken = await getSpotifyAccessToken();
@@ -74,7 +75,7 @@ export default async function albumInfo(
       }
 
       let selectedTracklist = releaseData.tracklist;
-      console.log("Selected tracklist:", selectedTracklist);
+    //  console.log("Selected tracklist:", selectedTracklist);
 
       // Si el lanzamiento tiene duraciones de pista, las uso.
       // Si no, intento con el lanzamiento maestro.
@@ -87,6 +88,7 @@ export default async function albumInfo(
         }
       }
 
+      //console.log("RELEASE DATA:", releaseData);
       const tracklistWithSpotifyIds = await getTracklistWithSpotifyIds(
         selectedTracklist,
         releaseData,
@@ -116,8 +118,8 @@ export default async function albumInfo(
         backCover ||
         (await getArtistImageFromSupabase(releaseData.artists[0].name));
 
-      console.log("Front cover T:", generatedFrontCover);
-      console.log("Back cover T:", generatedBackCover);
+     // console.log("Front cover T:", generatedFrontCover);
+     // console.log("Back cover T:", generatedBackCover);
       // Recopilo la información del álbum.
       const albumInfo = {
         label: removeAllSubstringsInParenthesis(releaseData.labels[0].name),
@@ -138,13 +140,17 @@ export default async function albumInfo(
         backCoverImage: generatedBackCover,
         artist: removeAllSubstringsInParenthesis(releaseData.artists[0].name),
         title: releaseData.title,
+        videos: releaseData.videos,
+        
       };
 
       // Enriquece la información del artista usando ChatGPT
       let enrichedArtistInfo = "";
       if (releaseData.artists && releaseData.artists[0]?.name) {
         enrichedArtistInfo = await enrichArtistInfoWithChatGPT(
-          releaseData.artists[0].name
+          releaseData.artists[0].name,
+          releaseData.title,
+          releaseData.id,
         );
       }
 
@@ -171,8 +177,8 @@ export default async function albumInfo(
         spotifyAlbumId: spotifyAlbumId,
         isPopularAlbum: isPopularAlbum,
       };
-      console.log("Combined data:", combinedData);
 
+      console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });
     } else {
       res.send({

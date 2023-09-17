@@ -164,10 +164,16 @@ function AlbumDetails() {
   const albumInfo: AlbumInfoInterface | null = data;
   const redirectToChat = () => {
     if (albumInfo && username) {
-      const query = `?artista=${encodeURIComponent(albumInfo.artist)}&album=${encodeURIComponent(albumInfo.title)}&username=${encodeURIComponent(username)}&disco_id=${id}`;
-      router.push(`/chat${query}`);
+      let baseQuery = `?artista=${encodeURIComponent(albumInfo.artist)}&album=${encodeURIComponent(albumInfo.title)}&username=${encodeURIComponent(username)}&disco_id=${id}`;
+      const fromParam = router.query.from;
+      if (fromParam === 'compare') {
+        baseQuery += `&from=compare`;
+      }
+  
+      router.push(`/chat${baseQuery}`);
     }
   };
+  
   
 
   useEffect(() => {
@@ -494,7 +500,7 @@ function AlbumDetails() {
               variant="outlined"
               style={{ width: "250px", marginBottom: "5px" }}
             >
-              🤖 Ask to Discobot
+              🤖 Ask to DiscBOT
             </Button>
           </div>
           {fromCompare && (

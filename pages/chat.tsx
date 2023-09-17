@@ -48,8 +48,15 @@ export default function Chat() {
   }, [artista, album, username]);
 
   const redirectToAlbum = () => {
-    router.push(`/albums/${disco_id}`);
+    let albumUrl = `/albums/${disco_id}`;
+    const fromParam = router.query.from;
+    if (fromParam === 'compare') {
+      albumUrl += `?from=compare`;
+    }
+  
+    router.push(albumUrl);
   };
+  
 
   const initialPrompt =
     artista && album

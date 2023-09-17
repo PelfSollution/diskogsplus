@@ -4,8 +4,8 @@ import { fetchOrGenerateImage } from "../../../services/supabase/imageService";
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method === "POST") {
-      const { artistName, coverType } = req.body;
-      const imageUrl = await fetchOrGenerateImage(artistName, coverType);
+      const { artistName, coverType, title } = req.body;
+      const imageUrl = await fetchOrGenerateImage(artistName, coverType, title);
 
       if (imageUrl) {
         res.status(200).json({ imageUrl });

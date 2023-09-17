@@ -5,6 +5,17 @@ import { sanitizeFileName } from "../../lib/stringUtils";
 const SUPABASE_STORAGE_URL =
   "https://psjhsoburgocxzalocmc.supabase.co/storage/v1/object/public/generated_images/";
 
+  const PROMPTS = [
+    "Digital Painting of a ${artistName}. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting.",
+    "A hyper real digital painting for ${title}, finely detailed armor, intricate design, silver, silk, cinematic lighting, 4k. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting",
+    "High quality pastel coloured film mid angle portrait music band ${artistName}, atmospheric three point light. photographic. art directed. ( pastel colours ). volumetric. clearcoat. waves. 8 k. filmic.",
+    "Cinematic photo of ${title}. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting"
+  ];
+
+
+
+  
+
 async function uploadImageToStorage(
   imageData: Buffer,
   filePath: string
@@ -36,10 +47,11 @@ async function saveImageMetadata(
 
 export async function fetchOrGenerateImage(
   artistName: string,
-  coverType: "front" | "back"
+  coverType: "front" | "back",
+  title: string
 ): Promise<string | null> {
   console.log(
-    `Buscando imagen para el artista: ${artistName} y tipo de portada: ${coverType}`
+    `Buscando imagen para el artista: ${artistName} - ${title} y tipo de portada: ${coverType}`
   );
 
   const sanitizedArtistName = sanitizeFileName(artistName);
@@ -59,8 +71,12 @@ export async function fetchOrGenerateImage(
   console.log(
     `Imagen no encontrada para ${artistName} y ${coverType}. Generando una nueva...`
   );
-  const prompt = `Digital Painting of a ${artistName}. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting.`;
 
+  const randomIndex = Math.floor(Math.random() * PROMPTS.length);
+  let prompt = PROMPTS[randomIndex];
+  prompt = prompt.replace('${artistName}', artistName);
+prompt = prompt.replace('${title}', title);
+console.log("PROMPT ELEJIDO:" , prompt)
   const generatedImageUrl = await generateImageFromPrompt(prompt);
   console.log("URL de la imagen generada:", generatedImageUrl);
 

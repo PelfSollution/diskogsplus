@@ -9,7 +9,7 @@ export async function getChatByAlbumAndArtist(username: string, artista: string,
       .eq('artista', artista)
       .eq('album', album)
       .order('created_at', { ascending: true });
-      console.log(data);
+    //  console.log(data);
     if (error) {
       throw error;
     }

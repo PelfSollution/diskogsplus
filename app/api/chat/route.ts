@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       });
     },
     onToken: async (token: string) => {
-      console.log(token);
+ 
     },
     onCompletion: async (completion: string) => {
       const lastChatLog = await getLastChatLogForUser(username);

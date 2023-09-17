@@ -25,7 +25,7 @@ export async function getSpotifyAlbumId(
     }
 
     const data = await response.json();
-    console.log("Spotify data:", data);
+//    console.log("Spotify data:", data);
 
     if (data.error) {
       throw new Error(data.error.message);

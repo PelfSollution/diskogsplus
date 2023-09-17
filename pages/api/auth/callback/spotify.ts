@@ -82,7 +82,7 @@ export default async function callbackSpotify(
     
       // Obten el nombre de usuario del usuario autenticado
   
-      console.log('Nombre de usuario:', username); // <-- Agrega esta línea
+     // console.log('Nombre de usuario:', username); // <-- Agrega esta línea
       
 
       if (!username) {

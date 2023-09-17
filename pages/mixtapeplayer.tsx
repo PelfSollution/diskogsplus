@@ -44,7 +44,7 @@ export default function MixtapePlayer() {
   const { embedUrl } = router.query;
 
   async function handleDeleteMixtape() {
-    console.log("embedUrl", embedUrl);
+   // console.log("embedUrl", embedUrl);
     try {
       if (typeof embedUrl === "string") {
         // 1. Obtener el ID de la lista de reproducción de la URL

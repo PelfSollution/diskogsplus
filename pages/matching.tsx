@@ -73,7 +73,7 @@ const [currentPage, setCurrentPage] = useState(1);
   }, [error, comparePressed]);
   
 
-  console.log("DIFERENCIA:", albumsDifference);
+  //console.log("DIFERENCIA:", albumsDifference);
 
   const handleLoadMore = () => {
     setCurrentPage(currentPage + 1);
@@ -81,7 +81,7 @@ const [currentPage, setCurrentPage] = useState(1);
 // solo al clicar sino hacia peticion al escribir
  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
   e.preventDefault();
-  console.log("Botón clicado, Usuario para comparar:", user2);
+ // console.log("Botón clicado, Usuario para comparar:", user2);
   setComparedUser(user2);
   setComparePressed(true);
 };

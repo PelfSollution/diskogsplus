@@ -50,6 +50,14 @@ type TrackType = {
   duration?: string;
 };
 
+interface Video {
+  uri: string;
+  title: string;
+  description: string;
+  duration: number;
+  embed: boolean;
+}
+
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [tracksInMixtape, setTracksInMixtape] = useState<string[]>([]);
@@ -61,6 +69,8 @@ function AlbumDetails() {
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [backCoverImage, setBackCoverImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  
 
   const handleAddToWantlist = async (username: string, albumId: number) => {
     setLoading(true);
@@ -220,6 +230,25 @@ function AlbumDetails() {
       </Layout>
     );
   }
+
+  function transformYouTubeUrlToEmbed(url: string): string {
+
+    const videoCode = url.split('v=')[1];
+  
+    return `https://www.youtube.com/embed/${videoCode}`;
+  }
+
+  const prevVideo = () => {
+    if (activeVideoIndex > 0) setActiveVideoIndex(activeVideoIndex - 1);
+  }
+  
+  const nextVideo = () => {
+    if (albumInfo && albumInfo.videos && activeVideoIndex < albumInfo.videos.length - 1) {
+      setActiveVideoIndex(activeVideoIndex + 1);
+    }
+    
+  }
+  
 
   const handleDeleteFromMixtape = async (track: { title: string }) => {
     if (!albumInfo || !id || !userData) return;
@@ -565,29 +594,50 @@ function AlbumDetails() {
           )}
 
           {albumInfo.enrichedInfo && (
-            <Accordion defaultExpanded>
+            <Accordion>
               <AccordionSummary
                 expandIcon={
-                  <ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />
+                  <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
                 }
                 aria-controls="panel1a-content"
                 id="panel1a-header"
               >
-                <Typography variant="h6">Información extra</Typography>
+                <Typography variant="h6">Notas</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body1">
-                  {albumInfo.enrichedInfo}
+            
                 </Typography>
               </AccordionDetails>
             </Accordion>
           )}
 
+
+            
+            <Accordion>
+                <AccordionSummary
+                    expandIcon={
+                        <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
+                    }
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                >
+                    <Typography variant="h6">Información  <Chip label="powered by [🤖 DiscoBOT]" className="tw-text-xs tw-font-thin tw-mr-2 tw-mb-2" />
+</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                <Typography variant="body1" className="tw-whitespace-pre-line">
+                        {albumInfo.enrichedInfo}
+                    </Typography>
+                </AccordionDetails>
+            </Accordion>
+
+
           {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
             <Accordion>
               <AccordionSummary
                 expandIcon={
-                  <ExpandMoreIcon className="tw-text-blue-500 tw-text-xl" />
+                  <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
                 }
                 aria-controls="panel1a-content"
                 id="panel1a-header"
@@ -683,6 +733,42 @@ function AlbumDetails() {
               </Typography>
             </div>
           )}
+          <div className="tw-mt-4">
+          <Accordion>
+  <AccordionSummary
+    expandIcon={<ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />}
+    aria-controls="panel1a-content"
+    id="panel1a-header"
+  >
+    <Typography variant="h6">Vídeos</Typography>
+  </AccordionSummary>
+  <AccordionDetails>
+    {albumInfo.videos && albumInfo.videos.length > 0 && (
+      <>
+        <iframe
+          width="100%"
+          src={transformYouTubeUrlToEmbed(albumInfo.videos[activeVideoIndex].uri)}
+          frameBorder="0"
+          allowFullScreen
+        ></iframe>
+
+        <div className="tw-flex tw-justify-center tw-mt-4">
+          {albumInfo.videos.map((_, index) => (
+            <span
+              key={index}
+              onClick={() => setActiveVideoIndex(index)}
+              className={`tw-mx-1 tw-block tw-w-2 tw-h-2 tw-rounded-full ${activeVideoIndex === index ? 'tw-bg-blue-400' : 'tw-bg-gray-300'} tw-cursor-pointer`}
+            ></span>
+          ))}
+        </div>
+      </>
+    )}
+  </AccordionDetails>
+</Accordion>
+
+</div>
+
+
         </Grid>
       </Grid>
       <Snackbar

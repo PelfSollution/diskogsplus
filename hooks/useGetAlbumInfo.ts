@@ -8,6 +8,14 @@ const fetcher = (url: string) =>
     return res.json();
   });
 
+  interface Video {
+    uri: string;
+    title: string;
+    description: string;
+    duration: number;
+    embed: boolean;
+  }
+
 export interface AlbumInfoInterface {
   albumId: string;
   coverImage: string;
@@ -19,6 +27,7 @@ export interface AlbumInfoInterface {
   rating: number;
   released: string;
   country: string;
+  videos?: Video[];
   genres: string[];
   styles: string[];
   tracklist: {

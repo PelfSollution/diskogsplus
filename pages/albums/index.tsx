@@ -6,6 +6,7 @@ import { useState } from "react";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import {
   Button,
+  Chip,
   FormControl,
   InputLabel,
   MenuItem,
@@ -18,6 +19,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CloseIcon from "@mui/icons-material/Close";
 import  { removeAllSubstringsInParenthesis }  from "@/lib/stringUtils";
+import { sign } from "crypto";
 
 
 
@@ -175,32 +177,45 @@ function Albums() {
           </IconButton>
         </div>
 
-        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-6">
+        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
+
           {filteredAlbums.map((album: Album) => {
             if (!album || !album.id || !album.basic_information) {
   
               return null;
             }
             return (
-              <Link key={album.id} href={`/albums/${album.id}`} passHref>
-                <div className="tw-bg-white tw-p-4 tw-rounded tw-shadow tw-cursor-pointer">
-                  <Image
-                    src={album.basic_information.cover_image}
-                    alt={album.basic_information.title}
-                    width={500}
-                    height={240}
-                    className="tw-w-full tw-h-48 tw-object-cover tw-mb-2 tw-rounded"
-                  />
-                  <h2 className="tw-text-xl">
-                    <span className="tw-font-bold">
-                      {album.basic_information.artists && album.basic_information.artists.length > 0
-                        ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
-                        : "Artista desconocido"}
-                    </span>{" "}
-                    - {album.basic_information.title}
-                  </h2>
-                </div>
-              </Link>
+<Link key={album.id} href={`/albums/${album.id}`} passHref>
+    <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md tw-cursor-pointer tw-overflow-hidden">
+    <Image
+    src={album.basic_information.cover_image}
+    alt={album.basic_information.title}
+    width={500}
+    height={240}
+    className="tw-w-full tw-h-48 tw-object-cover tw-rounded tw-transform hover:tw-scale-110 hover:tw-opacity-90 tw-transition tw-duration-300 tw-ease-in-out"
+/>
+<Chip 
+    className="tw-absolute tw-bottom-4 tw-left-4 tw-text-xs"
+    label={album.basic_information.title}
+    style={{ backgroundColor: '#282828', color: 'white', padding: '0', fontSize: '12px', height: '28px' }}
+/>
+        <Chip 
+    className="tw-absolute tw-bottom-10 tw-left-4 tw-text-xs"
+    label={
+        <>
+            <span className="tw-font-bold">
+                {album.basic_information.artists && album.basic_information.artists.length > 0
+                    ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
+                    : "Artista desconocido"}
+            </span>
+        </>
+    }
+    style={{ backgroundColor: '#f87171', color: 'white', padding: '0', fontSize: '12px', height: '28px' }}
+/>
+
+
+    </div>
+</Link>
             );
           })}
         </div>

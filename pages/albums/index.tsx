@@ -186,7 +186,7 @@ function Albums() {
             }
             return (
 <Link key={album.id} href={`/albums/${album.id}`} passHref>
-    <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md tw-cursor-pointer tw-overflow-hidden">
+    <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md hover:tw-shadow-dark tw-cursor-pointer tw-overflow-hidden tw-inner-border-2">
     <Image
     src={album.basic_information.cover_image}
     alt={album.basic_information.title}

@@ -19,6 +19,13 @@ const config: Config = {
       },
     },
     extend: {
+      boxShadow: {
+        'dark': 'rgba(0, 0, 0, 0.16) 0px 19px 38px, rgba(0, 0, 0, 0.16) 0px 15px 12px',
+        'inner-red': 'inset 0 0 0 2px #FF0000',
+        'dark-inner-red': 'inset 0 0 10px 4px #FF0000, rgba(0, 0, 0, 0.16) 0px 19px 38px, rgba(0, 0, 0, 0.16) 0px 15px 12px',
+        'inset': 'inset 0 -2px 4px rgba(0, 0, 0, 0.6)'
+      },
+    
       spacing: {
         '-4': '-1rem',
         '-3': '-0.75rem',

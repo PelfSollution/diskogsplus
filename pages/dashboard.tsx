@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useCallback  } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -41,7 +41,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
 
   const router = useRouter();
 
-  const loadMixtapes = async () => {
+  const loadMixtapes = useCallback(async () => {
 
     setLoadingMixtapes(true);
     try {
@@ -55,9 +55,9 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
     } finally {
       setLoadingMixtapes(false);
     }
-  };
+  }, [userData]);
 
-  const fetchChatLogs = async () => {
+  const fetchChatLogs = useCallback(async () => {
 
     try {
       if (data?.userProfile) {
@@ -70,21 +70,18 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
     } catch (error) {
   
     }
-  };
+  }, [data]);
   
-
   useEffect(() => {
-
-  
     const initializeData = async () => {
       if (userData?.userProfile?.username) {
         await loadMixtapes();
       }
       await fetchChatLogs();
     };
-
+  
     initializeData();
-  }, [userData, data]);
+  }, [userData, data, fetchChatLogs, loadMixtapes]);
 
 
   const handleChatSelection = (value: number) => {

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { fetchOrGenerateImage } from "../../../services/supabase/imageService";
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const handleImageGeneration = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method === "POST") {
       const { artistName, coverType, title } = req.body;
@@ -19,3 +19,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(500).json({ error: "Error al generar la imagen" });
   }
 };
+
+export default handleImageGeneration;
+

@@ -1,31 +1,26 @@
-import format from "date-fns/format";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import useGetUserData from "@/hooks/useGetUserData";
 import Image from "next/image";
+
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
+import { FormControl, InputLabel, MenuItem, Select, Snackbar } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+
 import { Button } from "@/components/ui/button";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import styles from "./dashboard.module.css";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+
+import useGetUserData from "@/hooks/useGetUserData";
 import { getChatLogsUser } from "@/services/supabase/getChatLogsUser";
 import { getMixtapeURLs } from "../services/supabase/getMixtapeURLs";
 
+import format from "date-fns/format";
+import styles from "./dashboard.module.css";
+
 interface Artist {
   name: string;
-}
-
-interface Album {
-  id: number;
-  basic_information: {
-    cover_image: string;
-    artists: Artist[];
-    title: string;
-    created_at: string;
-  };
 }
 
 export interface ChatLog {
@@ -42,7 +37,7 @@ const isDateValid = (dateString: string): boolean => {
   return !isNaN(Date.parse(dateString));
 };
 
-const UserProfile: React.FC<{ data: any }> = ({ data }) => {
+const UserProfile: React.FC<{ data: any }> = React.memo(({ data }) => {
   const [isImageLoaded, setImageLoaded] = React.useState(false);
   const [chatLogs, setChatLogs] = React.useState<ChatLog[]>([]);
   const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
@@ -51,38 +46,44 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    async function loadMixtapes() {
-      setLoadingMixtapes(true);
-      try {
-        const urls = await getMixtapeURLs(userData?.userProfile?.username);
-        setLoadedMixtapeUrls(
-          urls.map((u: { mixtape_url: string }) => u.mixtape_url)
-        );
-      } catch (error) {
-        console.error("Error al cargar mixtapes:", error);
-      } finally {
-        setLoadingMixtapes(false);
-      }
+  const loadMixtapes = async () => {
+    setLoadingMixtapes(true);
+    try {
+      const urls = await getMixtapeURLs(userData?.userProfile?.username);
+      setLoadedMixtapeUrls(
+        urls.map((u: { mixtape_url: string }) => u.mixtape_url)
+      );
+    } catch (error) {
+      console.error("Error al cargar mixtapes:", error);
+    } finally {
+      setLoadingMixtapes(false);
     }
+  };
 
-    if (userData?.userProfile?.username) {
-      loadMixtapes();
-    }
-  }, [userData]);
-
-  React.useEffect(() => {
-    async function fetchChatLogs() {
+  const fetchChatLogs = async () => {
+    try {
       if (data?.userProfile) {
         const logs = await getChatLogsUser(data.userProfile.username);
         if (logs) {
           setChatLogs(logs);
         }
       }
+    } catch (error) {
+      console.error("Error al obtener registros del chat:", error);
     }
+  };
+  
 
+  useEffect(() => {
+    if (userData?.userProfile?.username) {
+      loadMixtapes();
+    }
+  }, [userData]);
+
+  React.useEffect(() => {
     fetchChatLogs();
   }, [data]);
+
 
   const handleChatSelection = (value: number) => {
     const selectedChat = chatLogs[value];
@@ -225,7 +226,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
       </div>
     </div>
   );
-};
+});
 
 const LoadingOrErrorLayout: React.FC<LoadingOrErrorLayoutProps> = ({
   message,
@@ -240,11 +241,34 @@ const LoadingOrErrorLayout: React.FC<LoadingOrErrorLayoutProps> = ({
 function Dashboard() {
   const { data, error, isLoading, isValidating } = useGetUserData();
 
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const handleOpenSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
   if (error) {
-    return (
-      <LoadingOrErrorLayout message="Error: No se pudo cargar la información." />
-    );
+    let errorMessage = "Ocurrió un error desconocido.";
+  
+    if (error.message.includes("401")) {
+      errorMessage = "Error de autenticación. Por favor, vuelve a iniciar sesión.";
+    } else if (error.message.includes("404")) {
+      errorMessage = "La información solicitada no se encontró.";
+    } else if (error.message.includes("429")) {
+      errorMessage = "Has realizado demasiadas solicitudes. Por favor, espera un momento e intenta nuevamente.";
+    } 
+  
+    handleOpenSnackbar(errorMessage);
+  
+    return <LoadingOrErrorLayout message={<CustomCircularProgress />} />;
   }
+  
 
   if (isLoading || isValidating) {
     return <LoadingOrErrorLayout message={<CustomCircularProgress />} />;
@@ -261,6 +285,22 @@ function Dashboard() {
           {data?.userProfile && <UserProfile data={data} />}
         </header>
       </div>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={openSnackbar}
+        autoHideDuration={3000} // Duración en milisegundos
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        action={
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={handleCloseSnackbar}
+          >
+            <CloseIcon />
+          </IconButton>
+        }
+      />
     </Layout>
   );
 }

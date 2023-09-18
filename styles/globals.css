@@ -70,8 +70,10 @@
   }
   body {
     @apply tw-bg-background tw-text-foreground;
-     overflow-y: scroll; 
+  overflow-y: scroll; 
   }
-  
+  body.dashboard {
+    @apply tw-overflow-hidden tw-pr-0;
+}
   
 }

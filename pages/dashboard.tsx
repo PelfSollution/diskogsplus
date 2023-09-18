@@ -73,6 +73,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   }, [data]);
   
   useEffect(() => {
+
     const initializeData = async () => {
       if (userData?.userProfile?.username) {
         await loadMixtapes();
@@ -239,6 +240,7 @@ function Dashboard() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
+    document.body.classList.add('dashboard');
     if (error) {
       let errorMessage = "Ocurrió un error desconocido.";
 
@@ -257,6 +259,9 @@ function Dashboard() {
     } else {
       setMessage(null);
     }
+    return () => {
+      document.body.classList.remove('dashboard');
+    };
   }, [error, isLoading, isValidating]);
 
   const handleOpenSnackbar = (message: string) => {

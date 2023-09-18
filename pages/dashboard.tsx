@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -19,9 +19,7 @@ import { getMixtapeURLs } from "../services/supabase/getMixtapeURLs";
 import format from "date-fns/format";
 import styles from "./dashboard.module.css";
 
-interface Artist {
-  name: string;
-}
+
 
 export interface ChatLog {
   artista: string;
@@ -29,17 +27,14 @@ export interface ChatLog {
   disco_id: number;
 }
 
-interface LoadingOrErrorLayoutProps {
-  message: React.ReactNode;
-}
-
 const isDateValid = (dateString: string): boolean => {
   return !isNaN(Date.parse(dateString));
 };
 
-const UserProfile: React.FC<{ data: any }> = React.memo(({ data }) => {
-  const [isImageLoaded, setImageLoaded] = React.useState(false);
-  const [chatLogs, setChatLogs] = React.useState<ChatLog[]>([]);
+const UserProfile: React.FC<{ data: any }> = ({ data }) => {
+
+  const [isImageLoaded, setImageLoaded] = useState(false);
+  const [chatLogs, setChatLogs] = useState<ChatLog[]>([]);
   const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
   const [loadingMixtapes, setLoadingMixtapes] = useState(false);
   const { data: userData } = useGetUserData();
@@ -47,50 +42,62 @@ const UserProfile: React.FC<{ data: any }> = React.memo(({ data }) => {
   const router = useRouter();
 
   const loadMixtapes = async () => {
+
     setLoadingMixtapes(true);
     try {
       const urls = await getMixtapeURLs(userData?.userProfile?.username);
+  
       setLoadedMixtapeUrls(
         urls.map((u: { mixtape_url: string }) => u.mixtape_url)
       );
     } catch (error) {
-      console.error("Error al cargar mixtapes:", error);
+
     } finally {
       setLoadingMixtapes(false);
     }
   };
 
   const fetchChatLogs = async () => {
+
     try {
       if (data?.userProfile) {
         const logs = await getChatLogsUser(data.userProfile.username);
+
         if (logs) {
           setChatLogs(logs);
         }
       }
     } catch (error) {
-      console.error("Error al obtener registros del chat:", error);
+  
     }
   };
   
 
   useEffect(() => {
-    if (userData?.userProfile?.username) {
-      loadMixtapes();
-    }
-  }, [userData]);
 
-  React.useEffect(() => {
-    fetchChatLogs();
-  }, [data]);
+  
+    const initializeData = async () => {
+      if (userData?.userProfile?.username) {
+        await loadMixtapes();
+      }
+      await fetchChatLogs();
+    };
+
+    initializeData();
+  }, [userData, data]);
 
 
   const handleChatSelection = (value: number) => {
-    const selectedChat = chatLogs[value];
-    router.push(
-      `/chat?artista=${selectedChat.artista}&album=${selectedChat.album}&username=${data?.userProfile.username}&disco_id=${selectedChat.disco_id}`
-    );
+    if (value >= 0 && value < chatLogs.length) {
+      const selectedChat = chatLogs[value];
+      router.push(
+        `/chat?artista=${selectedChat.artista}&album=${selectedChat.album}&username=${data?.userProfile.username}&disco_id=${selectedChat.disco_id}`
+      );
+    } else {
+
+    }
   };
+  
 
   return (
     <div>
@@ -202,9 +209,6 @@ const UserProfile: React.FC<{ data: any }> = React.memo(({ data }) => {
               label="Tus Mixtapes:"
               className="tw-min-w-[300px]"
             >
-              <MenuItem value="">
-                <em>Selecciona una mixtape...</em>
-              </MenuItem>
               {loadedMixtapeUrls.map((url: string, index: number) => (
                 <MenuItem key={index} value={url}>
                   {`Mixtape ${index + 1}`}
@@ -226,23 +230,37 @@ const UserProfile: React.FC<{ data: any }> = React.memo(({ data }) => {
       </div>
     </div>
   );
-});
+};
 
-const LoadingOrErrorLayout: React.FC<LoadingOrErrorLayoutProps> = ({
-  message,
-}) => (
-  <Layout centeredContent={true}>
-    <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-      {message}
-    </div>
-  </Layout>
-);
+
 
 function Dashboard() {
   const { data, error, isLoading, isValidating } = useGetUserData();
-
+  
+  const [message, setMessage] = useState<ReactNode | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  useEffect(() => {
+    if (error) {
+      let errorMessage = "Ocurrió un error desconocido.";
+
+      if (error.message.includes("401")) {
+        errorMessage = "Error de autenticación. Por favor, vuelve a iniciar sesión.";
+      } else if (error.message.includes("404")) {
+        errorMessage = "La información solicitada no se encontró.";
+      } else if (error.message.includes("429")) {
+        errorMessage = "Has realizado demasiadas solicitudes. Por favor, espera un momento e intenta nuevamente.";
+      } 
+
+      handleOpenSnackbar(errorMessage);
+      setMessage(<CustomCircularProgress />);
+    } else if (isLoading || isValidating) {
+      setMessage(<CustomCircularProgress />);
+    } else {
+      setMessage(null);
+    }
+  }, [error, isLoading, isValidating]);
 
   const handleOpenSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -253,42 +271,27 @@ function Dashboard() {
     setOpenSnackbar(false);
   };
 
-  if (error) {
-    let errorMessage = "Ocurrió un error desconocido.";
-  
-    if (error.message.includes("401")) {
-      errorMessage = "Error de autenticación. Por favor, vuelve a iniciar sesión.";
-    } else if (error.message.includes("404")) {
-      errorMessage = "La información solicitada no se encontró.";
-    } else if (error.message.includes("429")) {
-      errorMessage = "Has realizado demasiadas solicitudes. Por favor, espera un momento e intenta nuevamente.";
-    } 
-  
-    handleOpenSnackbar(errorMessage);
-  
-    return <LoadingOrErrorLayout message={<CustomCircularProgress />} />;
-  }
-  
-
-  if (isLoading || isValidating) {
-    return <LoadingOrErrorLayout message={<CustomCircularProgress />} />;
-  }
-
   return (
     <Layout
       centeredContent={true}
       title="Dashboard - Diskogs +"
       description="Tu página personal"
     >
-      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-w-full">
-        <header className="tw-text-center tw-mb-8">
-          {data?.userProfile && <UserProfile data={data} />}
-        </header>
-      </div>
+      {message ? (
+        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+          {message}
+        </div>
+      ) : (
+        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-w-full">
+          <header className="tw-text-center tw-mb-8">
+            {data?.userProfile && <UserProfile data={data} />}
+          </header>
+        </div>
+      )}
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         open={openSnackbar}
-        autoHideDuration={3000} // Duración en milisegundos
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         message={snackbarMessage}
         action={
@@ -305,4 +308,4 @@ function Dashboard() {
   );
 }
 
-export default React.memo(Dashboard);
+export default Dashboard;

@@ -1,10 +1,17 @@
-import { ReactNode, useEffect, useState, useCallback  } from "react";
+import { ReactNode, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import { FormControl, InputLabel, MenuItem, Select, Snackbar } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Snackbar,
+  Typography,
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -14,12 +21,11 @@ import CustomCircularProgress from "@/components/CustomCircularProgress";
 
 import useGetUserData from "@/hooks/useGetUserData";
 import { getChatLogsUser } from "@/services/supabase/getChatLogsUser";
-import { getMixtapeURLs } from "../services/supabase/getMixtapeURLs";
+import { getMixtapeURLs } from "@/services/supabase/getMixtapeURLs";
+import { getWantlistItemsUser } from "@/services/supabase/getWantlistItemsUser";
 
 import format from "date-fns/format";
 import styles from "./dashboard.module.css";
-
-
 
 export interface ChatLog {
   artista: string;
@@ -27,90 +33,100 @@ export interface ChatLog {
   disco_id: number;
 }
 
+export type WantlistEntry = {
+  username: string;
+  disco_id: number;
+  notes?: string;
+  rating?: number;
+};
+
 const isDateValid = (dateString: string): boolean => {
   return !isNaN(Date.parse(dateString));
 };
 
 const UserProfile: React.FC<{ data: any }> = ({ data }) => {
-
   const [isImageLoaded, setImageLoaded] = useState(false);
   const [chatLogs, setChatLogs] = useState<ChatLog[]>([]);
+  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(
+    null
+  );
   const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
   const [loadingMixtapes, setLoadingMixtapes] = useState(false);
   const { data: userData } = useGetUserData();
 
   const router = useRouter();
+  const username = userData?.userProfile?.username;
 
   const loadMixtapes = useCallback(async () => {
-
     setLoadingMixtapes(true);
     try {
-      const urls = await getMixtapeURLs(userData?.userProfile?.username);
-  
+      const urls = await getMixtapeURLs(username);
+
       setLoadedMixtapeUrls(
         urls.map((u: { mixtape_url: string }) => u.mixtape_url)
       );
     } catch (error) {
-
     } finally {
       setLoadingMixtapes(false);
     }
-  }, [userData]);
+  }, [username]);
 
   const fetchChatLogs = useCallback(async () => {
-
     try {
       if (data?.userProfile) {
-        const logs = await getChatLogsUser(data.userProfile.username);
+        const logs = await getChatLogsUser(username);
 
         if (logs) {
           setChatLogs(logs);
         }
       }
-    } catch (error) {
-  
-    }
-  }, [data]);
-  
-  useEffect(() => {
+    } catch (error) {}
+  }, [username]);
 
+  const fetchWantlistItems = useCallback(async () => {
+    try {
+      const items = await getWantlistItemsUser(username);
+      if (items) {
+        setWantlistItems(items);
+      }
+    } catch (error) {
+      // Manejar error aquí
+    }
+  }, [username]);
+
+  useEffect(() => {
     const initializeData = async () => {
-      if (userData?.userProfile?.username) {
+      if (username) {
         await loadMixtapes();
+        await fetchWantlistItems();
       }
       await fetchChatLogs();
     };
-  
-    initializeData();
-  }, [userData, data, fetchChatLogs, loadMixtapes]);
 
+    initializeData();
+  }, [userData, data, fetchChatLogs, loadMixtapes, fetchWantlistItems]);
 
   const handleChatSelection = (value: number) => {
     if (value >= 0 && value < chatLogs.length) {
       const selectedChat = chatLogs[value];
       router.push(
-        `/chat?artista=${selectedChat.artista}&album=${selectedChat.album}&username=${data?.userProfile.username}&disco_id=${selectedChat.disco_id}`
+        `/chat?artista=${selectedChat.artista}&album=${selectedChat.album}&username=${username}&disco_id=${selectedChat.disco_id}`
       );
     } else {
-
     }
   };
-  
 
   return (
     <div>
       <h1 className="tw-text-2xl">
-        Hola,{" "}
-        <span className="tw-font-bold tw-text-blue-500">
-          {data.userProfile.username}
-        </span>
+        Hola, <span className="tw-font-bold tw-text-blue-500">{username}</span>
       </h1>
 
       {data.userProfile.avatar_url && (
         <div className="tw-relative tw-mt-4">
           <Image
             src={data.userProfile.avatar_url}
-            alt={`${data.userProfile.username} profile pic`}
+            alt={`${username} profile pic`}
             width={300}
             height={300}
             className={`${styles.spinCustom} tw-rounded-full`}
@@ -125,8 +141,11 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         </div>
       )}
 
-      {isDateValid(data.userProfile.registered) ? (
-        <p className="tw-mt-4">
+     
+      <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mt-4">
+        <Typography variant="body2" color="textSecondary">
+        {isDateValid(data.userProfile.registered) ? (
+        <p>
           <span className="tw-font-bold">Registrado:</span>{" "}
           {format(new Date(data.userProfile.registered), "dd/MM/yyyy HH:mm")}
         </p>
@@ -135,24 +154,24 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           <span className="tw-font-bold">Registrado:</span> Fecha desconocida
         </p>
       )}
+          <p className="tw-mt-2">
+            Tu tienes{" "}
+            <span className="tw-font-bold tw-text-blue-500">
+              {data.userProfile.num_collection}
+            </span>{" "}
+            discos en tu colecci&oacute;n.
+          </p>
+          <p>
+            Tienes{" "}
+            <span className="tw-font-bold tw-text-blue-500">
+              {wantlistItems ? wantlistItems.length : 0}
+            </span>{" "}
+            discos en tu wantlist.
+          </p>
+        </Typography>
+      </div>
 
-      <p>
-        Tu tienes{" "}
-        <span className="tw-font-bold tw-text-blue-500">
-          {data.userProfile.num_collection}
-        </span>{" "}
-        discos en tu colecci&oacute;n.
-      </p>
-
-      {data.userProfile.favorite_styles && (
-        <Stack direction="row" spacing={1}>
-          {data.userProfile.favorite_styles
-            .split(",")
-            .map((style: string, index: number) => (
-              <Chip key={index} label={style.trim()} />
-            ))}
-        </Stack>
-      )}
+      <div></div>
       <div className="tw-mt-4">
         <FormControl
           variant="outlined"
@@ -230,27 +249,27 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-
-
 function Dashboard() {
   const { data, error, isLoading, isValidating } = useGetUserData();
-  
+
   const [message, setMessage] = useState<ReactNode | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
-    document.body.classList.add('dashboard');
+    document.body.classList.add("dashboard");
     if (error) {
       let errorMessage = "Ocurrió un error desconocido.";
 
       if (error.message.includes("401")) {
-        errorMessage = "Error de autenticación. Por favor, vuelve a iniciar sesión.";
+        errorMessage =
+          "Error de autenticación. Por favor, vuelve a iniciar sesión.";
       } else if (error.message.includes("404")) {
         errorMessage = "La información solicitada no se encontró.";
       } else if (error.message.includes("429")) {
-        errorMessage = "Has realizado demasiadas solicitudes. Por favor, espera un momento e intenta nuevamente.";
-      } 
+        errorMessage =
+          "Has realizado demasiadas solicitudes. Por favor, espera un momento e intenta nuevamente.";
+      }
 
       handleOpenSnackbar(errorMessage);
       setMessage(<CustomCircularProgress />);
@@ -260,7 +279,7 @@ function Dashboard() {
       setMessage(null);
     }
     return () => {
-      document.body.classList.remove('dashboard');
+      document.body.classList.remove("dashboard");
     };
   }, [error, isLoading, isValidating]);
 

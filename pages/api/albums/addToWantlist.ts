@@ -1,14 +1,17 @@
-var Discogs = require("disconnect").Client;
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
+import addWantlistEntry, { WantlistEntry } from "@/services/supabase/addWantlistEntry";
+var Discogs = require("disconnect").Client;
 var CryptoJS = require("crypto-js");
+
 
 export default async function addToWantlist(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    const { username, releaseId, notes, rating } = req.body;
+    const { username, disco_id, notes, rating, artista, album, image_url } =
+      req.body;
 
     const accessDatacipherObj = getCookie("accessData", { req, res });
 
@@ -25,9 +28,25 @@ export default async function addToWantlist(
 
       const wantlistResponse = await userWantlist.addRelease(
         username,
-        releaseId,
+        disco_id,
         { notes, rating }
       );
+      if (wantlistResponse) {
+        const logData: WantlistEntry = {
+          username: username,
+          disco_id: disco_id,
+          notes: notes || "Sin notas",
+          rating: rating || 0,
+          artista: artista,
+          album: album,
+          image_url: image_url,
+        };
+        const supabaseResponse = await addWantlistEntry(logData);
+        if (!supabaseResponse) {
+          console.error("Error al registrar la entrada en Supabase.");
+        }
+      }
+
       res.send({ success: true, data: wantlistResponse });
     } else {
       res.send({

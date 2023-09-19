@@ -1,6 +1,5 @@
-import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import Layout from "@/components/Layout";
+import { useRouter } from "next/router";
 import {
   Grid,
   Button,
@@ -13,22 +12,19 @@ import {
   AccordionSummary,
   AccordionDetails,
   Snackbar,
-  Tooltip,
-  List,
-  ListItem,
-  ListItemText,
+  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
-import addMixtape from "../../services/supabase/addMixtape";
-import deleteFromMixtape from "../../services/supabase/deleteFromMixtape";
-import useGetMixtape from "../../hooks/useGetMixtape";
-import useGetUserData from "@/hooks/useGetUserData";
+import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-import { getArtistImageFromSupabase } from "../../services/supabase/getArtistImageFromSupabase";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
+import useGetMixtape from "@/hooks/useGetMixtape";
+import useGetUserData from "@/hooks/useGetUserData";
+import addMixtape from "@/services/supabase/addMixtape";
+import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
+import { getArtistImageFromSupabase } from "@/services/supabase/getArtistImageFromSupabase";
+import { isAlbumInWantlist } from "@/services/supabase/checkAlbumInWantlist";
 
 interface TrackInfo {
   position: string;
@@ -70,9 +66,14 @@ function AlbumDetails() {
   const [backCoverImage, setBackCoverImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
-  
 
-  const handleAddToWantlist = async (username: string, albumId: number) => {
+  const handleAddToWantlist = async (
+    username: string,
+    disco_id: number,
+    artista: string,
+    album: string,
+    image_url: string
+  ) => {
     setLoading(true);
 
     try {
@@ -83,10 +84,10 @@ function AlbumDetails() {
         },
         body: JSON.stringify({
           username: username,
-          releaseId: albumId,
-          // Puedes agregar notas y rating si los tienes
-          // notes: "TuNotaAqui",
-          // rating: TuValorDeRatingAqui
+          disco_id: disco_id,
+          artista: artista,
+          album: album,
+          image_url: image_url,
         }),
       });
 
@@ -108,7 +109,7 @@ function AlbumDetails() {
 
   const handleRemoveFromWantlist = async (
     username: string,
-    albumId: number
+    disco_id: number
   ) => {
     setLoading(true);
 
@@ -120,9 +121,13 @@ function AlbumDetails() {
         },
         body: JSON.stringify({
           username: username,
-          releaseId: albumId,
+          disco_id: disco_id,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
@@ -132,9 +137,9 @@ function AlbumDetails() {
       } else {
         alert("Error al eliminar el álbum: " + data.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Hubo un error al hacer la solicitud:", error);
-      alert("Error al eliminar el álbum de la wantlist.");
+      alert("Error al eliminar el álbum de la wantlist: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -156,7 +161,6 @@ function AlbumDetails() {
       setIsFlipped(!isFlipped);
     }
   };
-  
 
   const router = useRouter();
 
@@ -174,17 +178,30 @@ function AlbumDetails() {
   const albumInfo: AlbumInfoInterface | null = data;
   const redirectToChat = () => {
     if (albumInfo && username) {
-      let baseQuery = `?artista=${encodeURIComponent(albumInfo.artist)}&album=${encodeURIComponent(albumInfo.title)}&username=${encodeURIComponent(username)}&disco_id=${id}`;
+      let baseQuery = `?artista=${encodeURIComponent(
+        albumInfo.artist
+      )}&album=${encodeURIComponent(
+        albumInfo.title
+      )}&username=${encodeURIComponent(username)}&disco_id=${id}`;
       const fromParam = router.query.from;
-      if (fromParam === 'compare') {
+      if (fromParam === "compare") {
         baseQuery += `&from=compare`;
       }
-  
+
       router.push(`/chat${baseQuery}`);
     }
   };
-  
-  
+
+  useEffect(() => {
+    const checkIfAlbumInWantlist = async () => {
+      if (username && id) {
+        const disco_id = Number(id);
+        const isInWantlist = await isAlbumInWantlist(username, disco_id);
+        setInWantlist(isInWantlist);
+      }
+    };
+    checkIfAlbumInWantlist();
+  }, [userData]);
 
   useEffect(() => {
     if (albumInfo && albumInfo.isPopularAlbum) {
@@ -232,23 +249,24 @@ function AlbumDetails() {
   }
 
   function transformYouTubeUrlToEmbed(url: string): string {
+    const videoCode = url.split("v=")[1];
 
-    const videoCode = url.split('v=')[1];
-  
     return `https://www.youtube.com/embed/${videoCode}`;
   }
 
   const prevVideo = () => {
     if (activeVideoIndex > 0) setActiveVideoIndex(activeVideoIndex - 1);
-  }
-  
+  };
+
   const nextVideo = () => {
-    if (albumInfo && albumInfo.videos && activeVideoIndex < albumInfo.videos.length - 1) {
+    if (
+      albumInfo &&
+      albumInfo.videos &&
+      activeVideoIndex < albumInfo.videos.length - 1
+    ) {
       setActiveVideoIndex(activeVideoIndex + 1);
     }
-    
-  }
-  
+  };
 
   const handleDeleteFromMixtape = async (track: { title: string }) => {
     if (!albumInfo || !id || !userData) return;
@@ -338,7 +356,7 @@ function AlbumDetails() {
         body: JSON.stringify({
           artistName: albumInfo.artist,
           coverType: isFlipped ? "back" : "front",
-          title: albumInfo.title
+          title: albumInfo.title,
         }),
       });
 
@@ -372,18 +390,17 @@ function AlbumDetails() {
           />
           {!imageURL && (
             <div className="tw-h-0">
-     <Button
-  aria-label="Genera imagen"
-  onClick={(e) => {
-    e.stopPropagation(); // Detiene la propagación del evento
-    handleGenerateImage();
-  }}
-  className="tw-text-white tw-top-[-40px]"
-  style={{ color: "white" }}
->
-  {isGenerating ? "Generando..." : "Genera Imagen"}
-</Button>
-
+              <Button
+                aria-label="Genera imagen"
+                onClick={(e) => {
+                  e.stopPropagation(); // Detiene la propagación del evento
+                  handleGenerateImage();
+                }}
+                className="tw-text-white tw-top-[-40px]"
+                style={{ color: "white" }}
+              >
+                {isGenerating ? "Generando..." : "Genera Imagen"}
+              </Button>
             </div>
           )}
         </div>
@@ -496,9 +513,11 @@ function AlbumDetails() {
           <div className="tw-flex tw-items-center tw-mb-4 tw-mt-4">
             {/* Componente de la portada del disco */}
             <div
-  className={`relative cursor-pointer tw-w-32 tw-h-32 md:tw-w-64 md:tw-h-64 ${isGenerating ? "cursor-not-allowed" : ""}`}
-  onClick={handleFlip}
->
+              className={`relative cursor-pointer tw-w-32 tw-h-32 md:tw-w-64 md:tw-h-64 ${
+                isGenerating ? "cursor-not-allowed" : ""
+              }`}
+              onClick={handleFlip}
+            >
               <Card
                 className={`absolute w-full h-full transform transition-transform duration-700 ${
                   isFlipped ? "rotate-180" : "rotate-0"
@@ -549,7 +568,15 @@ function AlbumDetails() {
                   color="success"
                   variant="outlined"
                   className="tw-w-48"
-                  onClick={() => handleAddToWantlist(username, idNumber)}
+                  onClick={() =>
+                    handleAddToWantlist(
+                      username,
+                      idNumber,
+                      albumInfo.artist,
+                      albumInfo.title,
+                      albumInfo.coverImage
+                    )
+                  }
                 >
                   {loading ? "Añadiendo..." : "Añadir a wishlist"}
                 </Button>
@@ -605,33 +632,33 @@ function AlbumDetails() {
                 <Typography variant="h6">Notas</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography variant="body1">
-            
-                </Typography>
+                <Typography variant="body1"></Typography>
               </AccordionDetails>
             </Accordion>
           )}
 
-
-            
-            <Accordion>
-                <AccordionSummary
-                    expandIcon={
-                        <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
-                    }
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
-                >
-                    <Typography variant="h6">Información  <Chip label="powered by [🤖 DiscoBOT]" className="tw-text-xs tw-font-thin tw-mr-2 tw-mb-2" />
-</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                <Typography variant="body1" className="tw-whitespace-pre-line">
-                        {albumInfo.enrichedInfo}
-                    </Typography>
-                </AccordionDetails>
-            </Accordion>
-
+          <Accordion>
+            <AccordionSummary
+              expandIcon={
+                <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
+              }
+              aria-controls="panel1a-content"
+              id="panel1a-header"
+            >
+              <Typography variant="h6">
+                Información{" "}
+                <Chip
+                  label="powered by [🤖 DiscoBOT]"
+                  className="tw-text-xs tw-font-thin tw-mr-2 tw-mb-2"
+                />
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography variant="body1" className="tw-whitespace-pre-line">
+                {albumInfo.enrichedInfo}
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
 
           {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
             <Accordion>
@@ -734,41 +761,46 @@ function AlbumDetails() {
             </div>
           )}
           <div className="tw-mt-4">
-          <Accordion>
-  <AccordionSummary
-    expandIcon={<ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />}
-    aria-controls="panel1a-content"
-    id="panel1a-header"
-  >
-    <Typography variant="h6">Vídeos</Typography>
-  </AccordionSummary>
-  <AccordionDetails>
-    {albumInfo.videos && albumInfo.videos.length > 0 && (
-      <>
-        <iframe
-          width="100%"
-          src={transformYouTubeUrlToEmbed(albumInfo.videos[activeVideoIndex].uri)}
-          frameBorder="0"
-          allowFullScreen
-        ></iframe>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={
+                  <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
+                }
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
+                <Typography variant="h6">Vídeos</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {albumInfo.videos && albumInfo.videos.length > 0 && (
+                  <>
+                    <iframe
+                      width="100%"
+                      src={transformYouTubeUrlToEmbed(
+                        albumInfo.videos[activeVideoIndex].uri
+                      )}
+                      frameBorder="0"
+                      allowFullScreen
+                    ></iframe>
 
-        <div className="tw-flex tw-justify-center tw-mt-4">
-          {albumInfo.videos.map((_, index) => (
-            <span
-              key={index}
-              onClick={() => setActiveVideoIndex(index)}
-              className={`tw-mx-1 tw-block tw-w-2 tw-h-2 tw-rounded-full ${activeVideoIndex === index ? 'tw-bg-blue-400' : 'tw-bg-gray-300'} tw-cursor-pointer`}
-            ></span>
-          ))}
-        </div>
-      </>
-    )}
-  </AccordionDetails>
-</Accordion>
-
-</div>
-
-
+                    <div className="tw-flex tw-justify-center tw-mt-4">
+                      {albumInfo.videos.map((_, index) => (
+                        <span
+                          key={index}
+                          onClick={() => setActiveVideoIndex(index)}
+                          className={`tw-mx-1 tw-block tw-w-2 tw-h-2 tw-rounded-full ${
+                            activeVideoIndex === index
+                              ? "tw-bg-blue-400"
+                              : "tw-bg-gray-300"
+                          } tw-cursor-pointer`}
+                        ></span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </AccordionDetails>
+            </Accordion>
+          </div>
         </Grid>
       </Grid>
       <Snackbar

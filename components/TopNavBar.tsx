@@ -1,12 +1,15 @@
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/router";
-import { deleteCookie } from "cookies-next";
-import { Button } from "@/components/ui/button";
-import Drawer from "@mui/material/Drawer";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import Link from "next/link";
+import { useRouter } from "next/router";
+
+import { Drawer, IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Button } from "@/components/ui/button";
+
+import { deleteCookie } from "cookies-next";
+
+
 
 interface TopNavBarProps {
   isLoggedIn: boolean;
@@ -76,6 +79,12 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
       >
         Matching
       </NavigationButton>
+      <NavigationButton
+        href="/wantlist"
+        className={isDrawer ? "tw-w-full tw-mb-2" : ""}
+      >
+        Wantlist
+      </NavigationButton>
       <li className={`${isDrawer ? "tw-w-full tw-mb-2" : "tw-mr-4"}`}>
         <Button
           variant="destructive"
@@ -93,15 +102,15 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
   return (
     <nav className="tw-w-full tw-bg-white tw-shadow-md tw-py-2 tw-fixed tw-top-0 tw-left-0 tw-z-10">
       <div className="tw-max-w-screen-xl tw-mx-auto tw-flex tw-justify-between tw-items-center tw-px-4 lg:tw-px-0">
-      <Link href="/dashboard" className="lg:tw-ml-4">
-    <Image
-        src="/diskogs-logo.gif"
-        alt="Diskogs plus"
-        className="lg:tw-ml-4 tw-w-24" 
-        width={200}
-        height={60}
-    />
-</Link>
+        <Link href="/dashboard" className="lg:tw-ml-4">
+          <Image
+            src="/diskogs-logo.gif"
+            alt="Diskogs plus"
+            className="lg:tw-ml-4 tw-w-24"
+            width={200}
+            height={60}
+          />
+        </Link>
 
         <div className="lg:tw-hidden">
           <IconButton onClick={() => setIsDrawerOpen(true)}>

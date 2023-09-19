@@ -3,9 +3,9 @@ import getMixtape from './getMixtape';
 type Song = {
     id: number;
     username: string;
-    discogsalbumid: string;
+    disco_id: string;
     spotifytrackid: string | null;
-    artistname: string;
+    artista: string;
     trackname: string;
     tempo: number | null; 
     key: number | null; 

@@ -23,9 +23,9 @@ import CustomCircularProgress from "@/components/CustomCircularProgress";
 type Mixtape = {
   id: number;
   username: string;
-  artistname: string;
+  artista: string;
   trackname: string;
-  discogsalbumid: string;
+  disco_id: string;
   spotifytrackid?: string | null;
   tempo?: number | null;
   key?: number | null;
@@ -105,21 +105,21 @@ export default function Mixtape() {
     try {
       await deleteFromMixtape(
         track.username,
-        track.artistname,
+        track.artista,
         track.trackname,
-        track.discogsalbumid
+        track.disco_id
       );
       setMixtape((prevMixtape) =>
         prevMixtape.filter((item) => item.id !== track.id)
       );
 
       handleOpenSnackbar(
-        `Canción "${track.trackname}" de "${track.artistname}" eliminada de la mixtape con éxito.`
+        `Canción "${track.trackname}" de "${track.artista}" eliminada de la mixtape con éxito.`
       );
     } catch (error) {
       console.error("Error eliminando el tema:", error);
       handleOpenSnackbar(
-        `Hubo un error al eliminar la canción "${track.trackname}" de "${track.artistname}". Por favor, intenta nuevamente.`
+        `Hubo un error al eliminar la canción "${track.trackname}" de "${track.artista}". Por favor, intenta nuevamente.`
       );
     }
   }
@@ -174,7 +174,7 @@ export default function Mixtape() {
       return (
         (!searchTerm ||
           track.trackname.toLowerCase().includes(lowerCaseSearchTerm) ||
-          track.artistname.toLowerCase().includes(lowerCaseSearchTerm)) &&
+          track.artista.toLowerCase().includes(lowerCaseSearchTerm)) &&
         (!searchBPM || track.tempo === searchBPM) &&
         (searchKey === null || track.key === searchKey)
       );

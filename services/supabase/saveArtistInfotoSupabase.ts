@@ -1,7 +1,7 @@
 import { supabase } from "../../lib/supabase";
 import { getArtistInfoFromSupabase } from "./getArtistInfoSupabase";
 
-export async function saveArtistInfotoSupabase(artist: string, album: string, discoId: string, enrichedInfo: string): Promise<boolean> {
+export async function saveArtistInfotoSupabase(artista: string, album: string, discoId: string, enrichedInfo: string): Promise<boolean> {
     try {
       const existingInfo = await getArtistInfoFromSupabase(discoId);
   
@@ -13,7 +13,7 @@ export async function saveArtistInfotoSupabase(artist: string, album: string, di
       const { error } = await supabase
         .from('enriched_artist_info')
         .insert({
-          artist,
+          artista,
           album,
           disco_id: discoId,
           enriched_info: enrichedInfo

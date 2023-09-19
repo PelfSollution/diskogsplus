@@ -5,7 +5,7 @@ export async function getArtistImageFromSupabase(artistName: string): Promise<st
     const { data, error } = await supabase
       .from('generated_images_metadata')
       .select('image_url')
-      .eq('artist_name', artistName);
+      .eq('artista', artistName);
 
     if (error) {
       throw error;

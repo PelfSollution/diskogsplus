@@ -10,9 +10,9 @@ type MixtapeRowProps = {
 type Mixtape = {
   id: number;
   username: string;
-  artistname: string;
+  artista: string;
   trackname: string;
-  discogsalbumid: string;
+  disco_id: string;
   spotifytrackid?: string | null;
   tempo?: number | null;
   key?: number | null;
@@ -161,11 +161,11 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
       {/* Segunda columna: Información y Botón */}
       <div className=" tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-center md:tw-items-start">
         <span className="tw-font-bold tw-text-center md:tw-text-left tw-break-all">
-          {data.artistname}
+          {data.artista}
         </span>
         <Link
-          key={data.discogsalbumid}
-          href={`/albums/${data.discogsalbumid}`}
+          key={data.disco_id}
+          href={`/albums/${data.disco_id}`}
           className="tw-text-gray-500 tw-underline tw-text-center md:tw-text-left"
         >
           {data.trackname}

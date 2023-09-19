@@ -288,9 +288,9 @@ function AlbumDetails() {
     // Extraer la información relevante de albumInfo y track
     const mixtapeEntry = {
       username: username,
-      artistname: albumInfo.artist,
+      artista: albumInfo.artist,
       trackname: track.title, // Aquí es donde usamos el nombre de la canción
-      discogsalbumid: id,
+      disco_id: id,
       spotifytrackid: track.spotifyTrackId || null,
       tempo: track.tempo || null,
       key: track.key || null,

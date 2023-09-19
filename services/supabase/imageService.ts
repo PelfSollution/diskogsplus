@@ -38,7 +38,7 @@ async function saveImageMetadata(
 ): Promise<void> {
   const { error } = await supabase
     .from("generated_images_metadata")
-    .insert([{ artist_name: artistName, image_url: imageUrl }]);
+    .insert([{ artista: artistName, image_url: imageUrl }]);
 
   if (error) {
     console.error("Error al guardar metadatos de la imagen:", error);

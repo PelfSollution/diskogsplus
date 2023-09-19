@@ -2,9 +2,9 @@ import { supabase } from "../../lib/supabase";
 
 type Mixtape = {
   username: string;
-  artistname: string;
+  artista: string;
   trackname: string;
-  discogsalbumid: string;
+  disco_id: string;
   spotifytrackid?: string | null;
   tempo?: number | null;          
   key?: number | null;          

@@ -135,36 +135,36 @@ diskogsplus/
 ```
 ## Diagrama de Entidades y Relaciones (ER):
 ```
-+-------------+       +---------------------+       +------------------+
-|   users     |       |     mixtape_urls    |       |      mixtape     |
-+-------------+       +---------------------+       +------------------+
-| username(PK)|------>| username (FK)       |<----- | username (FK)    |
-| email       |       | id (PK)             |       | id (PK)          |
-+-------------+       | mixtape_url         |       | discogsalbumid   |
-                      | fecha_creacion      |       | spotifytrackid   |
-                      | spotify_username    |       | artistname       |
-                      +---------------------+       | trackname        |
-                                                    | tempo            |
-                                                    | key              |
-                                                    | mode             |
-                                                    | duration         |
-                                                    +------------------+
-
-+-----------------------+       +-------------------+
-|   generated_images_   |       |     chat_logs     |
-|     metadata          |       +-------------------+
-+-----------------------+       | id (PK)           |
-| id (PK)               |       | username (FK)     |
-| artist_name           |<------| prompt            |
-| image_url             |       | response          |
-| generated_at          |       | created_at        |
-+-----------------------+       | artista           |
-                                | album             |
-                                | disco_id          |
++-------------+       +---------------------+       +------------------+       +----------------+
+|   users     |       |     mixtape_urls    |       |     mixtape     |        |    wantlist    |     
++-------------+       +---------------------+       +------------------+       +----------------+
+| username(PK)|------>| username (FK)       |<----- | username (FK)    |<----- | username (FK)  |  
+| email       |       | id (PK)             |       | id (PK)          |       | id (PK)        |
++-------------+       | mixtape_url         |       | disco_id         |       | disco_id       |
+        |             | fecha_creacion      |       | spotifytrackid   |       | notes          | 
+        |             | spotify_username    |       | artista          |       | rating         |
+        |             +---------------------+       | trackname        |       | created_at     |
+        |                                           | tempo            |       | artista        |
+        |---------------------------------|         | key              |       | album          |
+                                          |         | mode             |       | image_url      |
+                                          |         | duration         |       +----------------+
+                                          |         +------------------+      
+                                          |      
++-----------------------+       +-------------------+      +-------------------+
+|   generated_images_   |       |     chat_logs     |      |   enrich_artist_  | 
+|     metadata          |       +-------------------+      |     info          |      
++-----------------------+       | id (PK)           |      +-------------------+  
+| id (PK)               |       | username (FK)     |      | id (PK)           |
+| artista               |<------| prompt            |----->| artista           |
+| image_url             |       | response          |      | album             |    
+| generated_at          |       | created_at        |      | disco_id          |
++-----------------------+       | artista           |      | enriched_info     |
+                                | album             |      | created_at        |
+                                | disco_id          |      +-------------------+
                                 +-------------------+
 
 +-----------------+       +-----------------+       +-----------------+
-|  storage.buckets|       | storage.objects |       | storage.migrate |
+| storage.buckets |       | storage.objects |       | storage.migrate |
 +-----------------+       +-----------------+       +-----------------+
 | id (PK)         |<------| bucket_id (FK)  |       | id (PK)         |
 | name            |       | id (PK)         |       | name            |

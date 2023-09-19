@@ -159,10 +159,10 @@ diskogsplus/
 | image_url             |       | response          |      | album             |    
 | generated_at          |       | created_at        |      | disco_id          |
 +-----------------------+       | artista           |      | enriched_info     |
-                                | album             |      | created_at        |
-                                | disco_id          |      +-------------------+
-                                +-------------------+
-
+            |                   | album             |      | created_at        |
+            |                   | disco_id          |      +-------------------+
+            |----------------|  +-------------------+
+                             |
 +-----------------+       +-----------------+       +-----------------+
 | storage.buckets |       | storage.objects |       | storage.migrate |
 +-----------------+       +-----------------+       +-----------------+

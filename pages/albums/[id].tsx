@@ -1,18 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import {
-  Grid,
-  Button,
-  Typography,
-  Chip,
-  Stack,
-  Card,
-  CardMedia,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Snackbar,
-  IconButton,
+import {Grid,Button,Typography,Chip,Stack,Card,CardMedia,Accordion,AccordionSummary,AccordionDetails,Snackbar,IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
@@ -45,14 +33,6 @@ type TrackType = {
   mode?: number;
   duration?: string;
 };
-
-interface Video {
-  uri: string;
-  title: string;
-  description: string;
-  duration: number;
-  embed: boolean;
-}
 
 function AlbumDetails() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -201,7 +181,7 @@ function AlbumDetails() {
       }
     };
     checkIfAlbumInWantlist();
-  }, [userData]);
+  }, [userData, username, id]);
 
   useEffect(() => {
     if (albumInfo && albumInfo.isPopularAlbum) {

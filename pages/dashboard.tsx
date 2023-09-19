@@ -1,29 +1,16 @@
 import { ReactNode, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Snackbar,
-  Typography,
-} from "@mui/material";
+import {FormControl,InputLabel,MenuItem,Select,Snackbar,Typography} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-
 import useGetUserData from "@/hooks/useGetUserData";
 import { getChatLogsUser } from "@/services/supabase/getChatLogsUser";
 import { getMixtapeURLs } from "@/services/supabase/getMixtapeURLs";
 import { getWantlistItemsUser } from "@/services/supabase/getWantlistItemsUser";
-
 import format from "date-fns/format";
 import styles from "./dashboard.module.css";
 
@@ -47,13 +34,10 @@ const isDateValid = (dateString: string): boolean => {
 const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const [isImageLoaded, setImageLoaded] = useState(false);
   const [chatLogs, setChatLogs] = useState<ChatLog[]>([]);
-  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(
-    null
-  );
+  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(null);
   const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
   const [loadingMixtapes, setLoadingMixtapes] = useState(false);
   const { data: userData } = useGetUserData();
-
   const router = useRouter();
   const username = userData?.userProfile?.username;
 
@@ -73,15 +57,12 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
 
   const fetchChatLogs = useCallback(async () => {
     try {
-      if (data?.userProfile) {
         const logs = await getChatLogsUser(username);
-
         if (logs) {
-          setChatLogs(logs);
+            setChatLogs(logs);
         }
-      }
     } catch (error) {}
-  }, [username]);
+}, [username]);
 
   const fetchWantlistItems = useCallback(async () => {
     try {
@@ -90,7 +71,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         setWantlistItems(items);
       }
     } catch (error) {
-      // Manejar error aquí
+
     }
   }, [username]);
 
@@ -102,9 +83,9 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
       }
       await fetchChatLogs();
     };
-
     initializeData();
-  }, [userData, data, fetchChatLogs, loadMixtapes, fetchWantlistItems]);
+  }, [username, fetchChatLogs, loadMixtapes, fetchWantlistItems]);
+
 
   const handleChatSelection = (value: number) => {
     if (value >= 0 && value < chatLogs.length) {

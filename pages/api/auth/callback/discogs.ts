@@ -2,6 +2,8 @@ var Discogs = require("disconnect").Client;
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie, setCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
+import { addUser } from "@/services/supabase/addUser";
+import { checkUserExists } from "@/services/supabase/checkUserExists";
 
 export default async function discogsCallback(
   req: NextApiRequest,
@@ -51,6 +53,13 @@ export default async function discogsCallback(
           JSON.stringify(userId.username),
           process.env.CRYPT_KEY
         ).toString();
+
+        const userExists = await checkUserExists(userId.username);
+
+        if (!userExists) {
+            
+            await addUser({ username: userId.username }); 
+        }
 
         setCookie("username", userId.username, cookieOptionsClient);
         setCookie("isLoggedIn", true, cookieOptionsClient);

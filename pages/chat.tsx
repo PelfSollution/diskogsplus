@@ -80,8 +80,8 @@ export default function Chat() {
 
   return (
     <Layout
-      title="Chat - Discogs Plus"
-      description="Chat"
+    title="Chat - Diskogs +"
+    description="Chatlogs de tus discos"
       centeredTopContent={true}
     >
       <div className="tw-container tw-mx-auto tw-p-6">

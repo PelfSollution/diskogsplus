@@ -68,7 +68,9 @@ function Wantlist() {
   }
 
   return (
-    <Layout centeredContent={false}>
+    <Layout centeredContent={false}
+    title="Wantlist - Diskogs +"
+    description="Discos de tu wantlist">
       <div className="tw-container tw-mx-auto tw-p-6">
         <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Mi Wantlist</h1>
         <div className="tw-flex tw-items-center tw-gap-4 tw-my-4">

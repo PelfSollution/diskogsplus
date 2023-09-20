@@ -664,7 +664,7 @@ function AlbumDetails() {
                           <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
                             {track.tempo && (
                               <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
-                                {track.tempo.toFixed(1)}
+                                {track.tempo.toFixed(0)}
                               </div>
                             )}
 

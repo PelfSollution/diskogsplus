@@ -173,7 +173,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
         <div className="tw-flex tw-item-center tw-gap-2 tw-items-start tw-max-w-[100] tw-mt-2">
           {data.tempo && (
             <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
-              {data.tempo.toFixed(1)}
+              {data.tempo.toFixed(0)}
             </div>
           )}
 

@@ -121,7 +121,13 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
           <NavigationItems />
         </ul>
       </div>
-      <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+      <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}
+     PaperProps={{
+      style: {
+        width: '90%', 
+      },
+    }}
+     >
         <div className="tw-space-y-4 tw-py-4 tw-px-8">
           <Image
             src="/diskogs-logo.gif"

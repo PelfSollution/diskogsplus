@@ -32,7 +32,9 @@ function Albums() {
     setSize,
     totalPagesVinyl,
   } = useGetAlbumList();
-  const allAlbums = albums ? albums.flatMap((page) => page.releases) : [];
+  const allAlbums = useMemo(() => {
+    return albums ? albums.flatMap((page) => page.releases) : [];
+  }, [albums]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<"name" | "album">("name");
   const [orderAsc, setOrderAsc] = useState(true);
@@ -79,7 +81,7 @@ function Albums() {
             return 0;
         }
       });
-  }, [allAlbums, lowercasedSearchTerm, filter, orderAsc]);
+    }, [allAlbums, lowercasedSearchTerm, filter, orderAsc]);
   
 
   const loadMoreAlbums = () => {

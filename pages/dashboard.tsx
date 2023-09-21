@@ -223,7 +223,7 @@ function Dashboard() {
 
       handleOpenSnackbar(errorMessage);
       setMessage(<CustomCircularProgress />);
-    } else if (isLoading || isValidating) {
+    } else if (isLoading) {
       setMessage(<CustomCircularProgress />);
     } else {
       setMessage(null);
@@ -231,7 +231,7 @@ function Dashboard() {
     return () => {
       document.body.classList.remove("dashboard");
     };
-  }, [message]);
+  }, [message , error, isLoading]);
 
   const handleOpenSnackbar = (message: string) => {
     setSnackbar({ isOpen: true, message });

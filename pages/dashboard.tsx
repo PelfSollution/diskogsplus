@@ -1,91 +1,54 @@
-import { ReactNode, useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import {FormControl,InputLabel,MenuItem,Select,Snackbar,Typography} from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from "@mui/material";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetUserData from "@/hooks/useGetUserData";
 import { getChatLogsUser } from "@/services/supabase/getChatLogsUser";
 import { getMixtapeURLs } from "@/services/supabase/getMixtapeURLs";
 import { getWantlistItemsUser } from "@/services/supabase/getWantlistItemsUser";
 import format from "date-fns/format";
 import styles from "./dashboard.module.css";
-
-export interface ChatLog {
-  artista: string;
-  album: string;
-  disco_id: number;
-}
-
-export type WantlistEntry = {
-  username: string;
-  disco_id: number;
-  notes?: string;
-  rating?: number;
-};
-
-const isDateValid = (dateString: string): boolean => {
-  return !isNaN(Date.parse(dateString));
-};
+import { ChatLog, WantlistEntry } from "@/types/types";
 
 const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const [isImageLoaded, setImageLoaded] = useState(false);
   const [chatLogs, setChatLogs] = useState<ChatLog[]>([]);
-  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(null);
+  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(
+    null
+  );
   const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
-  const [loadingMixtapes, setLoadingMixtapes] = useState(false);
   const { data: userData } = useGetUserData();
   const router = useRouter();
   const username = userData?.userProfile?.username;
 
-  const loadMixtapes = useCallback(async () => {
-    setLoadingMixtapes(true);
-    try {
-      const urls = await getMixtapeURLs(username);
-
-      setLoadedMixtapeUrls(
-        urls.map((u: { mixtape_url: string }) => u.mixtape_url)
-      );
-    } catch (error) {
-    } finally {
-      setLoadingMixtapes(false);
-    }
-  }, [username]);
-
-  const fetchChatLogs = useCallback(async () => {
-    try {
-        const logs = await getChatLogsUser(username);
-        if (logs) {
-            setChatLogs(logs);
-        }
-    } catch (error) {}
-}, [username]);
-
-  const fetchWantlistItems = useCallback(async () => {
-    try {
-      const items = await getWantlistItemsUser(username);
-      if (items) {
-        setWantlistItems(items);
-      }
-    } catch (error) {
-
-    }
-  }, [username]);
-
   useEffect(() => {
     const initializeData = async () => {
-      if (username) {
-        await loadMixtapes();
-        await fetchWantlistItems();
+      try {
+        if (username) {
+          const items = await getWantlistItemsUser(username);
+          setWantlistItems(items);
+          const logs = await getChatLogsUser(username);
+          setChatLogs(logs);
+          const mixtapeUrls = await getMixtapeURLs(username);
+          setLoadedMixtapeUrls(mixtapeUrls.map((u) => u.mixtape_url));
+        }
+      } catch (error) {
+        console.error(error);
       }
-      await fetchChatLogs();
     };
-    initializeData();
-  }, [username, fetchChatLogs, loadMixtapes, fetchWantlistItems]);
 
+    initializeData();
+  }, [username]);
 
   const handleChatSelection = (value: number) => {
     if (value >= 0 && value < chatLogs.length) {
@@ -93,7 +56,6 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
       router.push(
         `/chat?artista=${selectedChat.artista}&album=${selectedChat.album}&username=${username}&disco_id=${selectedChat.disco_id}`
       );
-    } else {
     }
   };
 
@@ -122,19 +84,22 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         </div>
       )}
 
-     
       <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mt-4">
         <Typography variant="body2" color="textSecondary">
-        {isDateValid(data.userProfile.registered) ? (
-        <p>
-          <span className="tw-font-bold">Registrado:</span>{" "}
-          {format(new Date(data.userProfile.registered), "dd/MM/yyyy HH:mm")}
-        </p>
-      ) : (
-        <p className="tw-mt-4">
-          <span className="tw-font-bold">Registrado:</span> Fecha desconocida
-        </p>
-      )}
+          {Date.parse(data.userProfile.registered) ? (
+            <p>
+              <span className="tw-font-bold">Registrado:</span>{" "}
+              {format(
+                new Date(data.userProfile.registered),
+                "dd/MM/yyyy HH:mm"
+              )}
+            </p>
+          ) : (
+            <p className="tw-mt-4">
+              <span className="tw-font-bold">Registrado:</span> Fecha
+              desconocida
+            </p>
+          )}
           <p className="tw-mt-2">
             Tu tienes{" "}
             <span className="tw-font-bold tw-text-blue-500">
@@ -151,8 +116,6 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           </p>
         </Typography>
       </div>
-
-      <div></div>
       <div className="tw-mt-4">
         <FormControl
           variant="outlined"
@@ -187,34 +150,39 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
       </div>
       <div className="tw-mt-4">
         {/* Selector (solo se muestra si hay loadedMixtapeUrls) */}
-        {loadedMixtapeUrls.length > 0 && (
-          <FormControl
-            variant="outlined"
-            size="small"
-            className="tw-mt-4 md:tw-mt-0"
+
+        <FormControl
+          variant="outlined"
+          size="small"
+          className="tw-mt-4 md:tw-mt-0"
+        >
+          <InputLabel id="mixtape-label">Tus Mixtapes:</InputLabel>
+          <Select
+            labelId="mixtape-label"
+            onChange={(e) => {
+              const embedUrl = e.target.value as string;
+              if (!embedUrl) return;
+              const newPath = `/mixtapeplayer?embedUrl=${encodeURIComponent(
+                embedUrl
+              )}`;
+              router.push(newPath);
+            }}
+            label="Tus Mixtapes:"
+            className="tw-min-w-[300px]"
           >
-            <InputLabel id="mixtape-label">Tus Mixtapes:</InputLabel>
-            <Select
-              labelId="mixtape-label"
-              onChange={(e) => {
-                const embedUrl = e.target.value as string;
-                if (!embedUrl) return;
-                const newPath = `/mixtapeplayer?embedUrl=${encodeURIComponent(
-                  embedUrl
-                )}`;
-                router.push(newPath);
-              }}
-              label="Tus Mixtapes:"
-              className="tw-min-w-[300px]"
-            >
-              {loadedMixtapeUrls.map((url: string, index: number) => (
+            {loadedMixtapeUrls.length > 0 ? (
+              loadedMixtapeUrls.map((url: string, index: number) => (
                 <MenuItem key={index} value={url}>
                   {`Mixtape ${index + 1}`}
                 </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
+              ))
+            ) : (
+              <MenuItem value="">
+                <em>No hay mixtapes disponibles</em>
+              </MenuItem>
+            )}
+          </Select>
+        </FormControl>
       </div>
       <div className="tw-mt-2">
         <Button
@@ -232,10 +200,11 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
 
 function Dashboard() {
   const { data, error, isLoading, isValidating } = useGetUserData();
-
-  const [message, setMessage] = useState<ReactNode | null>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbar, setSnackbar] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({ isOpen: false, message: "" });
+  const [message, setMessage] = useState<React.ReactNode | null>(null);
 
   useEffect(() => {
     document.body.classList.add("dashboard");
@@ -262,15 +231,14 @@ function Dashboard() {
     return () => {
       document.body.classList.remove("dashboard");
     };
-  }, [error, isLoading, isValidating]);
+  }, [message]);
 
   const handleOpenSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setOpenSnackbar(true);
+    setSnackbar({ isOpen: true, message });
   };
 
   const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
+    setSnackbar((prev) => ({ ...prev, isOpen: false }));
   };
 
   return (
@@ -290,21 +258,10 @@ function Dashboard() {
           </header>
         </div>
       )}
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        open={openSnackbar}
-        autoHideDuration={3000}
+      <CustomSnackbar
+        isOpen={snackbar.isOpen}
+        message={snackbar.message}
         onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-        action={
-          <IconButton
-            size="small"
-            color="inherit"
-            onClick={handleCloseSnackbar}
-          >
-            <CloseIcon />
-          </IconButton>
-        }
       />
     </Layout>
   );

@@ -79,13 +79,19 @@ export default async function catalog(
       if (album.basic_information.formats[0].name === "Vinyl") return album;
     });
 
+    const totalDiscos = userCollection.pagination.items;
+    const totalDiscosVinyl = filteredCollection.length;
+    
+
     const vinylCollection = {
-      pagination: userCollection.pagination,
+      pagination: {
+        ...userCollection.pagination,
+        totalDiscos: totalDiscos,
+      },
       releases: filteredCollection,
     };
-
     // Si tengo una colección de vinilos, la envío. De lo contrario, envío una respuesta vacía.
-    if (vinylCollection) {
+    if (vinylCollection.releases.length > 0) {
       res.send(vinylCollection);
     } else {
       res.send({ pagination: {}, releases: [] });

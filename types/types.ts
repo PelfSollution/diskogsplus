@@ -20,3 +20,16 @@ export type Mixtape = {
     notes?: string;
     rating?: number;
   };
+
+  export interface Artist {
+    name: string;
+  }
+  export interface Album {
+    id: number;
+    basic_information: {
+      cover_image: string;
+      artists: Artist[];
+      title: string;
+      created_at: string;
+    };
+  }

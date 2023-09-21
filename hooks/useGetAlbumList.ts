@@ -5,7 +5,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const useGetAlbumList = () => {
   // Defino cuántos álbumes quiero recuperar por página.
-  const perPage = 50;
+  const perPage = 48;
 
   // Aquí uso desestructuración para obtener las propiedades que necesito de useSWRInfinite.
   const {
@@ -29,10 +29,15 @@ const useGetAlbumList = () => {
 
   // Si no hay datos y tampoco hay errores, significa que está cargando.
   const isLoading = !data && !error;
+  const totalDiscos = data?.[0]?.pagination?.totalDiscos;
+  const totalPagesVinyl = data?.[0]?.pagination?.pages;
+
 
   // Devuelvo los datos y algunas propiedades útiles que podré usar en mis componentes.
   return {
     data,
+    totalDiscos,
+    totalPagesVinyl, 
     error,
     isLoading,
     size,

@@ -1,75 +1,89 @@
-import { useState } from "react";
+import React, { useMemo } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  Button, Chip, FormControl, InputLabel, MenuItem, Select, IconButton, TextField, Snackbar 
+import {
+  Button,
+  Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  IconButton,
+  TextField,
+  Snackbar,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CloseIcon from "@mui/icons-material/Close";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetAlbumList from "@/hooks/useGetAlbumList";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
-
-
-
-interface Artist {
-  name: string;
-}
-
-interface Album {
-  id: number;
-  basic_information: {
-    cover_image: string;
-    artists: Artist[];
-    title: string;
-    created_at: string;
-  };
-}
+import { Artist, Album } from "@/types/types";
 
 function Albums() {
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [hasMoreDiscs, setHasMoreDiscs] = useState(true);
-  const { data: albums, isLoading, error, size, setSize } = useGetAlbumList();
+  const {
+    data: albums,
+    isLoading,
+    error,
+    size,
+    setSize,
+    totalPagesVinyl,
+  } = useGetAlbumList();
   const allAlbums = albums ? albums.flatMap((page) => page.releases) : [];
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<"name" | "album">("name");
   const [orderAsc, setOrderAsc] = useState(true);
+  const [snackbar, setSnackbar] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: "",
+  });
 
-  const filteredAlbums = (allAlbums || [])
-    .filter((album) => {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
-      const titleMatches = album.basic_information.title
-        .toLowerCase()
-        .includes(lowercasedSearchTerm);
-      const artistMatches = album.basic_information.artists.some(
-        (artist: Artist) =>
-          artist.name.toLowerCase().includes(lowercasedSearchTerm)
-      );
-      return titleMatches || artistMatches;
-    })
-    .sort((a, b) => {
-      switch (filter) {
-        case "name":
-          const artistA = a.basic_information.artists[0]?.name || "";
-          const artistB = b.basic_information.artists[0]?.name || "";
-          return orderAsc
-            ? artistA.localeCompare(artistB)
-            : artistB.localeCompare(artistA);
-        case "album":
-          const titleA = a.basic_information.title;
-          const titleB = b.basic_information.title;
-          return orderAsc
-            ? titleA.localeCompare(titleB)
-            : titleB.localeCompare(titleA);
-        default:
-          return 0;
-      }
-    });
+  const lowercasedSearchTerm = useMemo(() => searchTerm.toLowerCase(), [searchTerm]);
+
+  const filteredAlbums = useMemo(() => {
+    return (allAlbums || [])
+      .filter((album) => {
+        if (!album || !album.basic_information) {
+          return false;
+        }
+        const titleMatches = album.basic_information.title
+          .toLowerCase()
+          .includes(lowercasedSearchTerm);
+        const artistMatches = album.basic_information.artists.some(
+          (artist: Artist) =>
+            artist.name.toLowerCase().includes(lowercasedSearchTerm)
+        );
+        return titleMatches || artistMatches;
+      })
+      .sort((a, b) => {
+        switch (filter) {
+          case "name":
+            const artistA = a.basic_information.artists[0]?.name || "";
+            const artistB = b.basic_information.artists[0]?.name || "";
+            return orderAsc
+              ? artistA.localeCompare(artistB)
+              : artistB.localeCompare(artistA);
+          case "album":
+            const titleA = a.basic_information.title;
+            const titleB = b.basic_information.title;
+            return orderAsc
+              ? titleA.localeCompare(titleB)
+              : titleB.localeCompare(titleA);
+          default:
+            return 0;
+        }
+      });
+  }, [allAlbums, lowercasedSearchTerm, filter, orderAsc]);
+  
 
   const loadMoreAlbums = () => {
+    mostrarMensaje("Cargando más discos...");
     setSize(size + 1);
   };
 
@@ -87,19 +101,20 @@ function Albums() {
     );
   }
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
+  const mostrarMensaje = (message: string) => {
+    setSnackbar({ isOpen: true, message });
   };
 
-  const mostrarMensaje = (mensaje: string) => {
-    setSnackbarMessage(mensaje);
-    setSnackbarOpen(true);
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, isOpen: false }));
   };
 
   if (error || !allAlbums) {
     mostrarMensaje("Error al cargar los álbumes.");
     return <Layout>Error al cargar los álbumes.</Layout>;
   }
+
+
 
   return (
     <Layout centeredContent={false}>
@@ -191,7 +206,7 @@ function Albums() {
           })}
         </div>
 
-        {searchTerm === "" && allAlbumsAreValid && (
+        {searchTerm === "" && allAlbumsAreValid && size < totalPagesVinyl && (
           <div className="tw-flex tw-flex-col tw-gap-2 tw-mt-8">
             <Button type="submit" variant="outlined" onClick={loadMoreAlbums}>
               Cargar más Discos
@@ -199,21 +214,10 @@ function Albums() {
           </div>
         )}
 
-        <Snackbar
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          open={snackbarOpen}
-          autoHideDuration={3000} // Duración en milisegundos
-          onClose={() => setSnackbarOpen(false)}
-          message={snackbarMessage}
-          action={
-            <IconButton
-              size="small"
-              color="inherit"
-              onClick={handleCloseSnackbar}
-            >
-              <CloseIcon />
-            </IconButton>
-          }
+        <CustomSnackbar
+          isOpen={snackbar.isOpen}
+          message={snackbar.message}
+          onClose={handleCloseSnackbar}
         />
       </div>
     </Layout>

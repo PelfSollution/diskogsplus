@@ -15,7 +15,7 @@ const ErrorPage = ({ statusCode }: ErrorProps) => (
     <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-full">
       <header className="tw-text-center tw-max-w-xl mx-auto">
         <div className="tw-flex tw-flex-col tw-items-center tw-justify-center">
-          <h1 className="tw-text-4xl">
+          <h1 className="tw-text-4xl tw-text-red-400">
             {statusCode ? `Error ${statusCode} - Page Not Found` : "An error has occurred"}
           </h1>
           

@@ -27,7 +27,7 @@ const ErrorPage = ({ statusCode }: ErrorProps) => (
             height={300}
           />
           <p className="tw-text-xl tw-mt-2">
-            Oops! Looks like this vinyl is broken. We couldn't find what you were looking for or an unexpected error occurred.
+          Oops! Looks like this vinyl is broken. We couldn&apos;t find what you were looking for or an unexpected error occurred.
           </p>
         </div>
       </header>      

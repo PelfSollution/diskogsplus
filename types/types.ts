@@ -33,3 +33,31 @@ export type Mixtape = {
       created_at: string;
     };
   }
+
+  export interface SimilarArtist {
+    name: string;
+    mbid: string; 
+    match: string; 
+    url: string;
+    image: Array<{
+      size: string;
+      "#text": string;
+    }>;
+    streamable: '0' | '1'; 
+  }
+  
+  export interface SimilarTrack {
+    name: string;
+    playcount: number;
+    mbid?: string;
+    match: number;
+    url: string;
+    streamable: any; 
+    duration?: number;
+    artist: {
+      name: string;
+     
+    };
+    image: any[]; 
+  }
+  

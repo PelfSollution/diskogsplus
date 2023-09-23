@@ -16,6 +16,42 @@ const fetcher = (url: string) =>
     embed: boolean;
   }
 
+  interface Image {
+    size: 'small' | 'medium' | 'large' | 'extralarge' | 'mega';
+    url: string;
+  }
+  
+
+  interface SimilarArtist {
+    name: string;
+    mbid: string; 
+    match: string; 
+    url: string;
+    image: Array<{
+      size: string;
+      "#text": string;
+    }>;
+    streamable: '0' | '1'; 
+  }
+
+  export interface SimilarTrack {
+    name: string;
+    playcount: number;
+    mbid?: string;
+    match: number;
+    url: string;
+    streamable: any; 
+    duration?: number;
+    artist: {
+      name: string;
+     
+    };
+    image: any[]; 
+  }
+  
+  
+  
+
 export interface AlbumInfoInterface {
   albumId: string;
   coverImage: string;
@@ -44,6 +80,9 @@ export interface AlbumInfoInterface {
   enrichedInfo?: string;
   spotifyAlbumId?: string;
   isPopularAlbum?: boolean;
+  similarArtists?: SimilarArtist[];
+  similarTracks?: SimilarTrack[];
+
 }
 
 export interface AlbumInfoPropsInterface {

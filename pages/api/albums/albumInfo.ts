@@ -3,13 +3,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
 import { enrichArtistInfoWithChatGPT } from "../../../services/openai/enrichArtistInfo";
-import { fetchLastfmData } from "../../../services/last.fm/fetchData";
+import { fetchLastfmData, fetchSimilarArtists, fetchSimilarTracks } from "../../../services/last.fm/fetchData";
 import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken";
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 import { getMostPopularAlbum } from "../../../services/spotify/getMostPopularAlbum";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
 import { getTracklistWithSpotifyIds } from "../../../services/spotify/getTracklistWithSpotifyIds";
 import { getArtistImageFromSupabase } from "../../../services/supabase/getArtistImageFromSupabase";
+import { SimilarArtist } from "@/types/types";
 
 // Esta función obtiene los datos del álbum del usuario.
 // Necesita el objeto accessData que está almacenado y cifrado como cookie.
@@ -155,20 +156,50 @@ export default async function albumInfo(
       }
 
       let lastfmTags: string[] = [];
-
+      let similarArtists: any[] = [];
+      let similarTracks: any[] = [];
+      
       try {
-        const lastfmResponse = await fetchLastfmData(
-          releaseData.title,
-          releaseData.artists ? releaseData.artists[0].name : undefined
-        );
-        if (lastfmResponse.album && lastfmResponse.album.tags) {
-          lastfmTags = lastfmResponse.album.tags.tag.map(
-            (tag: any) => tag.name
-          );
+        const artistName = releaseData.artists ? releaseData.artists[0].name : undefined;
+      
+        if (artistName) {
+     
+          const lastfmResponse = await fetchLastfmData(releaseData.title, artistName);
+          if (lastfmResponse.album && lastfmResponse.album.tags) {
+            lastfmTags = lastfmResponse.album.tags.tag.map((tag: any) => tag.name);
+          }
+      
+          const firstTrackName = selectedTracklist && selectedTracklist.length > 0 ? selectedTracklist[0].title : undefined;
+          console.log("First track name:", firstTrackName);
+          
+          if (firstTrackName) {
+            const trackSimilarResponse = await fetchSimilarTracks(artistName, firstTrackName, 6);
+            console.log("Track Similar Response:", trackSimilarResponse); // Este te mostrará la respuesta completa
+            
+            if (trackSimilarResponse && trackSimilarResponse.similartracks && trackSimilarResponse.similartracks.track) {
+              similarTracks = trackSimilarResponse.similartracks.track.slice(0, 6);
+              console.log("Sliced Similar Tracks:", similarTracks); // Este te mostrará los 6 primeros tracks similares
+            }
+          }
+          
+      
+          const artistSimilarResponse = await fetchSimilarArtists(artistName, 6);
+          
+          if (artistSimilarResponse && artistSimilarResponse.similarartists && artistSimilarResponse.similarartists.artist) {
+            similarArtists = artistSimilarResponse.similarartists.artist.slice(0, 6).map((artist: SimilarArtist) => {
+              const smallImage = artist.image.find((img: any) => img.size === "medium");
+              const imageUrl = smallImage ? smallImage["#text"] : null;
+              return {
+                ...artist,
+                smallImage: imageUrl
+              };
+            });
+          }
         }
       } catch (error) {
-        console.error("Error fetching Last.fm data:", error);
+        console.error("Error al obtener datos de Last.fm:", error);
       }
+      
 
       const combinedData = {
         ...albumInfo,
@@ -176,9 +207,11 @@ export default async function albumInfo(
         lastfmTags: lastfmTags,
         spotifyAlbumId: spotifyAlbumId,
         isPopularAlbum: isPopularAlbum,
+        similarArtists: similarArtists,
+        similarTracks: similarTracks,
       };
 
-      console.log("Combined data:", combinedData);
+    // console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });
     } else {
       res.send({

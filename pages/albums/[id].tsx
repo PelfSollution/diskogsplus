@@ -1,9 +1,24 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import {Grid,Button,Typography,Chip,Stack,Card,CardMedia,Accordion,AccordionSummary,AccordionDetails,Snackbar,IconButton,
+import {
+  Grid,
+  Button,
+  Typography,
+  Chip,
+  Stack,
+  Card,
+  CardMedia,
+  CardContent,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Snackbar,
+  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
+import { Link as MuiLink } from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
@@ -203,7 +218,7 @@ function AlbumDetails() {
     //  console.log("Verificando tracksInMixtape:", tracksInMixtape);
     const match = tracksInMixtape.includes(songTitle);
     if (match) {
-      // console.log("¡Coincidencia encontrada para:", songTitle);
+      // console.log("¡Match encontrada para:", songTitle);
     }
     return match;
   };
@@ -484,6 +499,12 @@ function AlbumDetails() {
     };
   }
 
+  const getColor = (matchPercentage: number) => {
+    if (matchPercentage >= 70) return "success"; // verde
+    if (matchPercentage >= 30) return "warning"; // naranja
+    return "error"; // rojo
+  };
+
   return (
     <Layout centeredTopContent={true}>
       <Grid container spacing={3} className="tw-container tw-mx-auto tw-p-6">
@@ -567,10 +588,6 @@ function AlbumDetails() {
           <Typography variant="subtitle1">
             Released in {albumInfo.released}
           </Typography>
-          <Typography variant="subtitle2">
-            {/*Added to collection: July 30, 2019*/}
-            {/* Nota: Puedes reemplazar la fecha estática con la que desees */}
-          </Typography>
 
           <Typography variant="h6" gutterBottom>
             Labels
@@ -600,24 +617,7 @@ function AlbumDetails() {
             </>
           )}
 
-          {albumInfo.enrichedInfo && (
-            <Accordion>
-              <AccordionSummary
-                expandIcon={
-                  <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
-                }
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography variant="h6">Notas</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography variant="body1"></Typography>
-              </AccordionDetails>
-            </Accordion>
-          )}
-
-          <Accordion>
+          <Accordion className="tw-mt-4">
             <AccordionSummary
               expandIcon={
                 <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
@@ -629,7 +629,7 @@ function AlbumDetails() {
                 Información{" "}
                 <Chip
                   label="powered by [🤖 DiscoBOT]"
-                  className="tw-text-xs tw-font-thin tw-mr-2 tw-mb-2"
+                  className="tw-text-xs tw-font-thin tw-ml-1"
                 />
               </Typography>
             </AccordionSummary>
@@ -640,8 +640,97 @@ function AlbumDetails() {
             </AccordionDetails>
           </Accordion>
 
-          {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
+          <div className="tw-mt-1">
             <Accordion>
+              <AccordionSummary
+                expandIcon={
+                  <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
+                }
+                aria-controls="panel3a-content"
+                id="panel3a-header"
+              >
+                <Typography variant="h6">Artistas Similares</Typography>
+                <Chip
+                  label="powered by Last.fm"
+                  className="tw-text-xs tw-font-thin tw-ml-2 tw-mb-1"
+                  color="warning"
+                />
+              </AccordionSummary>
+              <AccordionDetails>
+                <div>
+                  {albumInfo?.similarArtists &&
+                  albumInfo?.similarArtists.length > 0 ? (
+                    <Grid container spacing={2}>
+                      {albumInfo.similarArtists.map((artist) => {
+                        const matchPercentage = Math.round(
+                          Number(artist.match) * 100
+                        );
+                        return (
+                          <Grid item xs={6} md={4} key={artist.mbid}>
+                            <Card>
+                              <CardContent
+                                style={{
+                                  paddingTop: "6px",
+                                  paddingBottom: "10px",
+                                }}
+                              >
+                                <Typography
+                                  variant="subtitle1"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  <MuiLink
+                                    href={artist.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      textDecoration: "none",
+                                      color: "inherit",
+                                    }}
+                                    title={artist.name}
+                                  >
+                                    <OpenInNewIcon
+                                      style={{
+                                        marginRight: "4px",
+                                        fontSize: "14px",
+                                      }}
+                                    />
+                                    {artist.name}
+                                  </MuiLink>
+                                </Typography>
+
+                                <Chip
+                                  label={`Match: ${matchPercentage}%`}
+                                  color={getColor(matchPercentage)}
+                                  variant="outlined"
+                                  style={{ marginTop: "4px" }}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  ) : (
+                    <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4">
+                      <Typography variant="body2" color="textSecondary">
+                        Last.fm no ha podido facilitar ningún artista parecido
+                        para {albumInfo?.artist}.
+                      </Typography>
+                    </div>
+                  )}
+                </div>
+              </AccordionDetails>
+            </Accordion>
+          </div>
+
+          {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
+            <Accordion className="tw-mt-1">
               <AccordionSummary
                 expandIcon={
                   <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
@@ -650,6 +739,11 @@ function AlbumDetails() {
                 id="panel1a-header"
               >
                 <Typography variant="h6">Tracklist</Typography>
+                <Chip
+                  label="powered by Spotify"
+                  className="tw-text-xs tw-font-thin tw-ml-1"
+                  color="success"
+                />
               </AccordionSummary>
               <AccordionDetails>
                 <Stack direction="column" spacing={1}>
@@ -746,13 +840,118 @@ function AlbumDetails() {
                 expandIcon={
                   <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
                 }
+                aria-controls="panel2a-content"
+                id="panel2a-header"
+              >
+                <Typography variant="h6">
+                  Tracks Similares
+                  <Chip
+                    label="powered by Last.fm"
+                    className="tw-text-xs tw-font-thin tw-ml-2 tw-mb-1"
+                    color="warning"
+                  />
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <div>
+                  {albumInfo?.similarTracks &&
+                  albumInfo?.similarTracks.length > 0 ? (
+                    <Grid container spacing={2}>
+                      {albumInfo.similarTracks.slice(0, 6).map((track) => {
+                        const matchPercentage = Math.round(track.match * 100);
+                        return (
+                          <Grid
+                            item
+                            xs={6}
+                            md={4}
+                            key={track.mbid || track.name}
+                          >
+                            <Card>
+                              <CardContent
+                                style={{
+                                  paddingTop: "6px",
+                                  paddingBottom: "10px",
+                                }}
+                              >
+                                <Typography
+                                  variant="subtitle1"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  <MuiLink
+                                    href={track.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      textDecoration: "none",
+                                      color: "inherit",
+                                    }}
+                                    title={track.name}
+                                  >
+                                    <OpenInNewIcon
+                                      style={{
+                                        marginRight: "4px",
+                                        fontSize: "14px",
+                                      }}
+                                    />
+                                    {track.name}
+                                  </MuiLink>
+                                </Typography>
+
+                                <Typography
+                                  variant="subtitle2"
+                                  style={{
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {track.artist.name}
+                                </Typography>
+
+                                <Chip
+                                  label={`Match: ${matchPercentage}%`}
+                                  color={getColor(matchPercentage)}
+                                  variant="outlined"
+                                  style={{ marginTop: "4px" }}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  ) : (
+                    <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4">
+                      <Typography variant="body2" color="textSecondary">
+                        Last.fm no ha podido facilitar ningún track parecido
+                        para {albumInfo?.artist}.
+                      </Typography>
+                    </div>
+                  )}
+                </div>
+              </AccordionDetails>
+            </Accordion>
+          </div>
+
+          <div className="tw-mt-1">
+            <Accordion>
+              <AccordionSummary
+                expandIcon={
+                  <ExpandMoreIcon className="tw-text-blue-400 tw-text-xl" />
+                }
                 aria-controls="panel1a-content"
                 id="panel1a-header"
               >
                 <Typography variant="h6">Vídeos</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                {albumInfo.videos && albumInfo.videos.length > 0 && (
+                {albumInfo.videos && albumInfo.videos.length > 0 ? (
                   <>
                     <iframe
                       width="100%"
@@ -777,6 +976,13 @@ function AlbumDetails() {
                       ))}
                     </div>
                   </>
+                ) : (
+                  <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4 tw-w-full">
+                    <Typography variant="body2" color="textSecondary">
+                      Discogs no ha podido facilitar ningún vídeo del grupo{" "}
+                      {albumInfo?.artist}.
+                    </Typography>
+                  </div>
                 )}
               </AccordionDetails>
             </Accordion>

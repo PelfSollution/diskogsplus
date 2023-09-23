@@ -14,6 +14,7 @@ import {
   AccordionDetails,
   Snackbar,
   IconButton,
+  Divider,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
@@ -28,6 +29,7 @@ import addMixtape from "@/services/supabase/addMixtape";
 import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
 import { getArtistImageFromSupabase } from "@/services/supabase/getArtistImageFromSupabase";
 import { isAlbumInWantlist } from "@/services/supabase/checkAlbumInWantlist";
+import DOMPurify from "dompurify";
 
 interface TrackInfo {
   position: string;
@@ -329,17 +331,6 @@ function AlbumDetails() {
   const getImageComponent = (imageURL: string | undefined, altText: string) => {
     const defaultImage = "/no-portada.gif";
 
-    let finalImageURL = imageURL || defaultImage;
-
-    (async () => {
-      if (!imageURL) {
-        const artistImage = await getArtistImageFromSupabase(albumInfo.artist);
-        if (artistImage) {
-          finalImageURL = artistImage;
-        }
-      }
-    })();
-
     const handleGenerateImage = async () => {
       console.log("Generando imagen para", albumInfo.artist, albumInfo.title);
       setIsGenerating(true);
@@ -370,34 +361,48 @@ function AlbumDetails() {
       }
     };
 
-    if (imageURL && imageURL !== "") {
+    // Si no hay imageURL, intentar obtener de Supabase.
+    if (!imageURL) {
+      (async () => {
+        const artistImage = await getArtistImageFromSupabase(albumInfo.artist);
+        if (artistImage) {
+          imageURL = artistImage; // Actualizamos la URL de la imagen.
+        }
+      })();
+    }
+
+    if (imageURL && !imageURL.includes("generated_images")) {
       return <CardMedia component="img" image={imageURL} alt={altText} />;
     } else {
       return (
         <div className="relative h-full w-full">
-          {" "}
-          {/* Asegurarte que el contenedor principal tenga alto y ancho definidos */}
           <CardMedia
             component="img"
             className="w-full h-full absolute z-0"
             image={imageURL || defaultImage}
             alt={altText}
           />
-          {!imageURL && (
-            <div className="tw-h-0">
-              <Button
-                aria-label="Genera imagen"
-                onClick={(e) => {
-                  e.stopPropagation(); // Detiene la propagación del evento
-                  handleGenerateImage();
-                }}
-                className="tw-text-white tw-top-[-40px]"
-                style={{ color: "white" }}
-              >
-                {isGenerating ? "Generando..." : "Genera Imagen"}
-              </Button>
-            </div>
-          )}
+          <div className="tw-h-0">
+            <Button
+              aria-label={
+                imageURL && imageURL.includes("generated_images")
+                  ? "Imagen Generada"
+                  : "Genera imagen"
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                handleGenerateImage();
+              }}
+              className="tw-text-white tw-top-[-40px]"
+              style={{ color: "white" }}
+            >
+              {isGenerating
+                ? "Generando..."
+                : imageURL && imageURL.includes("generated_images")
+                ? "Imagen Generada"
+                : "Genera Imagen"}
+            </Button>
+          </div>
         </div>
       );
     }
@@ -505,6 +510,28 @@ function AlbumDetails() {
     return "error"; // rojo
   };
 
+  const sanitizedHTML = DOMPurify.sanitize(albumInfo.artistBio || "");
+
+  function truncateBio(htmlContent: string): string {
+    const linkText = "Read more on Last.fm";
+    const linkIndex = htmlContent.indexOf(linkText);
+
+    let truncatedContent =
+      linkIndex !== -1
+        ? htmlContent.substring(0, linkIndex + linkText.length)
+        : htmlContent;
+
+    truncatedContent = truncatedContent.replace(
+      '<a href="https://last.fm">',
+      '<a href="https://last.fm" target="_blank" rel="noopener noreferrer">'
+    );
+
+    return truncatedContent;
+  }
+
+  const truncatedHTML = truncateBio(sanitizedHTML);
+  const yearReleased = new Date(albumInfo.released).getFullYear();
+
   return (
     <Layout centeredTopContent={true}>
       <Grid container spacing={3} className="tw-container tw-mx-auto tw-p-6">
@@ -540,6 +567,7 @@ function AlbumDetails() {
             <div className="tw-ml-4">
               <Typography variant="h5">{albumInfo.artist}</Typography>
               <Typography variant="h6">{albumInfo.title}</Typography>
+              <Chip label={yearReleased} />
             </div>
           </div>
           {/* Botón para preguntar sobre el disco */}
@@ -585,10 +613,6 @@ function AlbumDetails() {
             </>
           )}
 
-          <Typography variant="subtitle1">
-            Released in {albumInfo.released}
-          </Typography>
-
           <Typography variant="h6" gutterBottom>
             Labels
           </Typography>
@@ -628,11 +652,25 @@ function AlbumDetails() {
               <Typography variant="h6">
                 Información{" "}
                 <Chip
-                  label="powered by [🤖 DiscoBOT]"
+                  label="powered by [Last.fm & 🤖 DiscoBOT]"
                   className="tw-text-xs tw-font-thin tw-ml-1"
                 />
               </Typography>
             </AccordionSummary>
+            {albumInfo.artistBio && ( // <-- Mostrar solo si hay contenido en artistBio
+              <>
+                <AccordionDetails>
+                  <Typography
+                    variant="body1"
+                    className="tw-whitespace-pre-line bio-content"
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: truncatedHTML }} />
+                  </Typography>
+                </AccordionDetails>
+              </>
+            )}
+            <Divider className="tw-my-2" />{" "}
+            {/* Opcional: Un separador entre la información y la biografía */}
             <AccordionDetails>
               <Typography variant="body1" className="tw-whitespace-pre-line">
                 {albumInfo.enrichedInfo}

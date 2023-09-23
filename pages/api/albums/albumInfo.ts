@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
 import { enrichArtistInfoWithChatGPT } from "../../../services/openai/enrichArtistInfo";
-import { fetchLastfmData, fetchSimilarArtists, fetchSimilarTracks } from "../../../services/last.fm/fetchData";
+import { fetchLastfmData, fetchSimilarArtists, fetchSimilarTracks, fetchArtistInfo } from "../../../services/last.fm/fetchData";
 import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken";
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 import { getMostPopularAlbum } from "../../../services/spotify/getMostPopularAlbum";
@@ -158,6 +158,7 @@ export default async function albumInfo(
       let lastfmTags: string[] = [];
       let similarArtists: any[] = [];
       let similarTracks: any[] = [];
+      let artistBio: string | null = null; 
       
       try {
         const artistName = releaseData.artists ? releaseData.artists[0].name : undefined;
@@ -165,20 +166,26 @@ export default async function albumInfo(
         if (artistName) {
      
           const lastfmResponse = await fetchLastfmData(releaseData.title, artistName);
+          console.log("Last.fm Response:", lastfmResponse); 
           if (lastfmResponse.album && lastfmResponse.album.tags) {
             lastfmTags = lastfmResponse.album.tags.tag.map((tag: any) => tag.name);
           }
+
+          const artistInfoResponse = await fetchArtistInfo(artistName);
+          if (artistInfoResponse.artist && artistInfoResponse.artist.bio) {
+            artistBio = artistInfoResponse.artist.bio.content;
+          }
       
           const firstTrackName = selectedTracklist && selectedTracklist.length > 0 ? selectedTracklist[0].title : undefined;
-          console.log("First track name:", firstTrackName);
+
           
           if (firstTrackName) {
             const trackSimilarResponse = await fetchSimilarTracks(artistName, firstTrackName, 6);
-            console.log("Track Similar Response:", trackSimilarResponse); // Este te mostrará la respuesta completa
+
             
             if (trackSimilarResponse && trackSimilarResponse.similartracks && trackSimilarResponse.similartracks.track) {
               similarTracks = trackSimilarResponse.similartracks.track.slice(0, 6);
-              console.log("Sliced Similar Tracks:", similarTracks); // Este te mostrará los 6 primeros tracks similares
+    
             }
           }
           
@@ -209,6 +216,7 @@ export default async function albumInfo(
         isPopularAlbum: isPopularAlbum,
         similarArtists: similarArtists,
         similarTracks: similarTracks,
+        artistBio: artistBio,
       };
 
     // console.log("Combined data:", combinedData);

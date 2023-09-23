@@ -43,7 +43,6 @@ export async function fetchSimilarTracks(artistName: string, trackName: string, 
   }${
     autocorrect ? `&autocorrect=${autocorrect}` : ""
   }${format}`;
-  console.log("Fetching similar tracks with URL:", url);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch similar tracks from Last.fm. Status: ${response.status} - ${response.statusText}`);
@@ -51,3 +50,20 @@ export async function fetchSimilarTracks(artistName: string, trackName: string, 
   }
   return response.json();
 }
+
+export async function fetchArtistInfo(artistName: string, autocorrect?: number) {
+  const apiKey = process.env.LASTFM_API_KEY;
+  const baseUrl = "https://ws.audioscrobbler.com/2.0/?method=artist.getinfo";
+  const format = "&format=json";
+  
+  const url = `${baseUrl}&api_key=${apiKey}&artist=${encodeURIComponent(artistName)}${
+    autocorrect ? `&autocorrect=${autocorrect}` : ""
+  }${format}`;
+  
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch artist info from Last.fm");
+  }
+  return response.json();
+}
+

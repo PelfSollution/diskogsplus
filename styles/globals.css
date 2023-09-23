@@ -75,5 +75,8 @@
   body.dashboard {
     @apply tw-overflow-hidden tw-pr-0;
 }
-  
+.bio-content a {
+  @apply tw-text-blue-500 tw-underline;
+}
+
 }

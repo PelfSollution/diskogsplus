@@ -82,6 +82,7 @@ export interface AlbumInfoInterface {
   isPopularAlbum?: boolean;
   similarArtists?: SimilarArtist[];
   similarTracks?: SimilarTrack[];
+  artistBio?: string;
 
 }
 

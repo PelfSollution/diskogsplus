@@ -44,10 +44,8 @@ export default function Comparador() {
   const {
     data: albumsDifference,
     isLoading,
-    error,
-    size,
-    setSize,
-  } = useCompareAlbumList(comparedUser, user1);
+    error
+} = useCompareAlbumList(comparedUser, user1, currentPage);
 
   const getDisplayedAlbums = () => {
     const start = (currentPage - 1) * 50;
@@ -58,6 +56,8 @@ export default function Comparador() {
     return []; // o cualquier valor predeterminado que quieras devolver en caso de que albumsDifference sea undefined
   };
 
+  const displayedAlbums = getDisplayedAlbums();
+
   useEffect(() => {
     if (comparePressed && error) {
       setSnackbarMessage("Usuario no encontrado, sin colección o privada"); //poner emojis
@@ -65,11 +65,11 @@ export default function Comparador() {
     }
   }, [error, comparePressed]);
 
-  //console.log("DIFERENCIA:", albumsDifference);
+  console.log("DIFERENCIA:", albumsDifference);
 
   const handleLoadMore = () => {
     setCurrentPage(currentPage + 1);
-  };
+};
   // solo al clicar sino hacia peticion al escribir
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -155,8 +155,8 @@ export default function Comparador() {
             <ul>
               <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
                 {Array.isArray(getDisplayedAlbums()) &&
-                  getDisplayedAlbums().map((album: Album) => (
-                    <li key={`${album.id}-${album.basic_information.title}`}>
+                  displayedAlbums.map((album: Album, index: number) => (
+                    <li key={`${album.id}-${index}`}>
                       <Link href={`/albums/${album.id}?from=compare`} passHref>
                         <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md hover:tw-shadow-dark tw-cursor-pointer tw-overflow-hidden tw-inner-border-2">
                           <Image
@@ -206,14 +206,16 @@ export default function Comparador() {
               </div>
             </ul>
             {/* Mostrar el botón "Cargar más" si es necesario */}
-            {getDisplayedAlbums().length &&
+            {displayedAlbums.length &&
               currentPage * 50 < albumsDifference[0].length && (
-                <button
+               <div className="tw-flex tw-flex-col tw-gap-2 tw-mt-8">
+                <Button type="submit" variant="outlined" 
                   onClick={handleLoadMore}
-                  className="tw-mt-4 tw-w-full tw-bg-blue-400 tw-text-white tw-py-2 tw-rounded-full"
+                  
                 >
                   Cargar más Discos
-                </button>
+                </Button>
+                </div>
               )}
           </div>
         )}

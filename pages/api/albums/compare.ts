@@ -23,14 +23,15 @@ async function getVinylCollection(
 
   while (currentPage <= totalPages) {
     const userCollection = await dis
-      .user()
-      .collection()
-      .getReleases(username, 0, {
-        page: page,
-        per_page: per_page,
-        sort: "artist",
-        sort_order: "asc",
-      });
+    .user()
+    .collection()
+    .getReleases(username, 0, {
+      page: currentPage, // Utiliza currentPage en lugar de page
+      per_page: per_page,
+      sort: "artist",
+      sort_order: "asc",
+    });
+  
 
     totalPages = userCollection.pagination.pages;
 

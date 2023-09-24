@@ -34,6 +34,7 @@ export default function Comparador() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  
 
   useEffect(() => {
     if (userData?.userProfile?.username) {
@@ -65,7 +66,6 @@ export default function Comparador() {
     }
   }, [error, comparePressed]);
 
-  console.log("DIFERENCIA:", albumsDifference);
 
   const handleLoadMore = () => {
     setCurrentPage(currentPage + 1);
@@ -95,6 +95,7 @@ export default function Comparador() {
     >
       <div className="tw-container tw-mx-auto tw-p-6">
         <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Matching</h1>
+        
         <form onSubmit={handleSubmit} className="tw-flex tw-flex-col tw-gap-4">
           <div className="tw-flex tw-flex-col tw-gap-2">
             <TextField

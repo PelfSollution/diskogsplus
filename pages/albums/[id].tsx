@@ -214,6 +214,9 @@ function AlbumDetails() {
   }, [userData, username, id]);
 
   useEffect(() => {
+    if (albumInfo) {
+      setEnrichedInfo(albumInfo.enrichedInfo || null);
+  }
     if (albumInfo && albumInfo.isPopularAlbum) {
       handleOpenSnackbar(
         `El disco de ${albumInfo.artist} que tienes en vinilo, no se encontró en Spotify.`
@@ -545,13 +548,6 @@ function AlbumDetails() {
   const truncatedHTML = truncateBio(sanitizedHTML);
   const year = new Date(albumInfo.released).getFullYear();
   const yearReleased = isNaN(year) ? null : year; 
-
- 
-  useEffect(() => {
-    if (albumInfo) {
-        setEnrichedInfo(albumInfo.enrichedInfo || null);
-    }
-}, [albumInfo]); 
 
 
 

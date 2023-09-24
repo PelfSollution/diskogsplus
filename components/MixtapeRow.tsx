@@ -144,56 +144,51 @@ function getKeyNotation(key: number, modeNumber: number) {
 
 const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
   return (
-
-    
-    <div className="tw-flex tw-flex-col md:tw-flex-row tw-justify-center tw-items-center tw-gap-y-4 md:tw-gap-x-8 tw-py-2 tw-px-2 tw-border tw-border-gray-200">
-      {/* Primera columna: Embed de Spotify o mensaje */}
-      <div className="tw-max-w-[350px] tw-w-full tw-flex tw-justify-center tw-items-center tw-mb-2 md:tw-mb-0">
-        {data.spotifytrackid ? (
-          <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
-        ) : (
-          <div className="tw-border tw-border-green-400 tw-rounded-lg tw-min-w-[350px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
-            <span className="tw-text-green-400">No está en Spotify</span>
-          </div>
-        )}
-      </div>
-
-      {/* Segunda columna: Información y Botón */}
-      <div className=" tw-w-full tw-flex tw-flex-col tw-justify-center tw-items-center md:tw-items-start">
-        <span className="tw-font-bold tw-text-center md:tw-text-left tw-break-all">
-          {data.artista}
-        </span>
-        <Link
-          key={data.disco_id}
-          href={`/albums/${data.disco_id}`}
-          className="tw-text-gray-500 tw-underline tw-text-center md:tw-text-left"
-        >
-          {data.trackname}
-        </Link>
-        <div className="tw-flex tw-item-center tw-gap-2 tw-items-start tw-max-w-[100] tw-mt-2">
-          {data.tempo && (
-            <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
-              {data.tempo.toFixed(0)}
+    <div className="tw-border tw-border-gray-200 tw-rounded tw-shadow-md tw-p-2 tw-bg-white hover:tw-shadow-lg tw-transition tw-duration-300">
+      <div className="tw-flex tw-flex-col md:tw-flex-row tw-gap-y-0 md:tw-gap-x-6 tw-items-center">
+        
+        {/* Primera columna: Embed de Spotify o mensaje */}
+        <div className="tw-w-full md:tw-w-1/3 tw-flex tw-justify-center tw-items-center tw-mb-2 md:tw-mb-0 ">
+          {data.spotifytrackid ? (
+            <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
+          ) : (
+            <div className="tw-border tw-border-green-400 tw-rounded-lg tw-min-w-[350px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
+              <span className="tw-text-green-400">No está en Spotify</span>
             </div>
           )}
-
-          {typeof data.key === "number" && typeof data.mode === "number" ? (
-            <div
-              className={`tw-text-xs tw-text-white tw-px-2 tw-py-1 tw-rounded-full ${
-                getKeyNotation(data.key, data.mode).color
-              }`}
-            >
-              {getKeyNotation(data.key, data.mode).notation}
-            </div>
-          ) : null}
         </div>
 
-        <button
-          className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 tw-px-2 tw-py-1 tw-rounded tw-mt-2 tw-w-full md:tw-w-auto tw-self-center md:tw-self-start"
-          onClick={() => onDelete(data)}
-        >
-          Eliminar
-        </button>
+{/* Segunda columna: Información */}
+<div className="tw-w-full md:tw-w-1/2">
+    <span className="tw-font-bold tw-text-lg tw-block tw-text-center md:tw-text-left">{data.artista}</span>
+    <Link key={data.disco_id} href={`/albums/${data.disco_id}`} className="tw-text-gray-500 tw-underline tw-block tw-mt-0 tw-text-center md:tw-text-left">
+        {data.trackname}
+    </Link>
+    <div className="tw-flex tw-gap-2 tw-mt-2 tw-justify-center md:tw-justify-start">
+        {data.tempo && (
+            <div className="tw-text-sm tw-bg-gray-200 tw-rounded tw-px-2 tw-py-1">
+                {data.tempo.toFixed(0)}
+            </div>
+        )}
+        {typeof data.key === "number" && typeof data.mode === "number" ? (
+            <div className={`tw-text-sm tw-text-white tw-px-2 tw-py-1 tw-rounded ${getKeyNotation(data.key, data.mode).color}`}>
+                {getKeyNotation(data.key, data.mode).notation}
+            </div>
+        ) : null}
+    </div>
+</div>
+
+
+
+        {/* Tercera columna: Botón de Eliminar */}
+        <div className="tw-w-full md:tw-w-1/6 tw-text-center md:tw-text-right tw-mt-2 md:tw-mt-0">
+          <button
+            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 tw-px-3 tw-py-2 tw-rounded tw-transition tw-w-full"
+            onClick={() => onDelete(data)}
+          >
+            Eliminar
+          </button>
+        </div>
       </div>
     </div>
   );

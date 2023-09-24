@@ -882,7 +882,7 @@ function AlbumDetails() {
                           {track.title} - {track.duration}
                           <div className="tw-flex tw-item-center tw-gap-1 tw-items-start tw-max-w-[100]">
                             {track.tempo && (
-                              <div className="tw-text-xs tw-bg-gray-200 tw-rounded-full tw-px-2 tw-py-1">
+                              <div className="tw-text-sm tw-bg-gray-200 tw-rounded tw-px-2 tw-py-1">
                                 {track.tempo.toFixed(0)}
                               </div>
                             )}
@@ -892,7 +892,7 @@ function AlbumDetails() {
                             typeof track.mode === "number" &&
                             track.mode !== null ? (
                               <div
-                                className={`tw-text-xs tw-text-white tw-px-2 tw-py-1 tw-rounded-full ${
+                                className={`tw-text-sm tw-text-white tw-px-2 tw-py-1 tw-rounded  ${
                                   getKeyNotation(track.key, track.mode).color
                                 }`}
                               >

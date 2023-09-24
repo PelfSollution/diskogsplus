@@ -60,6 +60,7 @@ export default function Mixtape() {
   const [mixtape, setMixtape] = useState<Mixtape[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const [searchMode, setSearchMode] = useState<number | null>(null);
 
   const { data: userData } = useGetUserData();
   const [searchTerm, setSearchTerm] = useState("");
@@ -321,27 +322,38 @@ export default function Mixtape() {
           <FormControl variant="outlined" size="small">
             <InputLabel>Filtrar por:</InputLabel>
             <Select
-              value={searchKey ?? ""}
-              onChange={(e) =>
-                setSearchKey(e.target.value ? Number(e.target.value) : null)
-              }
-              label="Filtrar por:"
-              className="tw-min-w-[110%] tw-mr-20 sm:tw-mr-20"
-            >
-              <MenuItem value="">
-                <em>Escala crómatica - Camelot</em>
-              </MenuItem>
-              {Array.from({ length: 12 }).map((_, key) =>
-                [1, 2].map((modeNumber) => {
-                  const { notation } = getKeyNotation(key, modeNumber);
-                  return (
-                    <MenuItem value={key} key={`${key}-${modeNumber}`}>
-                      {notation}
-                    </MenuItem>
-                  );
-                })
-              )}
-            </Select>
+  value={searchKey !== null && searchMode !== null ? `${searchKey}-${searchMode}` : ""}
+  onChange={(e) => {
+    if (e.target.value === 'all') {
+      // Lógica para mostrar todos los temas
+      setSearchKey(null);
+      setSearchMode(null);
+    } else if (typeof e.target.value === 'string') {
+      const [key, mode] = e.target.value.split("-").map(Number);
+      setSearchKey(key);
+      setSearchMode(mode);
+    }
+  }}
+  label="Filtrar por:"
+  className="tw-min-w-[110%] tw-mr-20 sm:tw-mr-20"
+>
+  <MenuItem value="all">
+    <em>Mostrar toda la escala (Camelot)</em>
+  </MenuItem>
+
+  {Array.from({ length: 12 }).map((_, key) =>
+    [1, 2].map((modeNumber) => {
+      const { notation } = getKeyNotation(key, modeNumber);
+      return (
+        <MenuItem value={`${key}-${modeNumber}`} key={`${key}-${modeNumber}`}>
+          {notation}
+        </MenuItem>
+      );
+    })
+  )}
+</Select>
+
+
           </FormControl>
 
           <TextField

@@ -8,7 +8,10 @@ const enrichArtistInfoHandler = async (req: NextApiRequest, res: NextApiResponse
     const { artistName, albumName, discoId } = req.body;
 
     try {
-      const enrichedInfo = await enrichArtistInfoWithChatGPT(artistName, albumName, discoId);
+      console.log("Antes de llamar a enrichArtistInfoWithChatGPT");
+const enrichedInfo = await enrichArtistInfoWithChatGPT(artistName, albumName, discoId);
+console.log("Después de llamar a enrichArtistInfoWithChatGPT", enrichedInfo);
+
       res.status(200).json({ enrichedInfo });
     } catch (error) {
       console.error("Error al enriquecer la información:", error);

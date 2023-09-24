@@ -69,6 +69,9 @@ function AlbumDetails() {
 
 
 
+
+
+
   const handleAddToWantlist = async (
     username: string,
     disco_id: number,
@@ -175,6 +178,7 @@ function AlbumDetails() {
   const { data, isLoading, error } = useGetAlbumInfo(
     idNumber,
     Number(masterId)
+    
   );
 
 
@@ -194,6 +198,9 @@ function AlbumDetails() {
       router.push(`/chat${baseQuery}`);
     }
   };
+
+
+
 
   useEffect(() => {
     const checkIfAlbumInWantlist = async () => {
@@ -538,6 +545,14 @@ function AlbumDetails() {
   const truncatedHTML = truncateBio(sanitizedHTML);
   const year = new Date(albumInfo.released).getFullYear();
   const yearReleased = isNaN(year) ? null : year; 
+
+ 
+  useEffect(() => {
+    if (albumInfo) {
+        setEnrichedInfo(albumInfo.enrichedInfo || null);
+    }
+}, [albumInfo]); 
+
 
 
   const handleEnrichArtistInfo = async () => {

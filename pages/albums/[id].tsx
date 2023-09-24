@@ -738,9 +738,9 @@ function AlbumDetails() {
                 className="tw-text-xs tw-font-thin tw-mb-2"
                 //...otros props...
             />
-            <div>{albumInfo.enrichedInfo}</div> 
+            <div>{enrichedInfo}</div> 
         </Typography>
-        {!albumInfo.enrichedInfo && 
+        {!enrichedInfo && 
             <Button 
                 type="submit" 
                 variant="outlined" 

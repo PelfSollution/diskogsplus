@@ -1,4 +1,4 @@
-// services/supabase/checkAlbumInWantlist.ts
+
 import { supabase } from "@/lib/supabase";
 
 export async function isAlbumInWantlist(username: string, disco_id: number) {
@@ -8,7 +8,7 @@ export async function isAlbumInWantlist(username: string, disco_id: number) {
       .select("disco_id")
       .eq('username', username)
       .eq('disco_id', disco_id)
-      .single(); 
+      .maybeSingle(); 
 
     if (error) {
       throw error;
@@ -20,3 +20,4 @@ export async function isAlbumInWantlist(username: string, disco_id: number) {
     return false;
   }
 }
+

@@ -23,7 +23,9 @@ export async function enrichArtistInfoWithChatGPT(
 ): Promise<string> {
   // Intenta obtener la información enriquecida de Supabase primero
 
+  console.log("[Supabase] Intentando obtener información enriquecida desde Supabase...");
   let enrichedInfo: string | null = await getArtistInfoFromSupabase(discoId);
+  console.log("[Supabase] Respuesta obtenida.");
 
   // Si ya tenemos la información enriquecida en Supabase, la retornamos
 
@@ -40,7 +42,7 @@ export async function enrichArtistInfoWithChatGPT(
   }
 
   // Si no, intentamos obtener la información de OpenAI
-
+  console.log("[OpenAI] Intentando obtener información desde OpenAI...");
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -53,7 +55,7 @@ export async function enrichArtistInfoWithChatGPT(
         },
       ],
 
-      max_tokens: 300,
+      max_tokens: 500,
 
       temperature: 1,
 
@@ -76,7 +78,7 @@ export async function enrichArtistInfoWithChatGPT(
       discoId,
       enrichedInfo
     );
-
+    console.log("[OpenAI] Información obtenida con éxito.");
     return enrichedInfo;
   } catch (error) {
     console.error("Error en OpenAI:", error);

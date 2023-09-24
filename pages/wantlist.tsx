@@ -20,6 +20,7 @@ import {
   getWantlistItemsUser,
   WantlistEntry,
 } from "@/services/supabase/getWantlistItemsUser";
+import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
 
 function Wantlist() {
   const { data: userData } = useGetUserData();
@@ -38,7 +39,6 @@ function Wantlist() {
   const [isImporting, setIsImporting] = useState<boolean>(false);
   const [wantlistData, setWantlistData] = useState([]);
 
-
   const handleOpenSnackbar = (message: string) => {
     setSnackbar({ isOpen: true, message });
   };
@@ -51,10 +51,9 @@ function Wantlist() {
     const response = await fetch("/api/albums/importWantlistFromDiscogs");
     const data = await response.json();
     setWantlistData(data);
-}
+  };
 
   const handleImportWantlist = async () => {
-  
     setIsImporting(true);
     try {
       const response = await fetch("/api/albums/importWantlistFromDiscogs", {
@@ -68,7 +67,9 @@ function Wantlist() {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          handleOpenSnackbar("¡Tu wantlist de Discogs ha sido importada con éxito!");
+          handleOpenSnackbar(
+            "¡Tu wantlist de Discogs ha sido importada con éxito!"
+          );
           location.reload();
         } else {
           handleOpenSnackbar("Hubo un error al importar la lista.");
@@ -214,7 +215,11 @@ function Wantlist() {
                 />
                 <Chip
                   className="tw-absolute tw-bottom-10 tw-left-4 tw-text-xs"
-                  label={<span className="tw-font-bold">{item.artista}</span>}
+                  label={
+                    <span className="tw-font-bold">
+                      {removeAllSubstringsInParenthesis(item.artista)}
+                    </span>
+                  }
                   style={{
                     backgroundColor: "#f87171",
                     color: "white",

@@ -7,15 +7,15 @@ import deleteFromMixtape from "../services/supabase/deleteFromMixtape";
 import { getMixtapeURLs } from "../services/supabase/getMixtapeURLs";
 import MixtapeRow from "@/components/MixtapeRow";
 import {
-  Snackbar,
   FormControl,
   InputLabel,
   MenuItem,
   TextField,
   Select,
+  Typography,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
+import CustomSnackbar from "@/components/CustomSnackbar";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
@@ -60,8 +60,7 @@ export default function Mixtape() {
   const [mixtape, setMixtape] = useState<Mixtape[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const { data: userData } = useGetUserData();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBPM, setSearchBPM] = useState<number | null>(null);
@@ -69,6 +68,10 @@ export default function Mixtape() {
   const [bpmOrder, setBpmOrder] = useState<"ASC" | "DESC" | null>(null);
   const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
   const [loadingMixtapes, setLoadingMixtapes] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({ isOpen: false, message: "" });
 
   const router = useRouter();
 
@@ -93,12 +96,11 @@ export default function Mixtape() {
   }, [userData]);
 
   const handleOpenSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setOpenSnackbar(true);
+    setSnackbar({ isOpen: true, message });
   };
 
   const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
+    setSnackbar((prev) => ({ ...prev, isOpen: false }));
   };
 
   async function handleDelete(track: Mixtape) {
@@ -155,6 +157,19 @@ export default function Mixtape() {
       <Layout>
         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
           <CustomCircularProgress />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (mixtape.length === 0) {
+    return (
+      <Layout>
+        <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4 tw-col-span-full">
+          <Typography variant="body2" color="textSecondary">
+            Aún no has creado ninguna mixtape. Comienza seleccionando algunas
+            canciones para tu mixtape.
+          </Typography>
         </div>
       </Layout>
     );
@@ -279,13 +294,7 @@ export default function Mixtape() {
 
     const notation = pitchClasses[key] || "N/A";
 
-    // Agregamos un log aquí para ver qué se está produciendo para cada pista
-    // console.log(`Intentando encontrar: ${notation} ${mode} en 'camelotCodes'`);
-
     if (!camelotCodes[`${notation} ${mode}`]) {
-      /* console.log(
-        `La combinación ${notation} ${mode} no se encuentra en 'camelotCodes'`
-      );*/
       return {
         notation: `${notation} (N/A)`,
         color: "tw-bg-gray-400",
@@ -293,7 +302,6 @@ export default function Mixtape() {
     }
 
     const camelotCode = camelotCodes[`${notation} ${mode}`];
-    //console.log(`Camelot code encontrado: ${camelotCode}`);
 
     return {
       notation: `${notation} (${camelotCode})`,
@@ -413,21 +421,10 @@ export default function Mixtape() {
         </div>
       </div>
 
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        open={openSnackbar}
-        autoHideDuration={3000} // Duración en milisegundos
+      <CustomSnackbar
+        isOpen={snackbar.isOpen}
+        message={snackbar.message}
         onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-        action={
-          <IconButton
-            size="small"
-            color="inherit"
-            onClick={handleCloseSnackbar}
-          >
-            <CloseIcon />
-          </IconButton>
-        }
       />
     </Layout>
   );

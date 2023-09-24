@@ -9,6 +9,7 @@ import {
   MenuItem,
   TextField,
   IconButton,
+  Typography,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
@@ -188,49 +189,57 @@ function Wantlist() {
         </div>
 
         <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
-          {filteredItems.map((item: WantlistEntry) => (
-            <Link
-              key={item.disco_id}
-              href={`/albums/${item.disco_id}?from=compare`}
-              passHref
-            >
-              <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md hover:tw-shadow-dark tw-cursor-pointer tw-overflow-hidden tw-inner-border-2">
-                <Image
-                  src={item.image_url}
-                  alt={item.album}
-                  width={500}
-                  height={240}
-                  className="tw-w-full tw-h-48 tw-object-cover tw-rounded tw-transform hover:tw-scale-110 hover:tw-opacity-90 tw-transition tw-duration-300 tw-ease-in-out"
-                />
-                <Chip
-                  className="tw-absolute tw-bottom-4 tw-left-4 tw-text-xs"
-                  label={item.album}
-                  style={{
-                    backgroundColor: "#282828",
-                    color: "white",
-                    padding: "0",
-                    fontSize: "12px",
-                    height: "28px",
-                  }}
-                />
-                <Chip
-                  className="tw-absolute tw-bottom-10 tw-left-4 tw-text-xs"
-                  label={
-                    <span className="tw-font-bold">
-                      {removeAllSubstringsInParenthesis(item.artista)}
-                    </span>
-                  }
-                  style={{
-                    backgroundColor: "#f87171",
-                    color: "white",
-                    padding: "0",
-                    fontSize: "12px",
-                    height: "28px",
-                  }}
-                />
-              </div>
-            </Link>
-          ))}
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item: WantlistEntry) => (
+              <Link
+                key={item.disco_id}
+                href={`/albums/${item.disco_id}?from=compare`}
+                passHref
+              >
+                <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md hover:tw-shadow-dark tw-cursor-pointer tw-overflow-hidden tw-inner-border-2">
+                  <Image
+                    src={item.image_url}
+                    alt={item.album}
+                    width={500}
+                    height={240}
+                    className="tw-w-full tw-h-48 tw-object-cover tw-rounded tw-transform hover:tw-scale-110 hover:tw-opacity-90 tw-transition tw-duration-300 tw-ease-in-out"
+                  />
+                  <Chip
+                    className="tw-absolute tw-bottom-4 tw-left-4 tw-text-xs"
+                    label={item.album}
+                    style={{
+                      backgroundColor: "#282828",
+                      color: "white",
+                      padding: "0",
+                      fontSize: "12px",
+                      height: "28px",
+                    }}
+                  />
+                  <Chip
+                    className="tw-absolute tw-bottom-10 tw-left-4 tw-text-xs"
+                    label={
+                      <span className="tw-font-bold">
+                        {removeAllSubstringsInParenthesis(item.artista)}
+                      </span>
+                    }
+                    style={{
+                      backgroundColor: "#f87171",
+                      color: "white",
+                      padding: "0",
+                      fontSize: "12px",
+                      height: "28px",
+                    }}
+                  />
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4 tw-col-span-full">
+              <Typography variant="body2" color="textSecondary">
+                Aún no tienes ningún disco en la wantlist.
+              </Typography>
+            </div>
+          )}
         </div>
       </div>
       <CustomSnackbar

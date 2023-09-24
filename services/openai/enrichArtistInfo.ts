@@ -53,7 +53,7 @@ export async function enrichArtistInfoWithChatGPT(
         },
       ],
 
-      max_tokens: 500,
+      max_tokens: 300,
 
       temperature: 1,
 

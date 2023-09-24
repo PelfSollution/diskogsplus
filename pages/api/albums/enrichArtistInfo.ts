@@ -2,7 +2,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { enrichArtistInfoWithChatGPT } from "@/services/openai/enrichArtistInfo";
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+
+const enrichArtistInfoHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     const { artistName, albumName, discoId } = req.body;
 
@@ -17,3 +18,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(405).json({ error: "Método no permitido." });
   }
 };
+
+export default enrichArtistInfoHandler;

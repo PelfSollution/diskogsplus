@@ -27,6 +27,7 @@ import useGetMixtape from "@/hooks/useGetMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import addMixtape from "@/services/supabase/addMixtape";
 import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
+import { enrichArtistInfoWithChatGPT } from "@/services/openai/enrichArtistInfo";
 import { getArtistImageFromSupabase } from "@/services/supabase/getArtistImageFromSupabase";
 import { isAlbumInWantlist } from "@/services/supabase/checkAlbumInWantlist";
 import DOMPurify from "dompurify";
@@ -63,6 +64,10 @@ function AlbumDetails() {
   const [backCoverImage, setBackCoverImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [enrichedInfo, setEnrichedInfo] = useState<string | null>(null);
+
+
+
 
   const handleAddToWantlist = async (
     username: string,
@@ -171,6 +176,7 @@ function AlbumDetails() {
     idNumber,
     Number(masterId)
   );
+
 
   const albumInfo: AlbumInfoInterface | null = data;
   const redirectToChat = () => {
@@ -530,7 +536,56 @@ function AlbumDetails() {
   }
 
   const truncatedHTML = truncateBio(sanitizedHTML);
-  const yearReleased = new Date(albumInfo.released).getFullYear();
+  const year = new Date(albumInfo.released).getFullYear();
+  const yearReleased = isNaN(year) ? null : year; 
+
+
+  const handleEnrichArtistInfo = async () => {
+    console.log("Iniciando handleEnrichArtistInfo...");
+
+    const { artist, title } = albumInfo;
+
+    if (!artist || !title || !idNumber) {
+        console.error("Información necesaria no proporcionada");
+        return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+        const response = await fetch("/api/albums/enrichArtistInfo", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                artistName: artist,
+                albumName: title,
+                discoId: idNumber,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error en la respuesta: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Datos recibidos:", data);
+
+        if (data.enrichedInfo) {
+            setEnrichedInfo(data.enrichedInfo);
+        } else {
+            // Puedes mostrar un mensaje de error al usuario aquí.
+            console.error("Información enriquecida no recibida.");
+        }
+    } catch (error) {
+        console.error("Error en handleEnrichArtistInfo:", error);
+    } finally {
+        setIsGenerating(false);
+    }
+};
+
+  
 
   return (
     <Layout centeredTopContent={true}>
@@ -657,13 +712,18 @@ function AlbumDetails() {
                 />
               </Typography>
             </AccordionSummary>
-            {albumInfo.artistBio && ( // <-- Mostrar solo si hay contenido en artistBio
+            {albumInfo.artistBio && ( 
               <>
                 <AccordionDetails>
                   <Typography
                     variant="body1"
                     className="tw-whitespace-pre-line bio-content"
                   >
+                        <Chip
+                  label="Last.fm"
+                  className="tw-text-xs tw-font-thin tw-mb-1"
+             
+                />
                     <div dangerouslySetInnerHTML={{ __html: truncatedHTML }} />
                   </Typography>
                 </AccordionDetails>
@@ -672,10 +732,26 @@ function AlbumDetails() {
             <Divider className="tw-my-2" />{" "}
             {/* Opcional: Un separador entre la información y la biografía */}
             <AccordionDetails>
-              <Typography variant="body1" className="tw-whitespace-pre-line">
-                {albumInfo.enrichedInfo}
-              </Typography>
-            </AccordionDetails>
+        <Typography variant="body1" className="tw-whitespace-pre-line">
+            <Chip
+                label="OpenAI ESP"
+                className="tw-text-xs tw-font-thin tw-mb-2"
+                //...otros props...
+            />
+            <div>{albumInfo.enrichedInfo}</div> 
+        </Typography>
+        {!albumInfo.enrichedInfo && 
+            <Button 
+                type="submit" 
+                variant="outlined" 
+                className="tw-flex tw-w-full" 
+                onClick={handleEnrichArtistInfo}
+                disabled={isGenerating}
+            >
+                {isGenerating ? "Generando texto..." : "Obtener Información Enriquecida"}
+            </Button>
+        }
+    </AccordionDetails>
           </Accordion>
 
           <div className="tw-mt-1">

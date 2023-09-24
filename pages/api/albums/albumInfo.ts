@@ -2,7 +2,7 @@ var Discogs = require("disconnect").Client;
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 var CryptoJS = require("crypto-js");
-import { enrichArtistInfoWithChatGPT } from "../../../services/openai/enrichArtistInfo";
+import { getArtistInfoFromSupabase } from "../../../services/supabase/getArtistInfoSupabase";
 import { fetchLastfmData, fetchSimilarArtists, fetchSimilarTracks, fetchArtistInfo } from "../../../services/last.fm/fetchData";
 import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken";
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
@@ -145,15 +145,13 @@ export default async function albumInfo(
         
       };
 
-      // Enriquece la información del artista usando ChatGPT
-      let enrichedArtistInfo = "";
-      if (releaseData.artists && releaseData.artists[0]?.name) {
-        enrichedArtistInfo = await enrichArtistInfoWithChatGPT(
-          releaseData.artists[0].name,
-          releaseData.title,
-          releaseData.id,
-        );
+      let enrichedArtistInfoFromDb = await getArtistInfoFromSupabase(releaseData.id);
+      console.log("Enriched artist info from DB:", enrichedArtistInfoFromDb);
+
+      if (!enrichedArtistInfoFromDb) {
+          enrichedArtistInfoFromDb = ""; 
       }
+      
 
       let lastfmTags: string[] = [];
       let similarArtists: any[] = [];
@@ -210,7 +208,7 @@ export default async function albumInfo(
 
       const combinedData = {
         ...albumInfo,
-        enrichedInfo: removeAllSubstringsInParenthesis(enrichedArtistInfo), //ojo con esto
+        enrichedInfo: removeAllSubstringsInParenthesis(enrichedArtistInfoFromDb),
         lastfmTags: lastfmTags,
         spotifyAlbumId: spotifyAlbumId,
         isPopularAlbum: isPopularAlbum,

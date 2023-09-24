@@ -405,7 +405,7 @@ export default function Mixtape() {
                   router.push(newPath);
                 }}
                 label="Selecciona una mixtape"
-                className="tw-min-w-[400px]"
+                className="tw-min-w-[320px]"
               >
                 <MenuItem value="">
                   <em>Selecciona una mixtape...</em>

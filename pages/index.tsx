@@ -9,7 +9,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Si la cookie existe, redirige al dashboard
+
     if (getCookie("username")) {
       router.push("/dashboard");
     }
@@ -17,8 +17,8 @@ export default function Home() {
 
   return (
     <Layout
-      title="Inicio - Discogs Plus"
-      description="Inicia sesión en Discogs Plus"
+      title="Inicio - Diskogs +"
+      description="Inicia sesión en Diskogs +"
       allowPublicAccess={true}
     >
       <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-full">
@@ -31,9 +31,10 @@ export default function Home() {
               width={500}
               height={149}
             />
-            <p className="tw-text-xl tw-mt-2">Connect your  <a href="https://discogs.com/" target="_blank" rel="noopener noreferrer" className="tw-text-blue-500 tw-hover:underline">
+         <p className="tw-text-xl tw-mt-2">Conecta tu cuenta de <a href="https://discogs.com/" target="_blank" rel="noopener noreferrer" className="tw-text-blue-500 tw-hover:underline">
                 Discogs
-            </a> account and delve into your vinyl collection in an enriched manner with <strong>Diskogs Plus</strong>.</p>
+            </a> y sumérgete en tu colección de vinilos de una manera enriquecida con <strong>Diskogs Plus</strong>.</p>
+
           </div>
         </header>
 

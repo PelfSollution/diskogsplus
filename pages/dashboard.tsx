@@ -245,7 +245,7 @@ function Dashboard() {
     <Layout
       centeredContent={true}
       title="Dashboard - Diskogs +"
-      description="Tu página personal"
+      description="Tu página principal [dasboard] de Diskogs +"
     >
       {message ? (
         <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">

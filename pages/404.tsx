@@ -19,7 +19,7 @@ const Custom404 = () => (
             width={300}
             height={300}
           />
-     <p>Oops! Looks like this vinyl is broken. We couldn&apos;t find what you were looking for.</p>
+     <p>¡Vaya! Parece que este vinilo est&aacute; roto. No pudimos encontrar lo que estabas buscando.</p>
 
         </div>
       </header>

@@ -143,7 +143,7 @@ function Wantlist() {
     <Layout
       centeredContent={false}
       title="Wantlist - Diskogs +"
-      description="Discos de tu wantlist"
+      description="Tu Wantlist de Discos"
     >
       <div className="tw-container tw-mx-auto tw-p-6">
         <div className="tw-flex tw-justify-between tw-items-center">

@@ -81,7 +81,7 @@ export default function Chat() {
   return (
     <Layout
     title="Chat - Diskogs +"
-    description="Chatlogs de tus discos"
+    description="Chatlogs de preguntas a tus Discos"
       centeredTopContent={true}
     >
       <div className="tw-container tw-mx-auto tw-p-6">

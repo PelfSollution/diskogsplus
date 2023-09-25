@@ -719,7 +719,7 @@ function AlbumDetails() {
                 Información{" "}
                 <Chip
                   label="powered by [Last.fm & 🤖 DiscoBOT]"
-                  className="tw-text-xs tw-font-thin tw-ml-1"
+                  className="tw-text-xs tw-font-thin tw-mb-1 md:tw-ml-2"
                 />
               </Typography>
             </AccordionSummary>
@@ -774,12 +774,15 @@ function AlbumDetails() {
                 aria-controls="panel3a-content"
                 id="panel3a-header"
               >
-                <Typography variant="h6">Artistas Similares</Typography>
-                <Chip
-                  label="powered by Last.fm"
-                  className="tw-text-xs tw-font-thin tw-ml-2 tw-mb-1"
-                  color="warning"
-                />
+             <div className="tw-flex tw-flex-wrap tw-items-center">
+  <Typography variant="h6" className="tw-mr-2">Artistas Similares</Typography>
+  <Chip
+    label="powered by Last.fm"
+    className="tw-text-xs tw-font-thin tw-ml-1 md:tw-ml-2"
+    color="warning"
+  />
+</div>
+
               </AccordionSummary>
               <AccordionDetails>
                 <div>
@@ -863,12 +866,15 @@ function AlbumDetails() {
                 aria-controls="panel1a-content"
                 id="panel1a-header"
               >
+             <div className="tw-flex tw-flex-wrap tw-items-center">
                 <Typography variant="h6">Tracklist</Typography>
                 <Chip
                   label="powered by Spotify"
-                  className="tw-text-xs tw-font-thin tw-ml-1"
+                  className="tw-text-xs tw-font-thin tw-ml-1 md:tw-ml-2"
                   color="success"
                 />
+
+                </div>
               </AccordionSummary>
               <AccordionDetails>
                 <Stack direction="column" spacing={1}>

@@ -29,15 +29,16 @@ ejemplo user para matching: dayats
 ## Estructura de Carpetas
 ```
 diskogsplus/
-┣ .next/
 ┣ app/
 ┃ ┗ api/
 ┃   ┗ chat/
+┃ ┃   ┗ route.ts
 ┣ components/
 ┃ ┣ ui/
 ┃ ┃ ┗ button.tsx
 ┃ ┣ CustomCircularProgress.tsx
 ┃ ┣ CustomHead.tsx
+┃ ┣ CustomSnackbar.tsx
 ┃ ┣ Layout.tsx
 ┃ ┣ MixtapeRow.tsx
 ┃ ┣ TopNavBar.tsx
@@ -61,8 +62,22 @@ diskogsplus/
 ┃ ┃ ┗ index.tsx
 ┃ ┣ api/
 ┃ ┃ ┣ albums/
+┃ ┃ ┃ ┣ addToWantlist.ts
+┃ ┃ ┃ ┣ albumData.ts
+┃ ┃ ┃ ┣ albumInfo.ts
+┃ ┃ ┃ ┣ catalog.ts
+┃ ┃ ┃ ┣ compare.ts
+┃ ┃ ┃ ┣ enrichArtistInfo.ts
+┃ ┃ ┃ ┣ importWantlistFromDiscogs.ts
+┃ ┃ ┃ ┗ removeFromWantlist.ts
 ┃ ┃ ┣ auth/
+┃ ┃ ┃ ┣ callback/
+┃ ┃ ┃ ┣ authorize.ts
+┃ ┃ ┃ ┣ authorizeSpotify.ts
+┃ ┃ ┃ ┣ identity.ts
+┃ ┃ ┃ ┗ logout.ts
 ┃ ┃ ┗ images/
+┃ ┃   ┗ generate.ts
 ┃ ┣ 404.tsx
 ┃ ┣ _app.tsx
 ┃ ┣ _document.tsx
@@ -74,14 +89,12 @@ diskogsplus/
 ┃ ┣ matching.tsx
 ┃ ┣ mixtape.tsx
 ┃ ┣ mixtapeplayer.tsx
-┃ ┣ spotify.tsx
-┃ ┗ supabasetest.tsx
+┃ ┗ wantlist.tsx
 ┣ public/
 ┃ ┣ diskogs-logo.gif
 ┃ ┣ favicon.png
-┃ ┣ next.svg
-┃ ┣ no-portada.gif
-┃ ┗ vercel.svg
+┃ ┣ img-404.png
+┃ ┗ no-portada.gif
 ┣ services/
 ┃ ┣ last.fm/
 ┃ ┃ ┗ fetchData.ts
@@ -99,36 +112,43 @@ diskogsplus/
 ┃ ┗ supabase/
 ┃   ┣ addChatLogs.ts
 ┃   ┣ addMixtape.ts
+┃   ┣ addUser.ts
+┃   ┣ addWantlistEntry.ts
+┃   ┣ checkAlbumInWantlist.ts
+┃   ┣ checkUserExists.ts
 ┃   ┣ deleteChatLogs.ts
 ┃   ┣ deleteFromMixtape.ts
 ┃   ┣ deleteMixtapeURL.ts
+┃   ┣ deleteWantlistEntry.ts
 ┃   ┣ getArtistImageFromSupabase.ts
+┃   ┣ getArtistInfoSupabase.ts
 ┃   ┣ getChatLogsUser.ts
 ┃   ┣ getLastChatLogForUser.ts
 ┃   ┣ getMixtape.ts
 ┃   ┣ getMixtapeURLs.ts
 ┃   ┣ getSongsFromSupabase.ts
 ┃   ┣ getUserChats.ts
+┃   ┣ getWantlistItemsUser.ts
 ┃   ┣ imageService.ts
+┃   ┣ saveArtistInfotoSupabase.ts
 ┃   ┣ saveMixtapeURL.ts
 ┃   ┗ updateChatLogs.ts
 ┣ styles/
 ┃ ┗ globals.css
 ┣ types/
-┃ ┗ Mixtape.ts
+┃ ┣ Mixtape.ts
+┃ ┗ types.ts
 ┣ .env.local
 ┣ .env.local.sample
 ┣ .eslintrc.json
 ┣ .gitignore
 ┣ README.md
 ┣ components.json
-┣ functions.jsonl
 ┣ next-env.d.ts
 ┣ next.config.js
 ┣ package-lock.json
 ┣ package.json
 ┣ postcss.config.js
-┣ sampleData.jsonl
 ┣ tailwind.config.js
 ┣ tailwind.config.ts
 ┗ tsconfig.json
@@ -186,7 +206,7 @@ diskogsplus/
 - APIs: Discogs, Last.fm, Spotify, OpenAI.
 - Deploy: Vercel.
 - Otros: TypeScript, ESLint, Prettier, Husky, Lint-Staged, Commitlint, Vercel AI SDK.
-
+- VS Code, Cursor, Github Copilot
 
 ## Inicialización del Proyecto
 

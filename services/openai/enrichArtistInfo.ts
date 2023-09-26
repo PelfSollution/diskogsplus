@@ -51,9 +51,8 @@ export async function enrichArtistInfoWithChatGPT(
 
   // Intenta obtener la información enriquecida de Supabase primero
 
-  console.log("[Supabase] Intentando obtener información enriquecida desde Supabase...");
   let enrichedInfo: string | null = await getArtistInfoFromSupabase(discoId);
-  console.log("[Supabase] Respuesta obtenida.");
+
 
   // Si ya tenemos la información enriquecida en Supabase, la retornamos
 

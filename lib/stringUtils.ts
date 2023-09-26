@@ -34,6 +34,12 @@ function removeStopWords(input: string, stopWords: string[]): string {
     return input.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
   
+  export function truncateString(str: string, num: number) {
+    if (str.length <= num) {
+      return str;
+    }
+    return str.slice(0, num) + "...";
+  }
   
   export function cleanInput(input: string, stopWords: string[] = []): string {
     let cleanedInput = cleanString(input);

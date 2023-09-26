@@ -1,23 +1,28 @@
 
 # Diskogs Plus: Enriqueciendo tu experiencia en Discogs
 
-Una aplicación web responsiva creada para los amantes de la música que usan Discogs. Desarrollada con Next.js y TypeScript, esta herramienta proporciona un conjunto robusto de funcionalidades para enriquecer la experiencia del usuario.
+Una aplicación web responsiva diseñada para amantes de la música en vinilo, DJs y coleccionistas que utilizan Discogs. Desarrollada con Next.js y TypeScript, esta herramienta ofrece un conjunto robusto de funcionalidades para mejorar la experiencia del usuario.
 
 ## Funcionalidades Principales:
 
-- Exploración de Catálogo: No sólo puedes visualizar tu catálogo de Discogs, sino que también puedes acceder al detalle de cada álbum con información enriquecida a partir de otras APIs como Last.fm, Spotify y OpenAI.
+- **Exploración de Tu Catálogo:** No solo puedes visualizar tu catálogo de Discogs, sino que también puedes acceder a detalles enriquecidos de cada álbum. Esto se logra mediante la integración con otras APIs como Last.fm (etiquetas, coincidencias con otros artistas similares, etc.), Spotify y OpenAI, con las cuales podrás generar portadas y ampliar información.
 
-- Mixtape Personal: Crea tu propia mixtape seleccionando canciones de diferentes álbumes. También puedes filtrar y ordenar las canciones por BPM, clave y escala camelot para facilitar el trabajo a los DJs preparando listas para tus sessiones. Una vez que estés satisfecho, puedes exportar esta mixtape como una lista directamente a tu cuenta de Spotify y compartir en redes sociales.
+- **Mixtape Personal:** Crea tu propia "mixtape" seleccionando canciones de diferentes álbumes. Además, cuentas con la posibilidad de filtrar y ordenar las pistas por BPM, clave musical y escala Camelot, facilitando así la preparación de sesiones para DJs. Una vez satisfecho, podrás exportar esta mixtape directamente a tu cuenta de Spotify y compartirla en redes sociales.
 
-- Comparativa de Catálogos: Compara tu colección de discos con la de otros usuarios. Descubre y escucha álbumes que no posees y agrégales fácilmente a tu Wantlist.
+- **Ask to DiscBOT:** Realiza preguntas relacionadas con un álbum específico y obtén respuestas por medio de inteligencia artificial.
 
-## Futuras Funcionalidades (Roadmap):
+- **Comparativa de Catálogos:** Compara tu colección de discos con la de otros usuarios. Descubre y escucha álbumes que no posees y añádelos fácilmente a tu "Wantlist".
 
-- [x] Gen-D: Una característica que utiliza inteligencia artificial para generar álbumes que nunca existieron. 
+## Futuras Funcionalidades:
 
-- [x] Herramientas para DJs: Filtra y ordena canciones por características esenciales para DJs, como BPMs, armonía y color de los temas.
+- [ ] Soporte Multi-idioma.
+- [ ] Notificaciones de conciertos en tu ciudad de artistas de tu colección.
+- [ ] Implementación de next-auth junto con Supabase para usuarios que no posean una cuenta en Discogs (consultas generales de discos).
+- [ ] Utilización de Langchain para una mejor gestión de LLM (agentes, contexto específico, memoria, prevención de alucinaciones, etc.).
 
-- [x] Ask to Album: Haz preguntas relacionadas con un álbum específico y recibe respuestas mediante inteligencia artificial.
+## Deploy (Vercel)
+
+- [Diskogs Plus](https://diskogsplus.vercel.app/)
 
 ## Usuario DEMO Discogs
 
@@ -52,6 +57,7 @@ diskogsplus/
 ┃ ┣ useGetMixtape.ts
 ┃ ┗ useGetUserData.ts
 ┣ lib/
+┃ ┣ cryptoUtils.ts
 ┃ ┣ musicnotation.ts
 ┃ ┣ stringUtils.ts
 ┃ ┣ supabase.ts
@@ -76,8 +82,10 @@ diskogsplus/
 ┃ ┃ ┃ ┣ authorizeSpotify.ts
 ┃ ┃ ┃ ┣ identity.ts
 ┃ ┃ ┃ ┗ logout.ts
-┃ ┃ ┗ images/
-┃ ┃   ┗ generate.ts
+┃ ┃ ┣ images/
+┃ ┃ ┃ ┗ generate.ts
+┃ ┃ ┣ getApiKey.ts
+┃ ┃ ┗ saveApiKey.ts
 ┃ ┣ 404.tsx
 ┃ ┣ _app.tsx
 ┃ ┣ _document.tsx
@@ -160,15 +168,16 @@ diskogsplus/
 +-------------+       +---------------------+       +------------------+       +----------------+
 | username(PK)|------>| username (FK)       |<----- | username (FK)    |<----- | username (FK)  |  
 | email       |       | id (PK)             |       | id (PK)          |       | id (PK)        |
-+-------------+       | mixtape_url         |       | disco_id         |       | disco_id       |
-        |             | fecha_creacion      |       | spotifytrackid   |       | notes          | 
-        |             | spotify_username    |       | artista          |       | rating         |
+| openai_key  |       | mixtape_url         |       | disco_id         |       | disco_id       |
++-------------+       | fecha_creacion      |       | spotifytrackid   |       | notes          |
+        |             | spotify_username    |       | artista          |       | rating         | 
         |             +---------------------+       | trackname        |       | created_at     |
         |                                           | tempo            |       | artista        |
-        |---------------------------------|         | key              |       | album          |
-                                          |         | mode             |       | image_url      |
+        |                                           | key              |       | album          |
+        |---------------------------------|         | mode             |       | image_url      |
                                           |         | duration         |       +----------------+
-                                          |         +------------------+      
+                                          |         +------------------+       
+                                          |              
                                           |      
 +-----------------------+       +-------------------+      +-------------------+
 |   generated_images_   |       |     chat_logs     |      |   enrich_artist_  | 
@@ -201,12 +210,12 @@ diskogsplus/
 ## Stack Tecnológico
 
 - Frontend: Next.js
-- Estilos: Emotion, MUI, TailwindCSS 
-- Estado y Datos: Supabase, React Query, SWR.
+- Estilos: MUI, TailwindCSS 
+- Estado y Datos: Supabase (PostgreSQL), SWR.
 - APIs: Discogs, Last.fm, Spotify, OpenAI.
+- Models: GPT-3.5 + DALL·E 2.
 - Deploy: Vercel.
-- Otros: TypeScript, ESLint, Prettier, Husky, Lint-Staged, Commitlint, Vercel AI SDK.
-- VS Code, Cursor, Github Copilot
+- Otros: Vercel AI SDK, TypeScript, ESLint, Prettier, VS Code, Cursor, Github Copilot.
 
 ## Inicialización del Proyecto
 
@@ -215,8 +224,33 @@ diskogsplus/
 ```bash
 npm install
 ```
-2 -Inicia servidor de desarrollo:
+2 - Configurar las variables de entorno:
+
+Modifica el archivo .env.local.sample con tus credenciales y renómbralo a .env.local
+
+```
+CONSUMER_KEY=<tu_clave_de_discogs>
+CONSUMER_SECRET=<tu_clave_secreta_de_discogs>
+BASE_URL=<tu_url_de_despliegue>
+NEXT_PUBLIC_BASE_URL=<tu_url_de_despliegue>
+CRYPT_KEY=<tu_clave_para_encrypt_dencript>
+LASTFM_API_KEY=<tu_clave_de_lastfm>
+OPENAI_API_KEY=<tu_clave_api_de_openai>
+SPOTIFY_CLIENT_ID=<tu_id_de_spotify
+SPOTIFY_CLIENT_SECRET=<tu_clave_secreta_de_spotify>
+NODE_ENTORNO=development / production
+SUPABASE_URL=<tu_url_de_supabase>
+SUPABASE_ANON_KEY=<tu_clave_de_supabase>
+```
+
+3 - Inicia servidor de desarrollo:
 
 ```bash
 npm run dev
 ```
+Abre [http://localhost:3000](http://localhost:3000) con tu navegador para ver el resultado.
+
+4 - Deploy a Vercel:
+
+Una forma sencilla de desplegar este proyecto es utilizar la plataforma Vercel. Ves a [https://vercel.com/signup](https://vercel.com/signup) y crea una cuenta. Una vez creada, haz click en el botón "New Project" y selecciona "Import Project". Selecciona el repositorio de Github y sigue los pasos. Una vez desplegado, puedes acceder a la aplicación desde la URL que te proporciona Vercel.
+

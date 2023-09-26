@@ -7,14 +7,37 @@ import { getLastChatLogForUser } from "../../../services/supabase/getLastChatLog
 
 export const runtime = "edge";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+
+async function getDecryptedUserApiKey(username: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/getApiKey', {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await res.json();
+    return data.apiKey || null;
+  } catch (err) {
+    return null;
+  }
+}
 
 export async function POST(req: Request) {
 
   const userMessages = await req.json();
   const { artista, album, username, disco_id } = userMessages;
+
+    // Obtener la clave API del usuario
+    const userApiKey = await getDecryptedUserApiKey(username);
+    const apiKeyToUse = userApiKey || process.env.OPENAI_API_KEY!;
+  
+    const openai = new OpenAI({
+      apiKey: apiKeyToUse,
+    });
+
   const systemMessage = {
     role: "system",
     content: `Eres un asistente especializado en música y discos. Debes responder preguntas exclusivamente relacionadas con el disco "${album}" del artista "${artista}". No te desvíes de ese tema ni proporciones información no relacionada con ese disco o artista.`,

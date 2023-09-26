@@ -359,6 +359,7 @@ function AlbumDetails() {
           artistName: albumInfo.artist,
           coverType: isFlipped ? "back" : "front",
           title: albumInfo.title,
+          username: username,
         }),
       });
 
@@ -573,6 +574,7 @@ function AlbumDetails() {
                 artistName: artist,
                 albumName: title,
                 discoId: idNumber,
+                username: username,
             }),
         });
 

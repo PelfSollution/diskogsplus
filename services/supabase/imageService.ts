@@ -48,7 +48,8 @@ async function saveImageMetadata(
 export async function fetchOrGenerateImage(
   artistName: string,
   coverType: "front" | "back",
-  title: string
+  title: string,
+  username: string
 ): Promise<string | null> {
   console.log(
     `Buscando imagen para el artista: ${artistName} - ${title} y tipo de portada: ${coverType}`
@@ -77,7 +78,7 @@ export async function fetchOrGenerateImage(
   prompt = prompt.replace('${artistName}', artistName);
 prompt = prompt.replace('${title}', title);
 console.log("PROMPT ELEJIDO:" , prompt)
-  const generatedImageUrl = await generateImageFromPrompt(prompt);
+  const generatedImageUrl = await generateImageFromPrompt(prompt,username);
   console.log("URL de la imagen generada:", generatedImageUrl);
 
   const generatedImageResponse = await fetch(generatedImageUrl);

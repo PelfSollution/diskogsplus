@@ -4,9 +4,22 @@ import { getArtistInfoFromSupabase } from "../supabase/getArtistInfoSupabase";
 
 import { saveArtistInfotoSupabase } from "../supabase/saveArtistInfotoSupabase";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+async function getDecryptedUserApiKey(username: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/getApiKey', {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await res.json();
+    return data.apiKey || null;
+  } catch (err) {
+    return null;
+  }
+}
 
 function mockEnrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
   return new Promise((resolve) => {
@@ -19,8 +32,23 @@ export async function enrichArtistInfoWithChatGPT(
 
   albumName: string,
 
-  discoId: string
+  discoId: string,
+  username: string
 ): Promise<string> {
+
+   // Intentar obtener la API key del usuario de la base de datos
+   const userApiKey = await getDecryptedUserApiKey(username);
+  
+   // Elegir qué clave usar
+   const apiKeyToUse = userApiKey || process.env.OPENAI_API_KEY!;
+   
+   // Instanciar OpenAI con la clave elegida
+   const openai = new OpenAI({
+     apiKey: apiKeyToUse,
+   });
+
+
+
   // Intenta obtener la información enriquecida de Supabase primero
 
   console.log("[Supabase] Intentando obtener información enriquecida desde Supabase...");

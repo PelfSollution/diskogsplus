@@ -1,7 +1,7 @@
 
 # Diskogs Plus: Enriqueciendo tu experiencia en Discogs
 
-Una aplicación web responsiva diseñada para amantes de la música en vinilo, DJs y coleccionistas que utilizan Discogs. Desarrollada con Next.js y TypeScript, esta herramienta ofrece un conjunto robusto de funcionalidades para mejorar la experiencia del usuario.
+Una aplicación web adaptable diseñada para amantes de la música en vinilo, DJs y coleccionistas que utilizan Discogs. Desarrollada con Next.js y TypeScript, esta herramienta ofrece un conjunto robusto de funcionalidades para mejorar la experiencia del usuario.
 
 ## Funcionalidades Principales:
 

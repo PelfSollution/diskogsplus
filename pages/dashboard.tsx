@@ -26,6 +26,7 @@ import format from "date-fns/format";
 import styles from "./dashboard.module.css";
 import { ChatLog, WantlistEntry } from "@/types/types";
 import { truncateString } from "@/lib/stringUtils";
+import { deleteApiKey } from "@/services/supabase/deleteApiKey";
 
 const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const [isImageLoaded, setImageLoaded] = useState(false);
@@ -88,15 +89,29 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
 
       if (response.ok) {
         const data = await response.json();
-       console.log(data.status);
+        console.log(data.status);
+        setHasApiKey(true);
       } else {
         const errorData = await response.json();
         console.log(`Error al guardar la clave API: ${errorData.error}`);
+        setHasApiKey(false); 
       }
     } catch (error) {
       console.log("Error al guardar la clave API");
+      setHasApiKey(false);
     }
   };
+
+  const handleDeleteApiKey = async () => {
+    const success = await deleteApiKey(username); 
+    if (success) {
+      setHasApiKey(false);
+    } else {
+      console.error("No se pudo eliminar la API Key");
+    }
+    handleDialogClose();
+  };
+  
 
   const handleChatSelection = (value: number) => {
     if (value >= 0 && value < chatLogs.length) {
@@ -114,7 +129,6 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
-
 
   return (
     <div>
@@ -253,28 +267,25 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
 
       {/* Link para abrir el modal */}
       <div className="tw-bg-gray-200 tw-p-2 tw-rounded-md tw-mt-4 tw-flex tw-justify-between">
-
-  <Typography variant="body2" color="textSecondary">
-    <button
-      onClick={handleDialogOpen}
-      className="tw-text-blue-500 tw-flex tw-items-center"
-    >
-      <AddCircleOutlineIcon fontSize="small" className="tw-mr-1" />
-      Añadir API Key (OpenAI)
-    </button>
-  </Typography>
-  <Typography variant="body2" color="textSecondary">
-  {hasApiKey === null ? (
-    <>{"\u00A0"}[Verificando...]</>
-  ) : hasApiKey ? (
-    <>{"\u00A0"}[API Key propia]</>
-  ) : (
-    <>{"\u00A0"}[API Key sistema]</>
-  )}
-</Typography>
-
-</div>
-
+        <Typography variant="body2" color="textSecondary">
+          <button
+            onClick={handleDialogOpen}
+            className="tw-text-blue-500 tw-flex tw-items-center"
+          >
+            <AddCircleOutlineIcon fontSize="small" className="tw-mr-1" />
+            Añadir API Key (OpenAI)
+          </button>
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          {hasApiKey === null ? (
+            <>{"\u00A0"}[Verificando...]</>
+          ) : hasApiKey ? (
+            <>{"\u00A0"}[API Key propia]</>
+          ) : (
+            <>{"\u00A0"}[API Key sistema]</>
+          )}
+        </Typography>
+      </div>
 
       {/* Modal */}
       <Dialog open={isDialogOpen} onClose={handleDialogClose}>
@@ -285,7 +296,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           <TextField
             id="apiKey"
             type="password"
-            value={apiKey || ""}
+            value={hasApiKey ? "•••••••••••••••••••••••••••••••" : ""}
             onChange={(e) => setApiKey(e.target.value)}
             variant="outlined"
             fullWidth
@@ -293,7 +304,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           />
         </DialogContent>
         <DialogActions>
-          <div className="tw-flex tw-flex-row tw-justify-between tw-items-right tw-gap-2 tw-mr-4">
+          <div className="tw-flex tw-flex-row tw-justify-between tw-items-right tw-gap-2">
             <Button
               onClick={() => {
                 handleSaveApiKey();
@@ -303,6 +314,9 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
               variant="outline"
             >
               Guardar
+            </Button>
+            <Button onClick={handleDeleteApiKey} size={"sm"} variant="outline">
+              Eliminar
             </Button>
             <Button onClick={handleDialogClose} variant="outline" size={"sm"}>
               Cancelar
@@ -374,12 +388,11 @@ function Dashboard() {
           </header>
         </div>
       )}
-   <CustomSnackbar
+      <CustomSnackbar
         isOpen={snackbar.isOpen}
         message={snackbar.message}
         onClose={handleCloseSnackbar}
       />
-   
     </Layout>
   );
 }

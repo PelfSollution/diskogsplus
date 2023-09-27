@@ -1,7 +1,7 @@
 import useSWRInfinite from "swr/infinite";
 
 const fetcher = async (url: string) => {
-  console.log("Fetching URL:", url); // <-- Aquí agregamos el log para la URL
+
 
   const response = await fetch(url);
 
@@ -19,7 +19,6 @@ const useCompareAlbumList = (user1: string, user2: string, currentPage: number) 
   const getKey = (pageIndex: number, previousPageData: any) => {
     // Si la página anterior es nula, regresa null para detener la paginación
     if (previousPageData && !previousPageData.length) return null;
-
     // Regresa la URL del API para la página solicitada
     return `${process.env.NEXT_PUBLIC_BASE_URL}/api/albums/compare?user1=${user1}&user2=${user2}&page=${currentPage}&per_page=${perPage}`;
   }
@@ -31,7 +30,7 @@ const useCompareAlbumList = (user1: string, user2: string, currentPage: number) 
   );
 
   if (data) {
-    console.log("Data received:", data); // <-- Log para los datos
+    //console.log("Data received:", data); // <-- Log para los datos
   }
 
   if (error) {

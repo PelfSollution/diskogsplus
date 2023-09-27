@@ -69,7 +69,7 @@ export async function enrichArtistInfoWithChatGPT(
   }
 
   // Si no, intentamos obtener la información de OpenAI
-  console.log("[OpenAI] Intentando obtener información desde OpenAI...");
+
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",

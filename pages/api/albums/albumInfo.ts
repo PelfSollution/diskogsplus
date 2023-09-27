@@ -33,14 +33,14 @@ export default async function albumInfo(
 
       // Aquí está mi objeto accessData descifrado.
       const accessData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      //console.log("Decrypted accessData:", accessData);
+
 
       // Me conecto a la base de datos de Discogs.
       var db = await new Discogs(accessData).database();
 
       // Obtengo los datos de un lanzamiento específico del álbum.
       const releaseData = await db.getRelease(id);
-      console.log("ID de lanzamiento:", id);
+
 
       // Autenticación en Spotify para obtener el token de acceso.
       const accessToken = await getSpotifyAccessToken();
@@ -76,7 +76,7 @@ export default async function albumInfo(
       }
 
       let selectedTracklist = releaseData.tracklist;
-    //  console.log("Selected tracklist:", selectedTracklist);
+
 
       // Si el lanzamiento tiene duraciones de pista, las uso.
       // Si no, intento con el lanzamiento maestro.
@@ -89,7 +89,7 @@ export default async function albumInfo(
         }
       }
 
-      //console.log("RELEASE DATA:", releaseData);
+
       const tracklistWithSpotifyIds = await getTracklistWithSpotifyIds(
         selectedTracklist,
         releaseData,
@@ -119,8 +119,7 @@ export default async function albumInfo(
         backCover ||
         (await getArtistImageFromSupabase(releaseData.artists[0].name));
 
-     // console.log("Front cover T:", generatedFrontCover);
-     // console.log("Back cover T:", generatedBackCover);
+
       // Recopilo la información del álbum.
       const albumInfo = {
         label: removeAllSubstringsInParenthesis(releaseData.labels[0].name),
@@ -146,7 +145,7 @@ export default async function albumInfo(
       };
 
       let enrichedArtistInfoFromDb = await getArtistInfoFromSupabase(releaseData.id);
-      console.log("Enriched artist info from DB:", enrichedArtistInfoFromDb);
+
 
       if (!enrichedArtistInfoFromDb) {
           enrichedArtistInfoFromDb = ""; 
@@ -164,7 +163,7 @@ export default async function albumInfo(
         if (artistName) {
      
           const lastfmResponse = await fetchLastfmData(releaseData.title, artistName);
-          console.log("Last.fm Response:", lastfmResponse); 
+
           if (lastfmResponse.album && lastfmResponse.album.tags) {
             lastfmTags = lastfmResponse.album.tags.tag.map((tag: any) => tag.name);
           }
@@ -217,7 +216,6 @@ export default async function albumInfo(
         artistBio: artistBio,
       };
 
-    // console.log("Combined data:", combinedData);
       res.send({ albumInfo: combinedData });
     } else {
       res.send({

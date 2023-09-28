@@ -20,17 +20,6 @@ Una aplicación web adaptable diseñada para amantes de la música en vinilo, DJ
 - [ ] Implementación de next-auth junto con Supabase para usuarios que no posean una cuenta en Discogs (consultas generales de discos).
 - [ ] Utilización de Langchain para una mejor gestión de LLM (agentes, contexto específico, memoria, prevención de alucinaciones, etc.).
 
-## Deploy (Vercel)
-
-- [Diskogs Plus](https://diskogsplus.vercel.app/)
-
-## Usuario DEMO Discogs
-
-- user: diskogsplus
-- pass: diskogsplus
-
-ejemplo user para matching: dayats 
-
 ## Estructura de Carpetas
 ```
 diskogsplus/

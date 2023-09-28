@@ -42,6 +42,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const [apiKey, setApiKey] = useState<string>("");
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
 
+
   useEffect(() => {
     const initializeData = async () => {
       try {
@@ -162,7 +163,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
               <span className="tw-font-bold">Registrado:</span>{" "}
               {format(
                 new Date(data.userProfile.registered),
-                "dd/MM/yyyy HH:mm"
+                "dd/MM/yyyy"
               )}
             </p>
           ) : (
@@ -296,7 +297,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           <TextField
             id="apiKey"
             type="password"
-            value={hasApiKey ? "•••••••••••••••••••••••••••••••" : ""}
+            value={hasApiKey ? "•••••••••••••••••••••••••••••••" : apiKey || ""}
             onChange={(e) => setApiKey(e.target.value)}
             variant="outlined"
             fullWidth

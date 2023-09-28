@@ -209,13 +209,13 @@ diskogsplus/
 ```
 ## Stack Tecnológico
 
-- Frontend: Next.js
+- Frontend / Backend (API routes): Next.js (React)
 - Estilos: MUI, TailwindCSS 
 - Estado y Datos: Supabase (PostgreSQL), SWR.
-- APIs: Discogs, Last.fm, Spotify, OpenAI.
-- Models: GPT-3.5 + DALL·E 2.
+- APIs: Discogs (disconnect lib.), Last.fm, Spotify, OpenAI.
+- Models: Vercel AI SDK (GPT-3.5 + DALL·E 2).
 - Deploy: Vercel.
-- Otros: Vercel AI SDK, TypeScript, ESLint, Prettier, VS Code, Cursor, Github Copilot.
+- Otros: TypeScript, ESLint, Prettier, VS Code, Cursor, Github Copilot
 
 ## Inicialización del Proyecto
 

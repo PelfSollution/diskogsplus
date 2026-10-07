@@ -1,47 +1,57 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 import { generateImageFromPrompt } from "../openai/generateImageFromPrompt";
 import { sanitizeFileName } from "../../lib/stringUtils";
 
-const SUPABASE_STORAGE_URL =
-  "https://psjhsoburgocxzalocmc.supabase.co/storage/v1/object/public/generated_images/";
-
-  const PROMPTS = [
-    "Digital Painting of a ${artistName}. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting.",
-    "A hyper real digital painting for ${title}, finely detailed armor, intricate design, silver, silk, cinematic lighting, 4k. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting",
-    "High quality pastel coloured film mid angle portrait music band ${artistName}, atmospheric three point light. photographic. art directed. ( pastel colours ). volumetric. clearcoat. waves. 8 k. filmic.",
-    "Cinematic photo of ${title}. The image transmit a sense of wonder and exploration. The art is incredibly detailed. The characters are all unique and interesting"
-  ];
-
-
-
-  
+const PROMPTS = [
+  "Surrealistic digital vinyl sleeve painting for ${title} by ${artistName}. Cosmic typography, vibrant neon palette, atmospheric lighting, detailed vinyl artwork.",
+  "Vintage 1970s analog vinyl LP cover for ${artistName} - ${title}. Retro aesthetic, textured paper sleeve, warm tones, cinematic analog photography.",
+  "Avant-garde modern vinyl album artwork for ${title} by ${artistName}. Bold geometric shapes, minimalist typography, artistic museum quality.",
+  "Psychedelic dreamscape vinyl album cover for ${artistName} - ${title}. Rich psychedelic oil painting, intricate motifs, ethereal lighting, collector vinyl edition.",
+];
 
 async function uploadImageToStorage(
   imageData: Buffer,
   filePath: string
 ): Promise<string | null> {
-  const { data, error } = await supabase.storage
-    .from("generated_images")
-    .upload(filePath, imageData);
+  if (!isSupabaseConfigured) return null;
 
-  if (error) {
-    console.error("Error subiendo la imagen:", error);
+  try {
+    const { data, error } = await supabase.storage
+      .from("generated_images")
+      .upload(filePath, imageData, { upsert: true, contentType: "image/jpeg" });
+
+    if (error) {
+      console.warn("[Storage] No se pudo subir imagen a Supabase Storage:", error.message);
+      return null;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("generated_images")
+      .getPublicUrl(filePath);
+
+    return publicUrlData?.publicUrl || null;
+  } catch (err: any) {
+    console.warn("[Storage] Excepción al interactuar con Supabase Storage:", err?.message);
     return null;
   }
-
-  return SUPABASE_STORAGE_URL + filePath; // <- Aquí combinamos la URL base con el filePath
 }
 
 async function saveImageMetadata(
   artistName: string,
   imageUrl: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from("generated_images_metadata")
-    .insert([{ artista: artistName, image_url: imageUrl }]);
+  if (!isSupabaseConfigured) return;
 
-  if (error) {
-    console.error("Error al guardar metadatos de la imagen:", error);
+  try {
+    const { error } = await supabase
+      .from("generated_images_metadata")
+      .insert([{ artista: artistName, image_url: imageUrl }]);
+
+    if (error) {
+      console.warn("[Storage] Error al guardar metadatos de la imagen:", error.message);
+    }
+  } catch (err) {
+    // Silencioso si la tabla no existe
   }
 }
 
@@ -51,57 +61,78 @@ export async function fetchOrGenerateImage(
   title: string,
   username: string
 ): Promise<string | null> {
-  console.log(
-    `Buscando imagen para el artista: ${artistName} - ${title} y tipo de portada: ${coverType}`
-  );
-
-  const sanitizedArtistName = sanitizeFileName(artistName);
+  const safeArtist = artistName || "Artista";
+  const safeTitle = title || "Álbum";
+  const sanitizedArtistName = sanitizeFileName(safeArtist);
   const filePath = `uploads/${sanitizedArtistName}_${coverType}.jpg`;
 
-  // Directamente construimos la imageUrl combinando la URL base con el filePath
-  const imageUrl = SUPABASE_STORAGE_URL + filePath;
+  // 1. Si Supabase Storage está configurado, comprobar si ya existe en storage
+  if (isSupabaseConfigured) {
+    try {
+      const { data: publicUrlData } = supabase.storage
+        .from("generated_images")
+        .getPublicUrl(filePath);
 
-  const response = await fetch(imageUrl);
-  if (response.ok) {
-    console.log(
-      `Imagen encontrada en Supabase Storage para ${artistName} y ${coverType}: ${imageUrl}`
-    );
-    return imageUrl;
+      if (publicUrlData?.publicUrl) {
+        const checkRes = await fetch(publicUrlData.publicUrl, { method: "HEAD" });
+        if (checkRes.ok) {
+          console.log(`[Storage] Imagen previa encontrada en Storage: ${publicUrlData.publicUrl}`);
+          return publicUrlData.publicUrl;
+        }
+      }
+    } catch {
+      // Continuar con la generación
+    }
   }
 
-  console.log(
-    `Imagen no encontrada para ${artistName} y ${coverType}. Generando una nueva...`
-  );
-
+  // 2. Seleccionar un prompt inspirador
   const randomIndex = Math.floor(Math.random() * PROMPTS.length);
-  let prompt = PROMPTS[randomIndex];
-  prompt = prompt.replace('${artistName}', artistName);
-prompt = prompt.replace('${title}', title);
-console.log("PROMPT ELEJIDO:" , prompt)
-  const generatedImageUrl = await generateImageFromPrompt(prompt,username);
-  console.log("URL de la imagen generada:", generatedImageUrl);
+  let prompt = PROMPTS[randomIndex]
+    .replace("${artistName}", safeArtist)
+    .replace("${title}", safeTitle);
 
-  const generatedImageResponse = await fetch(generatedImageUrl);
-  const generatedImageBlob = await generatedImageResponse.blob();
+  console.log(`[ImageGen] Generando portada ${coverType} para: ${safeArtist} - ${safeTitle}`);
 
-  const imageDataBuffer = Buffer.from(await generatedImageBlob.arrayBuffer());
-  console.log(
-    "Blob convertido a Buffer. Tamaño:",
-    imageDataBuffer.length,
-    "bytes"
+  // 3. Generar la imagen con IA (Google Imagen 3 / DALL-E / Flux)
+  const generatedImageUrl = await generateImageFromPrompt(
+    prompt,
+    username,
+    safeArtist,
+    safeTitle
   );
 
-  const finalImageUrl = await uploadImageToStorage(imageDataBuffer, filePath);
-
-  if (!finalImageUrl) {
-    console.error("Error al subir imagen generada a Supabase Storage.");
+  if (!generatedImageUrl) {
     return null;
   }
 
-  console.log(`Imagen subida a Supabase Storage: ${finalImageUrl}`);
+  // 4. Si es una data URI (de Google Imagen 3) o URL externa, intentar guardarla en Supabase si está disponible
+  if (isSupabaseConfigured) {
+    try {
+      let imageBuffer: Buffer | null = null;
 
-  // Guardamos los metadatos de la imagen en la tabla
-  await saveImageMetadata(artistName, finalImageUrl);
+      if (generatedImageUrl.startsWith("data:image")) {
+        const base64Data = generatedImageUrl.split(",")[1];
+        imageBuffer = Buffer.from(base64Data, "base64");
+      } else if (generatedImageUrl.startsWith("http")) {
+        const imgRes = await fetch(generatedImageUrl);
+        if (imgRes.ok) {
+          const arrayBuffer = await imgRes.arrayBuffer();
+          imageBuffer = Buffer.from(arrayBuffer);
+        }
+      }
 
-  return finalImageUrl;
+      if (imageBuffer) {
+        const storageUrl = await uploadImageToStorage(imageBuffer, filePath);
+        if (storageUrl) {
+          await saveImageMetadata(safeArtist, storageUrl);
+          return storageUrl;
+        }
+      }
+    } catch (storageErr: any) {
+      console.warn("[Storage] Guardado opcional en Supabase omitido:", storageErr?.message);
+    }
+  }
+
+  // 5. Retornar directamente la URL generada (base64 o URL remota de Flux)
+  return generatedImageUrl;
 }

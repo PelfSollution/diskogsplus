@@ -1,14 +1,10 @@
-import { memo } from "react";
+import React, { memo, useState } from "react";
 import Link from "next/link";
+import { Play, Trash2, Youtube, ExternalLink } from "lucide-react";
+import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
 
-
-type MixtapeRowProps = {
-  data: Mixtape;
-  onDelete: (track: Mixtape) => void;
-};
-
-type Mixtape = {
-  id: number;
+export type MixtapeTrack = {
+  id?: number | string;
   username: string;
   artista: string;
   trackname: string;
@@ -20,173 +16,137 @@ type Mixtape = {
   duration?: string | null;
 };
 
-type SpotifyPlayerProps = {
-  spotifyTrackId: string;
+type MixtapeRowProps = {
+  data: MixtapeTrack;
+  onDelete: (track: MixtapeTrack) => void;
+  onPlay?: (track: MixtapeTrack) => void;
+  isPlaying?: boolean;
 };
 
-const SpotifyPlayerComponent: React.FC<SpotifyPlayerProps> = ({
-  spotifyTrackId,
+const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
+  data,
+  onDelete,
+  onPlay,
+  isPlaying = false,
 }) => {
-  const embedUrl = `https://open.spotify.com/embed/track/${spotifyTrackId}`;
+  const [showPreview, setShowPreview] = useState(false);
+
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+    `${data.artista} ${data.trackname}`
+  )}`;
+
+  const youtubeEmbedUrl = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(
+    `${data.artista} ${data.trackname}`
+  )}&autoplay=1`;
+
+  const keyInfo =
+    typeof data.key === "number" && typeof data.mode === "number"
+      ? getPitchClassNotation(data.key, data.mode)
+      : null;
 
   return (
-    <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
-      <iframe
-        src={embedUrl}
-        width="310"
-        height="80"
-        frameBorder="0"
-        allow="encrypted-media"
-      ></iframe>
-    </div>
-  );
-};
+    <div
+      className={`tw-border tw-rounded-2xl tw-p-4 tw-transition-all tw-duration-200 tw-shadow-sm hover:tw-shadow-md ${
+        isPlaying
+          ? "tw-bg-purple-50/60 dark:tw-bg-purple-950/30 tw-border-purple-300 dark:tw-border-purple-700 ring-2 ring-purple-400"
+          : "tw-bg-white dark:tw-bg-gray-800 tw-border-gray-200 dark:tw-border-gray-700"
+      }`}
+    >
+      <div className="tw-flex tw-flex-col lg:tw-flex-row tw-gap-4 tw-items-start lg:tw-items-center tw-justify-between">
+        {/* Columna Izquierda: Información del tema y artista */}
+        <div className="tw-flex-1 tw-min-w-0">
+          <div className="tw-flex tw-items-center tw-gap-2 tw-mb-1">
+            <span className="tw-font-bold tw-text-base tw-text-gray-900 dark:tw-text-white tw-truncate">
+              {data.artista}
+            </span>
+          </div>
 
-export const SpotifyPlayer = memo(SpotifyPlayerComponent);
-SpotifyPlayer.displayName = "SpotifyPlayer";
+          <Link
+            href={`/albums/${data.disco_id}`}
+            className="tw-text-sm tw-font-medium tw-text-purple-600 dark:tw-text-purple-400 hover:tw-underline tw-block tw-truncate"
+            title="Ver vinilo en el catálogo"
+          >
+            {data.trackname}
+          </Link>
 
-function getKeyNotation(key: number, modeNumber: number) {
- 
-  const pitchClasses = [
-    "C",
-    "C♯/D♭",
-    "D",
-    "D♯/E♭",
-    "E",
-    "F",
-    "F♯/G♭",
-    "G",
-    "G♯/A♭",
-    "A",
-    "A♯/B♭",
-    "B",
-  ];
+          {/* Badges de BPM, Camelot Wheel y Duración */}
+          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-2.5 tw-items-center">
+            {data.tempo && (
+              <span className="tw-text-xs tw-font-semibold tw-bg-gray-100 dark:tw-bg-gray-700 tw-text-gray-700 dark:tw-text-gray-300 tw-px-2.5 tw-py-1 tw-rounded-lg">
+                ⚡ {Math.round(data.tempo)} BPM
+              </span>
+            )}
 
-  const mode = modeNumber === 1 ? "major" : "minor";
+            {keyInfo && (
+              <span
+                className={`tw-text-xs tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-lg tw-text-white ${getCamelotColor(
+                  keyInfo.camelotCode
+                )}`}
+              >
+                {keyInfo.full}
+              </span>
+            )}
 
-  const camelotCodes: { [key: string]: string } = {
-    "C major": "8B",
-    "A minor": "8A",
-    "G major": "9B",
-    "E minor": "9A",
-    "D major": "10B",
-    "B minor": "10A",
-    "A major": "11B",
-    "F♯/G♭ minor": "11A",
-    "E major": "12B",
-    "C♯/D♭ minor": "12A",
-    "B major": "1B",
-    "G♯/A♭ minor": "1A",
-    "F♯/G♭ major": "2B",
-    "D♯/E♭ minor": "2A",
-    "C♯/D♭ major": "3B",
-    "A♯/B♭ minor": "3A",
-    "F major": "4B",
-    "D minor": "4A",
-    "B♭ major": "5B",
-    "G minor": "5A",
-    "A♭ major": "6B",
-    "F minor": "6A",
-    "E♭ major": "7B",
-    "C minor": "7A",
-  };
-
-  const pitchClassColors: { [key: string]: string } = {
-    "1A": "tw-bg-yellow-200",
-    "1B": "tw-bg-yellow-200",
-    "2A": "tw-bg-yellow-300",
-    "2B": "tw-bg-orange-200",
-    "3A": "tw-bg-orange-200",
-    "3B": "tw-bg-orange-200",
-    "4A": "tw-bg-orange-300",
-    "4B": "tw-bg-orange-300",
-    "5A": "tw-bg-red-200",
-    "5B": "tw-bg-red-200",
-    "6A": "tw-bg-rose-200",
-    "6B": "tw-bg-rose-200",
-    "7A": "tw-bg-pink-200",
-    "7B": "tw-bg-pink-200",
-    "8A": "tw-bg-purple-200",
-    "8B": "tw-bg-purple-200",
-    "9A": "tw-bg-blue-200",
-    "9B": "tw-bg-blue-200",
-    "10A": "tw-bg-cyan-200",
-    "10B": "tw-bg-cyan-200",
-    "11A": "tw-bg-green-200",
-    "11B": "tw-bg-green-200",
-    "12A": "tw-bg-green-300",
-    "12B": "tw-bg-green-300",
-  };
-
-  const notation = pitchClasses[key] || "N/A";
-
-  // Agregamos un log aquí para ver qué se está produciendo para cada pista
- // console.log(`Intentando encontrar: ${notation} ${mode} en 'camelotCodes'`);
-
-  if (!camelotCodes[`${notation} ${mode}`]) {
-   /* console.log(
-      `La combinación ${notation} ${mode} no se encuentra en 'camelotCodes'`
-    );*/
-    return {
-      notation: `${notation} (N/A)`,
-      color: "tw-bg-gray-400",
-    };
-  }
-
-  const camelotCode = camelotCodes[`${notation} ${mode}`];
-  //console.log(`Camelot code encontrado: ${camelotCode}`);
-
-  return {
-    notation: `${notation} (${camelotCode})`,
-    color: pitchClassColors[camelotCode] || "tw-bg-gray-400",
-  };
-}
-
-const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({ data, onDelete }) => {
-  return (
-    <div className="tw-border tw-border-gray-200 tw-rounded tw-shadow-md tw-p-2 tw-bg-white hover:tw-shadow-lg tw-transition tw-duration-300">
-      <div className="tw-flex tw-flex-col md:tw-flex-row tw-gap-y-0 md:tw-gap-x-6 tw-items-center">
-        
-        {/* Primera columna: Embed de Spotify o mensaje */}
-        <div className="tw-w-full md:tw-w-1/3 tw-flex tw-justify-center tw-items-center tw-mb-2 md:tw-mb-0 ">
-          {data.spotifytrackid ? (
-            <SpotifyPlayer spotifyTrackId={data.spotifytrackid} />
-          ) : (
-            <div className="tw-border tw-border-green-400 tw-rounded-lg tw-min-w-[350px] tw-min-h-[82px] tw-flex tw-justify-center tw-items-center">
-              <span className="tw-text-green-400">No está en Spotify</span>
-            </div>
-          )}
+            {data.duration && (
+              <span className="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">
+                ⏱ {data.duration}
+              </span>
+            )}
+          </div>
         </div>
 
-{/* Segunda columna: Información */}
-<div className="tw-w-full md:tw-w-1/2">
-    <span className="tw-font-bold tw-text-lg tw-block tw-text-center md:tw-text-left">{data.artista}</span>
-    <Link key={data.disco_id} href={`/albums/${data.disco_id}`} className="tw-text-gray-500 tw-underline tw-block tw-mt-0 tw-text-center md:tw-text-left">
-        {data.trackname}
-    </Link>
-    <div className="tw-flex tw-gap-2 tw-mt-2 tw-justify-center md:tw-justify-start">
-        {data.tempo && (
-            <div className="tw-text-sm tw-bg-gray-200 tw-rounded tw-px-2 tw-py-1">
-                {data.tempo.toFixed(0)}
+        {/* Columna Centro: Reproductor de YouTube / Preescucha rápida */}
+        <div className="tw-w-full lg:tw-w-auto tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+          {showPreview ? (
+            <div className="tw-w-full sm:tw-w-[320px] tw-h-[85px] tw-rounded-xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-inner tw-bg-black">
+              <iframe
+                src={youtubeEmbedUrl}
+                width="100%"
+                height="100%"
+                title={`Reproductor YouTube: ${data.trackname}`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="tw-w-full tw-h-full"
+              />
             </div>
-        )}
-        {typeof data.key === "number" && typeof data.mode === "number" ? (
-            <div className={`tw-text-sm tw-text-white tw-px-2 tw-py-1 tw-rounded ${getKeyNotation(data.key, data.mode).color}`}>
-                {getKeyNotation(data.key, data.mode).notation}
-            </div>
-        ) : null}
-    </div>
-</div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (onPlay) {
+                  onPlay(data);
+                } else {
+                  setShowPreview(true);
+                }
+              }}
+              className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-red-50 dark:tw-bg-red-950/40 tw-text-red-600 dark:tw-text-red-400 hover:tw-bg-red-100 dark:hover:tw-bg-red-900/50 tw-border tw-border-red-200 dark:tw-border-red-800 tw-transition-colors"
+            >
+              <Youtube className="tw-w-4 tw-h-4" />
+              <span>{isPlaying ? "Reproduciendo" : "Escuchar audio"}</span>
+            </button>
+          )}
 
-
-
-        {/* Tercera columna: Botón de Eliminar */}
-        <div className="tw-w-full md:tw-w-1/6 tw-text-center md:tw-text-right tw-mt-2 md:tw-mt-0">
-          <button
-            className="tw-opacity-100 hover:tw-opacity-70 tw-text-red-400 tw-border tw-border-red-400 tw-px-3 tw-py-2 tw-rounded tw-transition tw-w-full"
-            onClick={() => onDelete(data)}
+          <a
+            href={youtubeSearchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-gray-200 tw-p-2 tw-rounded-lg hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-transition-colors"
+            title="Abrir en YouTube"
           >
-            Eliminar
+            <ExternalLink className="tw-w-4 tw-h-4" />
+          </a>
+        </div>
+
+        {/* Columna Derecha: Botón Eliminar */}
+        <div className="tw-w-full lg:tw-w-auto tw-flex tw-justify-end">
+          <button
+            type="button"
+            onClick={() => onDelete(data)}
+            className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3 tw-py-2 tw-rounded-xl tw-text-red-500 hover:tw-text-red-700 hover:tw-bg-red-50 dark:hover:tw-bg-red-950/40 tw-border tw-border-transparent hover:tw-border-red-200 tw-transition-colors"
+            title="Eliminar de la Mixtape"
+          >
+            <Trash2 className="tw-w-4 tw-h-4" />
+            <span>Eliminar</span>
           </button>
         </div>
       </div>

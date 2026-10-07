@@ -1,27 +1,32 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export type UserEntry = {
   username: string;
-  email?: string; 
+  email?: string;
 };
 
 export async function addUser(entry: UserEntry) {
+  if (!isSupabaseConfigured) {
+    return null;
+  }
   try {
     const { data, error } = await supabase.from("users").insert([entry]);
 
     if (error) {
       if (error.message.includes('unique constraint "users_pkey"')) {
-        throw new Error("El usuario ya existe en la base de datos.");
+        console.warn("El usuario ya existe en Supabase.");
+        return null;
       } else if (error.message.includes('unique constraint "users_email_key"')) {
-        throw new Error("El email ya está registrado con otro usuario.");
+        console.warn("El email ya está registrado con otro usuario.");
+        return null;
       } else {
         throw error;
       }
     }
 
     return data;
-  } catch (error) {
-    console.error("Error añadiendo usuario a Supabase:", error);
+  } catch (error: any) {
+    console.warn("Aviso añadiendo usuario a Supabase:", error?.message || error);
     return null;
   }
 }

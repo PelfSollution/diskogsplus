@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export type WantlistEntry = {
   username: string;
@@ -13,6 +13,9 @@ export type WantlistEntry = {
 export async function getWantlistItemsUser(
   username: string
 ): Promise<WantlistEntry[] | null> {
+  if (!isSupabaseConfigured || !username) {
+    return [];
+  }
   try {
     const { data, error } = await supabase
       .from("wantlist")
@@ -20,22 +23,17 @@ export async function getWantlistItemsUser(
       .eq("username", username);
 
     if (error) {
-      throw error;
+      console.warn("Aviso obteniendo wantlist:", error.message);
+      return [];
     }
 
     if (!data) {
-      return null;
+      return [];
     }
 
     return data as WantlistEntry[];
-  } catch (error) {
-    console.error(
-      "Error obteniendo las entradas de la wantlist en Supabase para el usuario:",
-      username,
-      error
-    );
-    return null;
+  } catch (error: any) {
+    console.warn("Aviso obteniendo wantlist:", error?.message || error);
+    return [];
   }
 }
-
-export default getWantlistItemsUser;

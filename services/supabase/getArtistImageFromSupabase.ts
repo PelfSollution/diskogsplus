@@ -1,24 +1,25 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export async function getArtistImageFromSupabase(artistName: string): Promise<string | null> {
+  if (!isSupabaseConfigured || !artistName) {
+    return null;
+  }
+
   try {
     const { data, error } = await supabase
-      .from('generated_images_metadata')
-      .select('image_url')
-      .eq('artista', artistName);
+      .from("generated_images_metadata")
+      .select("image_url")
+      .eq("artista", artistName);
 
     if (error) {
-      throw error;
+      return null;
     }
 
     if (data && data.length > 0) {
       return data[0].image_url;
-    } else {
-      return null;
     }
-
-  } catch (err) {
-    console.error('Error obteniendo imagen del artista desde Supabase:', err);
+    return null;
+  } catch (err: any) {
     return null;
   }
 }

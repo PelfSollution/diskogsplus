@@ -1,37 +1,37 @@
+import type { NextApiRequest, NextApiResponse } from "next";
+import { supabase } from "../../lib/supabase";
 
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../lib/supabase';
-import { decrypt } from '../../lib/cryptoUtils';  
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { username } = req.body;
 
-  if (req.method === 'POST') {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('openai_api_key')
-        .eq('username', username)
-        .single();
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-      if (error) {
-        throw new Error(error.message);
-      }
+  if (!username || typeof username !== "string") {
+    return res.status(400).json({ error: "Username is required" });
+  }
 
-      if (data && data.openai_api_key) {
-        const decryptedKey = decrypt(data.openai_api_key);
-        res.status(200).json({ apiKey: decryptedKey });
-      } else {
-        res.status(404).json({ error: 'Clave API no encontrada' });
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Un error desconocido ocurrió' });
-      }
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("openai_api_key")
+      .eq("username", username)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 is single row not found
+      throw new Error(error.message);
     }
-  } else {
-    res.status(405).end();  // Método no permitido
+
+    const hasApiKey = Boolean(data && data.openai_api_key);
+    // Security: Only return a boolean indicator, never the decrypted plaintext key!
+    return res.status(200).json({ hasApiKey });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal error";
+    return res.status(500).json({ error: message });
   }
 }

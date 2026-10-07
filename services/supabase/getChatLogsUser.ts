@@ -1,4 +1,4 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export interface ChatLog {
   artista: string;
@@ -7,6 +7,9 @@ export interface ChatLog {
 }
 
 export async function getChatLogsUser(username: string): Promise<ChatLog[]> {
+  if (!isSupabaseConfigured || !username) {
+    return [];
+  }
   try {
     const { data, error } = await supabase
       .from("chat_logs")
@@ -14,16 +17,19 @@ export async function getChatLogsUser(username: string): Promise<ChatLog[]> {
       .eq("username", username);
 
     if (error) {
-      throw error;
+      console.warn("Aviso obteniendo logs de chat:", error.message);
+      return [];
     }
+
+    if (!data) return [];
 
     const uniqueRecords = Array.from(
       new Set(data.map((record) => JSON.stringify(record)))
     ).map((recordString) => JSON.parse(recordString));
 
     return uniqueRecords;
-  } catch (error) {
-    console.error("Error obteniendo logs de chat:", error);
+  } catch (error: any) {
+    console.warn("Aviso obteniendo logs de chat:", error?.message || error);
     return [];
   }
 }

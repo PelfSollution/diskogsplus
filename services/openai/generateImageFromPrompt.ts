@@ -1,55 +1,111 @@
 import OpenAI from "openai";
+import { getUserApiKey } from "../supabase/getUserApiKey";
 
-async function getDecryptedUserApiKey(username: string): Promise<string | null> {
-  try {
-    const res = await fetch('/api/getApiKey', {
-      method: 'POST',
-      body: JSON.stringify({ username }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await res.json();
-    return data.apiKey || null;
-  } catch (err) {
-    return null;
-  }
-}
-
+/**
+ * Genera una portada conceptual con IA para vinilos musicales.
+ * Prioridad de motores de IA:
+ * 1. Google Imagen 3 (si hay GEMINI_API_KEY)
+ * 2. OpenAI DALL-E (si hay clave OpenAI con formato sk-...)
+ * 3. Flux / SDXL Generator (vía Pollinations AI, libre y sin cuotas)
+ */
 export async function generateImageFromPrompt(
   prompt?: string,
-  username?: string 
+  username?: string,
+  artistName?: string,
+  title?: string
 ): Promise<string> {
+  const safePrompt =
+    prompt ||
+    `Vinyl album cover art for "${title || "Music Album"}" by "${artistName || "Artist"}". ` +
+    `Stunning artistic album sleeve, rich colors, intricate details, highly atmospheric vinyl aesthetic, 8k resolution.`;
 
-    // Intentar obtener la API key del usuario de la base de datos
-    let userApiKey;
-    if (username) {
-      userApiKey = await getDecryptedUserApiKey(username);
+  // 1. Verificar claves de usuario y variables de entorno
+  let userApiKey: string | null = null;
+  if (username) {
+    userApiKey = await getUserApiKey(username);
+  }
+
+  const geminiEnvKey = process.env.GEMINI_API_KEY?.trim();
+  const openaiEnvKey = process.env.OPENAI_API_KEY?.trim();
+
+  const geminiKey =
+    geminiEnvKey ||
+    (userApiKey && userApiKey.startsWith("AIza") ? userApiKey : null) ||
+    (openaiEnvKey && openaiEnvKey.startsWith("AIza") ? openaiEnvKey : null);
+
+  const openaiKey =
+    (userApiKey && userApiKey.startsWith("sk-") ? userApiKey : null) ||
+    (openaiEnvKey && openaiEnvKey.startsWith("sk-") ? openaiEnvKey : null);
+
+  // 2. Intentar con Google Imagen 3 si disponemos de Gemini API Key
+  if (geminiKey) {
+    try {
+      console.log("[ImageGen] Intentando generar portada con Google Imagen 3...");
+      const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiKey}`;
+
+      const res = await fetch(imagenUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instances: [
+            {
+              prompt: `Artistic vinyl LP record cover art for ${title || "Album"} by ${artistName || "Artist"}. ${safePrompt}`,
+            },
+          ],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: "1:1",
+            outputMimeType: "image/jpeg",
+          },
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const base64Bytes = data?.predictions?.[0]?.bytesBase64Encoded;
+        if (base64Bytes) {
+          console.log("[ImageGen] ¡Portada generada con éxito con Google Imagen 3!");
+          return `data:image/jpeg;base64,${base64Bytes}`;
+        }
+      } else {
+        const errText = await res.text();
+        console.warn("[ImageGen] Google Imagen 3 devolvió status:", res.status, errText);
+      }
+    } catch (err: any) {
+      console.warn("[ImageGen] Aviso con Google Imagen 3:", err?.message);
     }
-  
-    // Elegir qué clave usar
-    const apiKeyToUse = userApiKey || process.env.OPENAI_API_KEY!;
-    
-    // Instanciar OpenAI con la clave elegida
-    const openai = new OpenAI({
-      apiKey: apiKeyToUse,
-    });
-
-
-  if (!prompt) {
-    return "/no-portada.gif";
   }
 
-  try {
-    const image = await openai.images.generate({ prompt,
-      size: "512x512" } as any);
+  // 3. Intentar con OpenAI DALL-E si hay clave sk-...
+  if (openaiKey) {
+    try {
+      console.log("[ImageGen] Intentando generar portada con OpenAI DALL-E...");
+      const openai = new OpenAI({ apiKey: openaiKey });
+      const response = await openai.images.generate({
+        prompt: safePrompt.slice(0, 1000),
+        n: 1,
+        size: "1024x1024",
+      });
 
-    return image.data && image.data.length > 0 && image.data[0].url
-      ? image.data[0].url
-      : "/no-portada.gif";
-  } catch (error) {
-    console.error("Error generando imagen:", error);
-    return "/no-portada.gif";
+      const url = response.data?.[0]?.url;
+      if (url) {
+        console.log("[ImageGen] ¡Portada generada con éxito con DALL-E!");
+        return url;
+      }
+    } catch (err: any) {
+      console.warn("[ImageGen] Aviso con OpenAI DALL-E:", err?.message);
+    }
   }
+
+  // 4. Fallback de alta fidelidad con Flux / SDXL (Pollinations AI)
+  // Libre, instantáneo, sin cuotas y con una estética artística para portadas excelente
+  console.log("[ImageGen] Generando portada de vinilo con motor Flux AI (Pollinations)...");
+  const randomSeed = Math.floor(Math.random() * 10000000);
+  const cleanDescription = encodeURIComponent(
+    `Vintage vinyl album cover sleeve for "${title || "Music"}" by "${artistName || "Artist"}". ` +
+    `${safePrompt}, album cover typography, hyper-detailed retro-futuristic cover art`
+  );
+
+  const fluxUrl = `https://image.pollinations.ai/prompt/${cleanDescription}?width=1024&height=1024&seed=${randomSeed}&nologo=true&model=flux`;
+  return fluxUrl;
 }

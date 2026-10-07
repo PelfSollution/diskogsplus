@@ -1,18 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
@@ -22,13 +10,19 @@ import {
   WantlistEntry,
 } from "@/services/supabase/getWantlistItemsUser";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
+import {
+  Bookmark,
+  Search,
+  ArrowUpDown,
+  Filter,
+  Download,
+  Disc,
+} from "lucide-react";
 
 function Wantlist() {
   const { data: userData } = useGetUserData();
   const username = userData?.userProfile?.username;
-  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(
-    null
-  );
+  const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<"name" | "album">("name");
@@ -38,7 +32,6 @@ function Wantlist() {
     message: string;
   }>({ isOpen: false, message: "" });
   const [isImporting, setIsImporting] = useState<boolean>(false);
-  const [wantlistData, setWantlistData] = useState([]);
 
   const handleOpenSnackbar = (message: string) => {
     setSnackbar({ isOpen: true, message });
@@ -48,205 +41,241 @@ function Wantlist() {
     setSnackbar((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const fetchWantlist = async () => {
-    const response = await fetch("/api/albums/importWantlistFromDiscogs");
-    const data = await response.json();
-    setWantlistData(data);
-  };
-
   const handleImportWantlist = async () => {
     setIsImporting(true);
+    handleOpenSnackbar("Sincronizando Wantlist con Discogs...");
     try {
       const response = await fetch("/api/albums/importWantlistFromDiscogs", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: username }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          handleOpenSnackbar(
-            "¡Tu wantlist de Discogs ha sido importada con éxito!"
-          );
-          location.reload();
-        } else {
-          handleOpenSnackbar("Hubo un error al importar la lista.");
-        }
+      const data = await response.json();
+      if (data && data.length > 0) {
+        setWantlistItems(data);
+        handleOpenSnackbar("¡Wantlist importada con éxito desde Discogs!");
       } else {
-        handleOpenSnackbar(
-          "Error al hacer la solicitud: " + response.statusText
-        );
+        handleOpenSnackbar("No se encontraron nuevos discos en tu Wantlist de Discogs.");
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error(error);
-      }
+    } catch {
+      handleOpenSnackbar("No se pudo conectar con Discogs para importar la Wantlist.");
     } finally {
       setIsImporting(false);
     }
   };
 
-  const filteredItems = (wantlistItems || [])
-    .filter((item) => {
-      switch (filter) {
-        case "name":
-          return item.artista.toLowerCase().includes(searchTerm.toLowerCase());
-        case "album":
-          return item.album.toLowerCase().includes(searchTerm.toLowerCase());
-        default:
-          return true;
-      }
-    })
-    .sort((a, b) => {
-      const valueA = filter === "name" ? a.artista : a.album;
-      const valueB = filter === "name" ? b.artista : b.album;
-      return orderAsc
-        ? valueA.localeCompare(valueB)
-        : valueB.localeCompare(valueA);
-    });
-
   useEffect(() => {
+    if (!username) return;
     getWantlistItemsUser(username)
-      .then((data) => {
-        setWantlistItems(data);
-        setError(null);
+      .then((items) => {
+        setWantlistItems(items || []);
       })
       .catch((err) => {
-        setWantlistItems(null);
+        setWantlistItems([]);
         setError(err);
       });
   }, [username]);
+
+  const lowercasedSearchTerm = useMemo(
+    () => searchTerm.toLowerCase(),
+    [searchTerm]
+  );
+
+  const filteredItems = useMemo(() => {
+    return (wantlistItems || [])
+      .filter((item: WantlistEntry) => {
+        if (!item) return false;
+        const albumMatches = (item.album || "")
+          .toLowerCase()
+          .includes(lowercasedSearchTerm);
+        const artistMatches = (item.artista || "")
+          .toLowerCase()
+          .includes(lowercasedSearchTerm);
+        return albumMatches || artistMatches;
+      })
+      .sort((a, b) => {
+        switch (filter) {
+          case "name": {
+            const artistA = a.artista || "";
+            const artistB = b.artista || "";
+            return orderAsc
+              ? artistA.localeCompare(artistB)
+              : artistB.localeCompare(artistA);
+          }
+          case "album": {
+            const titleA = a.album || "";
+            const titleB = b.album || "";
+            return orderAsc
+              ? titleA.localeCompare(titleB)
+              : titleB.localeCompare(titleA);
+          }
+          default:
+            return 0;
+        }
+      });
+  }, [wantlistItems, lowercasedSearchTerm, filter, orderAsc]);
 
   const isLoading = !wantlistItems && !error;
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
+      <Layout centeredContent={true} title="Cargando Wantlist...">
+        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-min-h-[60vh]">
           <CustomCircularProgress />
+          <p className="tw-mt-4 tw-text-sm tw-text-gray-500">
+            Cargando tu Wantlist de vinilos...
+          </p>
         </div>
       </Layout>
     );
   }
 
-  if (error || !wantlistItems) {
-    handleOpenSnackbar("Hubo un Error al cargar la wantlist.");
-    return <Layout>Error al cargar la wantlist.</Layout>;
-  }
-
   return (
     <Layout
       centeredContent={false}
-      title="Wantlist - Diskogs +"
-      description="Tu Wantlist de Discos"
+      title="Mi Wantlist de Vinilos | Diskogs +"
+      description="Los discos de vinilo que estás buscando y deseas añadir a tu colección"
     >
-      <div className="tw-container tw-mx-auto tw-p-6">
-        <div className="tw-flex tw-justify-between tw-items-center">
-          <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Mi Wantlist</h1>
+      <div className="tw-container tw-mx-auto tw-max-w-7xl tw-p-4 md:tw-p-6">
+        {/* Cabecera */}
+        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
+          <div>
+            <div className="tw-flex tw-items-center tw-gap-2.5">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-blue-100 dark:tw-bg-blue-950/50 tw-text-blue-600 dark:tw-text-blue-400 tw-flex tw-items-center tw-justify-center">
+                <Bookmark className="tw-w-5 tw-h-5" />
+              </div>
+              <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-tracking-tight">
+                Mi Wantlist
+              </h1>
+            </div>
+            <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-mt-1">
+              {wantlistItems ? `${wantlistItems.length} vinilos deseados` : "Cargando..."}
+            </p>
+          </div>
+
           <button
-            className="tw-gap-4tw-opacity-100 tw-mb-2 hover:tw-opacity-70 tw-text-blue-400 tw-border tw-border-blue-400 md:tw-px-2 md:tw-py-1 tw-px-1 tw-py-0.5 tw-rounded tw-min-w-[100px]"
+            type="button"
             onClick={handleImportWantlist}
             disabled={isImporting}
+            className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-opacity-50 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors tw-shadow-sm"
           >
-            {isImporting ? "Importando discos..." : "Importar de Discogs"}
+            <Download className="tw-w-4 tw-h-4" />
+            <span>{isImporting ? "Importando de Discogs..." : "Importar de Discogs"}</span>
           </button>
         </div>
-        <div className="tw-flex tw-items-center tw-gap-4 tw-my-4">
-          <FormControl variant="outlined" size="small">
-            <InputLabel>Filtrar por:</InputLabel>
-            <Select
+
+        {/* Barra de Filtros y Búsqueda */}
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-mb-8 tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-items-stretch sm:tw-items-center">
+          <div className="tw-flex tw-items-center tw-gap-2 tw-bg-gray-50 dark:tw-bg-gray-900 tw-px-3 tw-py-2 tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 sm:tw-w-48">
+            <Filter className="tw-w-4 tw-h-4 tw-text-gray-400 tw-shrink-0" />
+            <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as "name" | "album")}
-              label="Filtrar por:"
-              className="tw-min-w-[110%] tw-mr-20 sm:tw-mr-20"
+              className="tw-w-full tw-bg-transparent tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white tw-outline-none"
             >
-              <MenuItem value="name">Artista</MenuItem>
-              <MenuItem value="album">Disco</MenuItem>
-            </Select>
-          </FormControl>
+              <option value="name">Por Artista</option>
+              <option value="album">Por Disco</option>
+            </select>
+          </div>
 
-          <TextField
-            placeholder="Buscar..."
-            variant="outlined"
-            value={searchTerm}
-            fullWidth
-            onChange={(e) => setSearchTerm(e.target.value)}
-            size="small"
-            className="tw-min-w-[60%] tw-ml-4"
-          />
+          <div className="tw-relative tw-flex-1">
+            <Search className="tw-w-4 tw-h-4 tw-text-gray-400 tw-absolute tw-left-3.5 tw-top-1/2 tw--translate-y-1/2" />
+            <input
+              type="text"
+              placeholder={filter === "name" ? "Buscar por artista en wantlist..." : "Buscar por título de disco..."}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-blue-500 focus:tw-ring-2 focus:tw-ring-blue-500/20"
+            />
+          </div>
 
-          <IconButton
+          <button
+            type="button"
             onClick={() => setOrderAsc(!orderAsc)}
-            className="tw-min-w-[2%] tw-ml-4"
+            className={`tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
+              orderAsc
+                ? "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100"
+                : "tw-bg-blue-600 tw-text-white tw-border-blue-700"
+            }`}
+            title={orderAsc ? "Orden alfabético A-Z" : "Orden alfabético Z-A"}
           >
-            {orderAsc ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
-          </IconButton>
+            <ArrowUpDown className="tw-w-4 tw-h-4" />
+            <span>{orderAsc ? "A → Z" : "Z → A"}</span>
+          </button>
         </div>
 
-        <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item: WantlistEntry) => (
-              <Link
-                key={item.disco_id}
-                href={`/albums/${item.disco_id}?from=compare`}
-                passHref
-              >
-                <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md hover:tw-shadow-dark tw-cursor-pointer tw-overflow-hidden tw-inner-border-2">
-                  <Image
-                    src={item.image_url}
-                    alt={item.album}
-                    width={500}
-                    height={240}
-                    className="tw-w-full tw-h-48 tw-object-cover tw-rounded tw-transform hover:tw-scale-110 hover:tw-opacity-90 tw-transition tw-duration-300 tw-ease-in-out"
-                  />
-                  <Chip
-                    className="tw-absolute tw-bottom-4 tw-left-4 tw-text-xs"
-                    label={item.album}
-                    style={{
-                      backgroundColor: "#282828",
-                      color: "white",
-                      padding: "0",
-                      fontSize: "12px",
-                      height: "28px",
-                    }}
-                  />
-                  <Chip
-                    className="tw-absolute tw-bottom-10 tw-left-4 tw-text-xs"
-                    label={
-                      <span className="tw-font-bold">
-                        {removeAllSubstringsInParenthesis(item.artista)}
+        {/* Cuadrícula de Wantlist */}
+        {filteredItems.length === 0 ? (
+          <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-md tw-mx-auto tw-my-12">
+            <Disc className="tw-w-12 tw-h-12 tw-text-gray-400 tw-mx-auto tw-mb-3" />
+            <h3 className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-1">
+              Tu Wantlist está vacía
+            </h3>
+            <p className="tw-text-sm tw-text-gray-500 tw-mb-5">
+              Navega por los discos del catálogo y pulsa el botón de &quot;Añadir a Wantlist&quot; o pulsa arriba para importar tu lista de Discogs.
+            </p>
+            <Link
+              href="/albums"
+              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors"
+            >
+              <Disc className="tw-w-4 tw-h-4" />
+              <span>Explorar Vinilos</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 tw-gap-6">
+            {filteredItems.map((item: WantlistEntry) => {
+              const artistName = removeAllSubstringsInParenthesis(item.artista || "Artista Desconocido");
+
+              return (
+                <Link
+                  key={item.disco_id}
+                  href={`/albums/${item.disco_id}`}
+                  className="tw-group tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-xs hover:tw-shadow-xl tw-transition-all tw-duration-300 tw-flex tw-flex-col"
+                >
+                  <div className="tw-relative tw-w-full tw-h-56 tw-bg-gray-100 dark:tw-bg-gray-900 tw-overflow-hidden">
+                    <Image
+                      src={item.image_url || "/no-portada.gif"}
+                      alt={item.album}
+                      fill
+                      className="tw-object-cover group-hover:tw-scale-105 tw-transition-transform tw-duration-500"
+                    />
+                  </div>
+
+                  <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
+                    <div>
+                      <span className="tw-text-xs tw-font-bold tw-text-blue-600 dark:tw-text-blue-400 tw-block tw-truncate">
+                        {artistName}
                       </span>
-                    }
-                    style={{
-                      backgroundColor: "#f87171",
-                      color: "white",
-                      padding: "0",
-                      fontSize: "12px",
-                      height: "28px",
-                    }}
-                  />
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4 tw-col-span-full">
-              <Typography variant="body2" color="textSecondary">
-                Aún no tienes ningún disco en la wantlist.
-              </Typography>
-            </div>
-          )}
-        </div>
+                      <h3
+                        className="tw-text-sm tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-truncate tw-mt-1"
+                        title={item.album}
+                      >
+                        {item.album}
+                      </h3>
+                    </div>
+
+                    <div className="tw-flex tw-items-center tw-justify-between tw-mt-4 tw-pt-3 tw-border-t tw-border-gray-100 dark:tw-border-gray-750">
+                      <span className="tw-text-[11px] tw-text-amber-500 tw-font-semibold">
+                        ★ En tu Wantlist
+                      </span>
+                      <span className="tw-text-xs tw-font-semibold tw-text-gray-400 group-hover:tw-text-blue-500 tw-transition-colors">
+                        Ver ficha →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        <CustomSnackbar
+          isOpen={snackbar.isOpen}
+          message={snackbar.message}
+          onClose={handleCloseSnackbar}
+        />
       </div>
-      <CustomSnackbar
-        isOpen={snackbar.isOpen}
-        message={snackbar.message}
-        onClose={handleCloseSnackbar}
-      />
     </Layout>
   );
 }

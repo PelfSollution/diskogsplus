@@ -1,100 +1,41 @@
-import { useState, useEffect, memo } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 import getMixtape from "../services/supabase/getMixtape";
 import useGetUserData from "@/hooks/useGetUserData";
 import deleteFromMixtape from "../services/supabase/deleteFromMixtape";
-import { getMixtapeURLs } from "../services/supabase/getMixtapeURLs";
-import MixtapeRow from "@/components/MixtapeRow";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  TextField,
-  Select,
-  Typography,
-} from "@mui/material";
-import IconButton from "@mui/material/IconButton";
+import MixtapeRow, { MixtapeTrack } from "@/components/MixtapeRow";
 import CustomSnackbar from "@/components/CustomSnackbar";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-
-type Mixtape = {
-  id: number;
-  username: string;
-  artista: string;
-  trackname: string;
-  disco_id: string;
-  spotifytrackid?: string | null;
-  tempo?: number | null;
-  key?: number | null;
-  mode?: number | null;
-  duration?: string | null;
-};
-
-type SpotifyPlayerProps = {
-  spotifyTrackId: string;
-};
-
-export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = memo(
-  ({ spotifyTrackId }) => {
-    const embedUrl = `https://open.spotify.com/embed/track/${spotifyTrackId}`;
-
-    return (
-      <div className="w-full max-w-md bg-white rounded-xl overflow-hidden shadow-lg">
-        <iframe
-          src={embedUrl}
-          width="300"
-          height="80"
-          frameBorder="0"
-          allow="encrypted-media"
-        ></iframe>
-      </div>
-    );
-  }
-);
-SpotifyPlayer.displayName = "SpotifyPlayer";
+import {
+  Play,
+  Bot,
+  Disc,
+  Search,
+  ArrowUpDown,
+  Music2,
+  Trash2,
+  Filter,
+} from "lucide-react";
+import { CAMELOT_CODES, getPitchClassNotation } from "@/lib/musicNotation";
 
 export default function Mixtape() {
-  const [mixtape, setMixtape] = useState<Mixtape[]>([]);
+  const [mixtape, setMixtape] = useState<MixtapeTrack[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
-  const [searchMode, setSearchMode] = useState<number | null>(null);
-
-  const { data: userData } = useGetUserData();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBPM, setSearchBPM] = useState<number | null>(null);
   const [searchKey, setSearchKey] = useState<number | null>(null);
+  const [searchMode, setSearchMode] = useState<number | null>(null);
   const [bpmOrder, setBpmOrder] = useState<"ASC" | "DESC" | null>(null);
-  const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
-  const [loadingMixtapes, setLoadingMixtapes] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     isOpen: boolean;
     message: string;
   }>({ isOpen: false, message: "" });
 
+  const { data: userData } = useGetUserData();
+  const username = userData?.userProfile?.username || "";
   const router = useRouter();
-
-  useEffect(() => {
-    async function loadMixtapes() {
-      setLoadingMixtapes(true);
-      try {
-        const urls = await getMixtapeURLs(userData?.userProfile?.username);
-        setLoadedMixtapeUrls(
-          urls.map((u: { mixtape_url: string }) => u.mixtape_url)
-        );
-      } catch (error) {
-        console.error("Error al cargar mixtapes:", error);
-      } finally {
-        setLoadingMixtapes(false);
-      }
-    }
-
-    if (userData?.userProfile?.username) {
-      loadMixtapes();
-    }
-  }, [userData]);
 
   const handleOpenSnackbar = (message: string) => {
     setSnackbar({ isOpen: true, message });
@@ -104,7 +45,7 @@ export default function Mixtape() {
     setSnackbar((prev) => ({ ...prev, isOpen: false }));
   };
 
-  async function handleDelete(track: Mixtape) {
+  async function handleDelete(track: MixtapeTrack) {
     try {
       await deleteFromMixtape(
         track.username,
@@ -112,69 +53,42 @@ export default function Mixtape() {
         track.trackname,
         track.disco_id
       );
-      setMixtape((prevMixtape) =>
-        prevMixtape.filter((item) => item.id !== track.id)
+      setMixtape((prev) =>
+        prev.filter(
+          (item) =>
+            !(
+              item.artista === track.artista &&
+              item.trackname === track.trackname &&
+              item.disco_id === track.disco_id
+            )
+        )
       );
-
-      handleOpenSnackbar(
-        `Canción "${track.trackname}" de "${track.artista}" eliminada de la mixtape con éxito.`
-      );
+      handleOpenSnackbar(`"${track.trackname}" eliminada de tu Mixtape.`);
     } catch (error) {
-      console.error("Error eliminando el tema:", error);
-      handleOpenSnackbar(
-        `Hubo un error al eliminar la canción "${track.trackname}" de "${track.artista}". Por favor, intenta nuevamente.`
-      );
+      console.error("Error eliminando tema de Mixtape:", error);
+      handleOpenSnackbar("Hubo un error al eliminar la canción.");
     }
   }
 
   useEffect(() => {
     async function fetchData() {
-      const username = userData?.userProfile?.username;
-
       if (!username) {
-        console.error("No se pudo obtener el username del usuario.");
+        setLoading(false);
         return;
       }
 
       try {
         const data = await getMixtape(username);
-
-        setMixtape(data);
+        setMixtape(data || []);
       } catch (err) {
-        console.error("Error obteniendo datos:", err);
-        setError(err);
+        console.error("Error cargando mixtape:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    if (userData) {
-      fetchData();
-    }
-  }, [userData]);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="tw-flex tw-justify-center tw-items-center tw-h-screen">
-          <CustomCircularProgress />
-        </div>
-      </Layout>
-    );
-  }
-
-  if (mixtape.length === 0) {
-    return (
-      <Layout>
-        <div className="tw-bg-gray-200 tw-p-4 tw-rounded-md tw-mb-4 tw-col-span-full">
-          <Typography variant="body2" color="textSecondary">
-            Aún no has creado ninguna mixtape. Comienza seleccionando algunas
-            canciones para tu mixtape.
-          </Typography>
-        </div>
-      </Layout>
-    );
-  }
+    fetchData();
+  }, [username]);
 
   const toggleBpmOrder = () => {
     if (bpmOrder === null || bpmOrder === "DESC") {
@@ -186,16 +100,20 @@ export default function Mixtape() {
 
   const filteredAndSortedMixtape = [...mixtape]
     .filter((track) => {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      return (
-        (!searchTerm ||
-          track.trackname.toLowerCase().includes(lowerCaseSearchTerm) ||
-          track.artista.toLowerCase().includes(lowerCaseSearchTerm)) &&
-        (!searchBPM || track.tempo === searchBPM) &&
-        (searchKey === null || track.key === searchKey)
-      );
-    })
+      const lower = searchTerm.toLowerCase();
+      const matchesSearch =
+        !searchTerm ||
+        track.trackname.toLowerCase().includes(lower) ||
+        track.artista.toLowerCase().includes(lower);
 
+      const matchesKey =
+        searchKey === null ||
+        (track.key === searchKey && (searchMode === null || track.mode === searchMode));
+
+      const matchesBpm = !searchBPM || track.tempo === searchBPM;
+
+      return matchesSearch && matchesKey && matchesBpm;
+    })
     .sort((a, b) => {
       if (!bpmOrder) return 0;
       return bpmOrder === "DESC"
@@ -203,234 +121,183 @@ export default function Mixtape() {
         : (b.tempo ?? 0) - (a.tempo ?? 0);
     });
 
-  const handleGenerateMixtape = async () => {
-    try {
-      setLoading(true);
-      const username = userData?.userProfile?.username;
-
-      // Redirige al usuario para autorizar con Spotify
-      window.location.href = `/api/auth/authorizeSpotify?username=${username}`;
-
-      // Una vez que el usuario autorice y se genere la mixtape, la lógica del callback se encargará del resto.
-
-      // No necesitamos llamar a setLoading(false) aquí porque estamos redirigiendo.
-      // Si hay algún error en el callback, puedes manejarlo allí o después de redirigir al usuario de regreso a tu aplicación.
-    } catch (error) {
-      setError("Error al iniciar la generación de la mixtape:" + error);
-      setLoading(false);
-    }
-  };
-
-  function getKeyNotation(key: number, modeNumber: number) {
-    const pitchClasses = [
-      "C",
-      "C♯/D♭",
-      "D",
-      "D♯/E♭",
-      "E",
-      "F",
-      "F♯/G♭",
-      "G",
-      "G♯/A♭",
-      "A",
-      "A♯/B♭",
-      "B",
-    ];
-
-    const mode = modeNumber === 1 ? "major" : "minor";
-
-    const camelotCodes: { [key: string]: string } = {
-      "C major": "8B",
-      "A minor": "8A",
-      "G major": "9B",
-      "E minor": "9A",
-      "D major": "10B",
-      "B minor": "10A",
-      "A major": "11B",
-      "F♯/G♭ minor": "11A",
-      "E major": "12B",
-      "C♯/D♭ minor": "12A",
-      "B major": "1B",
-      "G♯/A♭ minor": "1A",
-      "F♯/G♭ major": "2B",
-      "D♯/E♭ minor": "2A",
-      "C♯/D♭ major": "3B",
-      "A♯/B♭ minor": "3A",
-      "F major": "4B",
-      "D minor": "4A",
-      "B♭ major": "5B",
-      "G minor": "5A",
-      "A♭ major": "6B",
-      "F minor": "6A",
-      "E♭ major": "7B",
-      "C minor": "7A",
-    };
-
-    const pitchClassColors: { [key: string]: string } = {
-      "1A": "tw-bg-yellow-200",
-      "1B": "tw-bg-yellow-200",
-      "2A": "tw-bg-yellow-300",
-      "2B": "tw-bg-orange-200",
-      "3A": "tw-bg-orange-200",
-      "3B": "tw-bg-orange-200",
-      "4A": "tw-bg-orange-300",
-      "4B": "tw-bg-orange-300",
-      "5A": "tw-bg-red-200",
-      "5B": "tw-bg-red-200",
-      "6A": "tw-bg-rose-200",
-      "6B": "tw-bg-rose-200",
-      "7A": "tw-bg-pink-200",
-      "7B": "tw-bg-pink-200",
-      "8A": "tw-bg-purple-200",
-      "8B": "tw-bg-purple-200",
-      "9A": "tw-bg-blue-200",
-      "9B": "tw-bg-blue-200",
-      "10A": "tw-bg-cyan-200",
-      "10B": "tw-bg-cyan-200",
-      "11A": "tw-bg-green-200",
-      "11B": "tw-bg-green-200",
-      "12A": "tw-bg-green-300",
-      "12B": "tw-bg-green-300",
-    };
-
-    const notation = pitchClasses[key] || "N/A";
-
-    if (!camelotCodes[`${notation} ${mode}`]) {
-      return {
-        notation: `${notation} (N/A)`,
-        color: "tw-bg-gray-400",
-      };
-    }
-
-    const camelotCode = camelotCodes[`${notation} ${mode}`];
-
-    return {
-      notation: `${notation} (${camelotCode})`,
-      color: pitchClassColors[camelotCode] || "tw-bg-gray-400",
-    };
+  if (loading) {
+    return (
+      <Layout centeredContent={true} title="Cargando Mixtape...">
+        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-min-h-[50vh]">
+          <CustomCircularProgress />
+          <p className="tw-mt-4 tw-text-sm tw-text-gray-500">
+            Cargando tus vinilos y pistas de la mixtape...
+          </p>
+        </div>
+      </Layout>
+    );
   }
 
   return (
     <Layout
       centeredTopContent={true}
-      title="Mixtape - Diskogs +"
-      description="Tu Mixtape personal"
+      title="Mi Mixtape de Vinilos | Diskogs +"
+      description="Tu selección personalizada de pistas y mezcla armónica para DJs de vinilo"
     >
-      <div className="tw-container tw-mx-auto tw-p-6">
-        <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Mixtape</h1>
-        <div className="tw-flex tw-items-center tw-gap-4 tw-mb-4">
-          <FormControl variant="outlined" size="small">
-            <InputLabel>Filtrar por:</InputLabel>
-            <Select
-  value={searchKey !== null && searchMode !== null ? `${searchKey}-${searchMode}` : ""}
-  onChange={(e) => {
-    if (e.target.value === 'all') {
-      // Lógica para mostrar todos los temas
-      setSearchKey(null);
-      setSearchMode(null);
-    } else if (typeof e.target.value === 'string') {
-      const [key, mode] = e.target.value.split("-").map(Number);
-      setSearchKey(key);
-      setSearchMode(mode);
-    }
-  }}
-  label="Filtrar por:"
-  className="tw-min-w-[110%] tw-mr-20 sm:tw-mr-20"
->
-  <MenuItem value="all">
-    <em>Mostrar toda la escala (Camelot)</em>
-  </MenuItem>
+      <div className="tw-container tw-mx-auto tw-max-w-6xl tw-p-4 md:tw-p-6">
+        {/* Cabecera Principal */}
+        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
+          <div>
+            <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-tracking-tight">
+              Mi Mixtape
+            </h1>
+            <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-mt-1">
+              {mixtape.length} canciones seleccionadas para mezcla y escucha continua
+            </p>
+          </div>
 
-  {Array.from({ length: 12 }).map((_, key) =>
-    [1, 2].map((modeNumber) => {
-      const { notation } = getKeyNotation(key, modeNumber);
-      return (
-        <MenuItem value={`${key}-${modeNumber}`} key={`${key}-${modeNumber}`}>
-          {notation}
-        </MenuItem>
-      );
-    })
-  )}
-</Select>
+          {/* Botones de Acción Principales */}
+          <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-3">
+            {mixtape.length > 0 && (
+              <>
+                <Link
+                  href="/mixtapeplayer"
+                  className="tw-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-bold tw-text-sm tw-shadow-md hover:tw-shadow-lg tw-transition-all"
+                >
+                  <Play className="tw-w-4 tw-h-4 tw-fill-current" />
+                  <span>Reproducir Mixtape (YouTube)</span>
+                </Link>
 
+                <Link
+                  href={`/chat?username=${encodeURIComponent(username)}&artista=Mixtape&album=Mixtape%20Personal`}
+                  className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-purple-100 dark:tw-bg-purple-950/50 tw-text-purple-700 dark:tw-text-purple-300 hover:tw-bg-purple-200 dark:hover:tw-bg-purple-900/60 tw-font-semibold tw-text-sm tw-border tw-border-purple-200 dark:tw-border-purple-800 tw-transition-colors"
+                >
+                  <Bot className="tw-w-4 tw-h-4" />
+                  <span>Analizar Armonía con DiscBOT</span>
+                </Link>
+              </>
+            )}
 
-          </FormControl>
-
-          <TextField
-            placeholder="Buscar por nombre"
-            variant="outlined"
-            value={searchTerm}
-            fullWidth
-            onChange={(e) => setSearchTerm(e.target.value)}
-            size="small"
-            className="tw-min-w-[60%] tw-ml-4"
-          />
-
-          <IconButton
-            onClick={toggleBpmOrder}
-            className="tw-min-w-[2%] tw-ml-4"
-          >
-            {bpmOrder === "ASC" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
-          </IconButton>
-        </div>
-
-        <div className="tw-border tw-border-gray-200 tw-mt-2">
-          {/* Cabecera */}
-
-          {/* Cuerpo */}
-          {filteredAndSortedMixtape.length === 0 ? (
-            <div className="tw-p-2">No hay datos disponibles</div>
-          ) : (
-            filteredAndSortedMixtape.map((data) => (
-              <MixtapeRow key={data.id} data={data} onDelete={handleDelete} />
-            ))
-          )}
-        </div>
-        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center md:tw-flex-row md:tw-space-x-4">
-          {/* Botón */}
-          <button
-            className="tw-mt-4 tw-mb-4 tw-bg-green-600 tw-text-white tw-px-4 tw-py-2 tw-rounded tw-cursor-pointer tw-max-w-[400px]"
-            onClick={handleGenerateMixtape}
-            disabled={loading}
-          >
-            {loading
-              ? "Procesando..."
-              : "Iniciar sesión en Spotify para generar tu mixtape"}
-          </button>
-
-          {/* Selector (solo se muestra si hay loadedMixtapeUrls) */}
-          {loadedMixtapeUrls.length > 0 && (
-            <FormControl
-              variant="outlined"
-              size="small"
-              className="tw-mt-4 md:tw-mt-0"
+            <Link
+              href="/albums"
+              className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-text-gray-700 dark:tw-text-gray-200 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-800 tw-text-sm tw-font-medium tw-transition-colors"
             >
-              <InputLabel id="mixtape-label">Selecciona una mixtape</InputLabel>
-              <Select
-                labelId="mixtape-label"
-                onChange={(e) => {
-                  const embedUrl = e.target.value as string;
-                  if (!embedUrl) return;
-                  const newPath = `/mixtapeplayer?embedUrl=${encodeURIComponent(
-                    embedUrl
-                  )}`;
-                  router.push(newPath);
-                }}
-                label="Selecciona una mixtape"
-                className="tw-min-w-[320px]"
-              >
-                <MenuItem value="">
-                  <em>Selecciona una mixtape...</em>
-                </MenuItem>
-                {loadedMixtapeUrls.map((url: string, index: number) => (
-                  <MenuItem key={index} value={url}>
-                    {`Mixtape ${index + 1}`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
+              <Disc className="tw-w-4 tw-h-4" />
+              <span>Añadir más vinilos</span>
+            </Link>
+          </div>
         </div>
+
+        {/* Estado Vacío */}
+        {mixtape.length === 0 ? (
+          <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-lg tw-mx-auto tw-my-12">
+            <div className="tw-w-16 tw-h-16 tw-rounded-2xl tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-600 tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
+              <Music2 className="tw-w-8 tw-h-8" />
+            </div>
+            <h2 className="tw-text-xl tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-2">
+              Aún no tienes temas en tu Mixtape
+            </h2>
+            <p className="tw-text-sm tw-text-gray-500 tw-mb-6">
+              Navega por los vinilos de tu catálogo y pulsa el botón &quot;+ Mixtape&quot; en las pistas que quieras incluir en tu sesión.
+            </p>
+            <Link
+              href="/albums"
+              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-medium tw-text-sm tw-transition-colors tw-shadow-md"
+            >
+              <Disc className="tw-w-4 tw-h-4" />
+              <span>Explorar Catálogo de Vinilos</span>
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Barra de Filtros y Búsqueda */}
+            <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-mb-6 tw-flex tw-flex-col md:tw-flex-row tw-gap-3 tw-items-stretch md:tw-items-center">
+              {/* Input de Búsqueda */}
+              <div className="tw-relative tw-flex-1">
+                <Search className="tw-w-4 tw-h-4 tw-text-gray-400 tw-absolute tw-left-3.5 tw-top-1/2 tw--translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar por artista o canción en tu mixtape..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-amber-500 focus:tw-ring-2 focus:tw-ring-amber-500/20"
+                />
+              </div>
+
+              {/* Filtro por Rueda Camelot */}
+              <div className="tw-w-full md:tw-w-64">
+                <select
+                  value={
+                    searchKey !== null && searchMode !== null
+                      ? `${searchKey}-${searchMode}`
+                      : "all"
+                  }
+                  onChange={(e) => {
+                    if (e.target.value === "all") {
+                      setSearchKey(null);
+                      setSearchMode(null);
+                    } else {
+                      const [k, m] = e.target.value.split("-").map(Number);
+                      setSearchKey(k);
+                      setSearchMode(m);
+                    }
+                  }}
+                  className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-amber-500"
+                >
+                  <option value="all">Todas las tonalidades (Camelot)</option>
+                  {Array.from({ length: 12 }).map((_, keyIdx) =>
+                    [1, 0].map((modeIdx) => {
+                      const notation = getPitchClassNotation(keyIdx, modeIdx);
+                      return (
+                        <option
+                          key={`${keyIdx}-${modeIdx}`}
+                          value={`${keyIdx}-${modeIdx}`}
+                        >
+                          {notation.full}
+                        </option>
+                      );
+                    })
+                  )}
+                </select>
+              </div>
+
+              {/* Ordenar por BPM */}
+              <button
+                type="button"
+                onClick={toggleBpmOrder}
+                className={`tw-flex tw-items-center tw-justify-center tw-gap-1.5 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
+                  bpmOrder
+                    ? "tw-bg-amber-500 tw-text-white tw-border-amber-600"
+                    : "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100"
+                }`}
+                title="Ordenar por BPM"
+              >
+                <ArrowUpDown className="tw-w-4 tw-h-4" />
+                <span>
+                  {bpmOrder === "ASC"
+                    ? "BPM: Menor a Mayor"
+                    : bpmOrder === "DESC"
+                    ? "BPM: Mayor a Menor"
+                    : "Ordenar BPM"}
+                </span>
+              </button>
+            </div>
+
+            {/* Lista de Filas de Mixtape */}
+            <div className="tw-space-y-3">
+              {filteredAndSortedMixtape.length === 0 ? (
+                <div className="tw-text-center tw-p-8 tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-text-gray-500">
+                  No se encontraron canciones que coincidan con los filtros aplicados.
+                </div>
+              ) : (
+                filteredAndSortedMixtape.map((track) => (
+                  <MixtapeRow
+                    key={`${track.artista}-${track.trackname}-${track.disco_id}`}
+                    data={track}
+                    onDelete={handleDelete}
+                    onPlay={() => router.push("/mixtapeplayer")}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <CustomSnackbar

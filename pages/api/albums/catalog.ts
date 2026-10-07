@@ -33,32 +33,32 @@ export default async function catalog(
 
     // Si no encuentro las cookies, devuelvo una respuesta vacía.
     if (!usernameCipher || !accessDatacipherObj) {
-      res.send({ pagination: {}, releases: [] });
+      return res.status(200).send({ pagination: {}, releases: [] });
     }
 
     // Descifro el objeto cookie de accessData.
-    const accessBytes = await CryptoJS.AES.decrypt(
+    const accessBytes = CryptoJS.AES.decrypt(
       accessDatacipherObj,
       process.env.CRYPT_KEY
     );
 
-    const accessData = await JSON.parse(
+    const accessData = JSON.parse(
       accessBytes.toString(CryptoJS.enc.Utf8)
     );
 
     // Descifro el nombre de usuario.
-    const usernameBytes = await CryptoJS.AES.decrypt(
+    const usernameBytes = CryptoJS.AES.decrypt(
       usernameCipher,
       process.env.CRYPT_KEY
     );
 
-    const username = await JSON.parse(
+    const username = JSON.parse(
       usernameBytes.toString(CryptoJS.enc.Utf8)
     );
 
     // Si no tengo el nombre de usuario o los datos de acceso, devuelvo una respuesta vacía.
     if (!username || !accessData) {
-      res.send({ pagination: {}, releases: [] });
+      return res.status(200).send({ pagination: {}, releases: [] });
     }
 
     // Obtengo la página de la colección del usuario usando la API de Discogs.

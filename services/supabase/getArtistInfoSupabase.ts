@@ -1,25 +1,27 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
-export async function getArtistInfoFromSupabase(discoId: string): Promise<string | null> {
-    try {
-      const { data, error } = await supabase
-        .from('enriched_artist_info')
-        .select('enriched_info')
-        .eq('disco_id', discoId);
-  
-      if (error) {
-        throw error;
-      }
-  
-      if (data && data.length > 0) {
-        return data[0].enriched_info;
-      } else {
-        return null;
-      }
-  
-    } catch (err) {
-      console.error('Error obteniendo información enriquecida del artista desde Supabase:', err);
+export async function getArtistInfoFromSupabase(discoId: string | number): Promise<string | null> {
+  if (!isSupabaseConfigured || !discoId) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("enriched_artist_info")
+      .select("enriched_info")
+      .eq("disco_id", discoId.toString());
+
+    if (error) {
+      console.warn("[Supabase] Aviso consultando información de artista:", error.message);
       return null;
     }
+
+    if (data && data.length > 0) {
+      return data[0].enriched_info;
+    }
+    return null;
+  } catch (err: any) {
+    // Si la conexión falla, retornamos null silenciosamente
+    return null;
   }
-  
+}

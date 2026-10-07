@@ -1,6 +1,9 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export async function checkUserExists(username: string): Promise<boolean> {
+  if (!isSupabaseConfigured) {
+    return false;
+  }
   try {
     const { data, error } = await supabase
       .from("users")
@@ -8,13 +11,13 @@ export async function checkUserExists(username: string): Promise<boolean> {
       .eq("username", username);
 
     if (error) {
-      console.error("Error verificando usuario en Supabase:", error);
-      throw error;
+      console.warn("Aviso verificando usuario en Supabase:", error.message);
+      return false;
     }
 
-    return data && data.length > 0; 
-  } catch (error) {
-    console.error("Error verificando usuario en Supabase:", error);
+    return Boolean(data && data.length > 0);
+  } catch (error: any) {
+    console.warn("Aviso verificando usuario en Supabase:", error?.message || error);
     return false;
   }
 }

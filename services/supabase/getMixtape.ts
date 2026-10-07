@@ -1,19 +1,27 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { getLocalMixtape } from "../local/mixtapeStorage";
 
 async function getMixtape(username: string) {
-  try {
-    const { data, error } = await supabase.from('mixtape').select('*').eq('username', username);
+  if (!username) return [];
 
+  // 1. Si Supabase está configurado, intentar consultar la base de datos
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("mixtape")
+        .select("*")
+        .eq("username", username);
 
-    if (error) {
-      throw error;
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+    } catch (err) {
+      console.warn("[Mixtape] Supabase no disponible, usando almacenamiento local:", err);
     }
-
-    return data;
-  } catch (err) {
-    console.error('Error obteniendo datos de mixtape:', err);
-    throw err;
   }
+
+  // 2. Fallback a almacenamiento local del navegador
+  return getLocalMixtape(username);
 }
 
 export default getMixtape;

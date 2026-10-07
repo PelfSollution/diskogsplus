@@ -1,115 +1,83 @@
-import OpenAI from "openai";
-
+import { getAIClient } from "@/lib/aiClient";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { getArtistInfoFromSupabase } from "../supabase/getArtistInfoSupabase";
-
 import { saveArtistInfotoSupabase } from "../supabase/saveArtistInfotoSupabase";
-
-async function getDecryptedUserApiKey(username: string): Promise<string | null> {
-  try {
-    const res = await fetch('/api/getApiKey', {
-      method: 'POST',
-      body: JSON.stringify({ username }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await res.json();
-    return data.apiKey || null;
-  } catch (err) {
-    return null;
-  }
-}
-
-function mockEnrichArtistInfoWithChatGPT(artistName: string): Promise<string> {
-  return new Promise((resolve) => {
-    resolve(`Esta es una respuesta simulada para el artista ${artistName}.`);
-  });
-}
 
 export async function enrichArtistInfoWithChatGPT(
   artistName: string,
-
   albumName: string,
-
-  discoId: string,
+  discoId: string | number,
   username: string
 ): Promise<string> {
+  const discoIdStr = discoId ? discoId.toString() : "";
 
-   // Intentar obtener la API key del usuario de la base de datos
-   const userApiKey = await getDecryptedUserApiKey(username);
-  
-   // Elegir qué clave usar
-   const apiKeyToUse = userApiKey || process.env.OPENAI_API_KEY!;
-   
-   // Instanciar OpenAI con la clave elegida
-   const openai = new OpenAI({
-     apiKey: apiKeyToUse,
-   });
-
-
-
-  // Intenta obtener la información enriquecida de Supabase primero
-
-  let enrichedInfo: string | null = await getArtistInfoFromSupabase(discoId);
-
-
-  // Si ya tenemos la información enriquecida en Supabase, la retornamos
-
-  if (enrichedInfo) {
-    return enrichedInfo;
+  // 1. Si Supabase está configurado, intentar obtener la información enriquecida previa de caché
+  if (isSupabaseConfigured && discoIdStr) {
+    try {
+      const cachedInfo = await getArtistInfoFromSupabase(discoIdStr);
+      if (cachedInfo && cachedInfo.trim().length > 20) {
+        return cachedInfo;
+      }
+    } catch (dbErr) {
+      console.warn("[EnrichInfo] Supabase cache read warning:", dbErr);
+    }
   }
 
-  // Si estamos en desarrollo, devolvemos un mock
+  // 2. Obtener cliente de IA (Google AI Studio Gemini o OpenAI)
+  const ai = await getAIClient(username);
 
-  if (process.env.NODE_ENTORNO === "development") {
-    enrichedInfo = await mockEnrichArtistInfoWithChatGPT(artistName);
-
-    return enrichedInfo;
+  if (!ai) {
+    return (
+      `No se ha configurado ninguna clave de IA. Por favor, añade tu GEMINI_API_KEY ` +
+      `(obtenida gratuitamente en https://aistudio.google.com/) en el archivo .env.local para activar el análisis musical.`
+    );
   }
 
-  // Si no, intentamos obtener la información de OpenAI
-
+  // 3. Generar análisis contextual con IA
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+    const prompt =
+      `Proporciona un análisis enriquecido y contexto histórico sobre el álbum "${albumName || "Desconocido"}" ` +
+      `del artista o banda "${artistName || "Desconocido"}".\n\n` +
+      `Estructura la respuesta de forma clara y amena cubriendo:\n` +
+      `1. Contexto de la época y momento artístico del creador.\n` +
+      `2. Estilo sonoro, producción e influencias musicales clave.\n` +
+      `3. Repercusión cultural y por qué es una pieza valiosa para coleccionistas de vinilo.`;
 
+    const response = await ai.client.chat.completions.create({
+      model: ai.model,
       messages: [
         {
+          role: "system",
+          content:
+            "Eres un musicólogo e historiador musical experto. Proporcionas información detallada, " +
+            "precisa y apasionada sobre la historia de la música y lanzamientos discográficos en vinilo. " +
+            "Responde siempre en español con tono divulgativo de alta calidad.",
+        },
+        {
           role: "user",
-
-          content: `Proporciona información adicional sobre el artista ${artistName}`,
+          content: prompt,
         },
       ],
-
-      max_tokens: 500,
-
-      temperature: 1,
-
-      stop: ["\\n"],
+      max_tokens: 850,
+      temperature: 0.7,
     });
 
-    enrichedInfo =
-      response.choices &&
-      response.choices.length > 0 &&
-      response.choices[0].message &&
-      response.choices[0].message.content
-        ? response.choices[0].message.content.trim()
-        : "No se pudo obtener información adicional del artista.";
+    const enrichedInfo =
+      response.choices?.[0]?.message?.content?.trim() ||
+      "No se pudo generar el análisis detallado para este álbum.";
 
-    // Guardamos la información enriquecida en Supabase para referencias futuras
+    // 4. Guardar en Supabase para el futuro si la base de datos está disponible
+    if (isSupabaseConfigured && discoIdStr) {
+      try {
+        await saveArtistInfotoSupabase(artistName, albumName, discoIdStr, enrichedInfo);
+      } catch (saveErr) {
+        console.warn("[EnrichInfo] No se pudo persistir en Supabase:", saveErr);
+      }
+    }
 
-    await saveArtistInfotoSupabase(
-      artistName,
-      albumName,
-      discoId,
-      enrichedInfo
-    );
-    console.log("[OpenAI] Información obtenida con éxito.");
     return enrichedInfo;
-  } catch (error) {
-    console.error("Error en OpenAI:", error);
-
-    return "Error al obtener información adicional del artista.";
+  } catch (error: any) {
+    console.error("[EnrichInfo] Error invocando modelo de IA:", error);
+    return `Error al contactar con el servicio de IA: ${error?.message || "Inténtalo de nuevo en unos momentos."}`;
   }
 }

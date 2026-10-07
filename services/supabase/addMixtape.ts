@@ -1,37 +1,32 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { saveLocalMixtape, LocalMixtapeTrack } from "../local/mixtapeStorage";
 
-type Mixtape = {
-  username: string;
-  artista: string;
-  trackname: string;
-  disco_id: string;
-  spotifytrackid?: string | null;
-  tempo?: number | null;          
-  key?: number | null;          
-  mode?: number | null;          
-  duration?: string | null;      
-};
+export type Mixtape = LocalMixtapeTrack;
 
 export async function addMixtape(mixtape: Mixtape) {
-  try {
-    // Corregir valores que pueden ser interpretados como null
-    if (mixtape.key === null) mixtape.key = 0;
-    if (mixtape.mode === null) mixtape.mode = 0;
+  // 1. Guardar siempre en almacenamiento local para disponibilidad inmediata
+  saveLocalMixtape(mixtape);
 
-    const { data, error } = await supabase
-      .from('mixtape')
-      .insert([mixtape]);
+  // 2. Si Supabase está configurado, sincronizar con la base de datos
+  if (isSupabaseConfigured) {
+    try {
+      if (mixtape.key === null) mixtape.key = 0;
+      if (mixtape.mode === null) mixtape.mode = 0;
 
-    if (error) {
-      throw error;
+      const { data, error } = await supabase
+        .from("mixtape")
+        .insert([mixtape]);
+
+      if (error) {
+        console.warn("[Mixtape] Aviso al sincronizar con Supabase:", error.message);
+      }
+      return data;
+    } catch (error) {
+      console.warn("[Mixtape] Excepción al añadir a Supabase:", error);
     }
-
-    return data;
-  } catch (error) {
-    console.error("Error añadiendo mixtape:", error);
-    return null;
   }
-}
 
+  return [mixtape];
+}
 
 export default addMixtape;

@@ -1,14 +1,13 @@
 import React, { useState, useEffect, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { TextField, Button, Snackbar, Chip, IconButton } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
+import CustomSnackbar from "@/components/CustomSnackbar";
 import useCompareAlbumList from "@/hooks/useCompareAlbumList";
 import useGetUserData from "@/hooks/useGetUserData";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
-
+import { Users2, ArrowRight, Disc, Layers } from "lucide-react";
 
 interface Artist {
   name: string;
@@ -34,7 +33,6 @@ export default function Comparador() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  
 
   useEffect(() => {
     if (userData?.userProfile?.username) {
@@ -45,199 +43,190 @@ export default function Comparador() {
   const {
     data: albumsDifference,
     isLoading,
-    error
-} = useCompareAlbumList(comparedUser, user1, currentPage);
+    error,
+  } = useCompareAlbumList(comparedUser, user1, currentPage);
 
   const getDisplayedAlbums = () => {
     const start = (currentPage - 1) * 50;
     const end = start + 50;
-    if (albumsDifference) {
+    if (albumsDifference && albumsDifference[0]) {
       return albumsDifference[0].slice(start, end);
     }
-    return []; // o cualquier valor predeterminado que quieras devolver en caso de que albumsDifference sea undefined
+    return [];
   };
 
   const displayedAlbums = getDisplayedAlbums();
 
-  useEffect(() => {
-    if (comparePressed && error) {
-      setSnackbarMessage("Usuario no encontrado, sin colección o privada"); //poner emojis
-      setSnackbarOpen(true);
-    }
-  }, [error, comparePressed]);
-
-
-  const handleLoadMore = () => {
-    setCurrentPage(currentPage + 1);
-};
-  // solo al clicar sino hacia peticion al escribir
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // console.log("Botón clicado, Usuario para comparar:", user2);
-    setComparedUser(user2);
-    setComparePressed(true);
+  const handleOpenSnackbar = (msg: string) => {
+    setSnackbarMessage(msg);
+    setSnackbarOpen(true);
   };
 
   const resetComparison = () => {
-    setComparePressed(false);
-    setComparedUser("");
+    setCurrentPage(1);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
+  const handleLoadMore = () => {
+    setCurrentPage((prev) => prev + 1);
+  };
+
+  const handleCompare = (e: FormEvent) => {
+    e.preventDefault();
+    if (!user2.trim()) {
+      handleOpenSnackbar("Por favor, introduce el nombre del usuario a comparar.");
+      return;
+    }
+    setComparedUser(user2.trim());
+    setComparePressed(true);
   };
 
   return (
     <Layout
-      centeredContent={false}
-      title="Matching - Diskogs +"
-      description="Matching entre colleciones de Discos"
+      centeredTopContent={true}
+      title="Comparador de Colecciones | Diskogs +"
+      description="Compara tu colección de vinilos con la de otros usuarios de Discogs"
     >
-      <div className="tw-container tw-mx-auto tw-p-6">
-        <h1 className="tw-text-2xl tw-font-bold tw-mb-4">Matching</h1>
-        
-        <form onSubmit={handleSubmit} className="tw-flex tw-flex-col tw-gap-4">
-          <div className="tw-flex tw-flex-col tw-gap-2">
-            <TextField
-              label="Tu usuario"
-              variant="outlined"
-              fullWidth
-              value={user1InputValue}
-              disabled={true}
-              className="tw-mb-4"
-              id="user1"
-              autoComplete="off"
-              size="small"
-            />
+      <div className="tw-container tw-mx-auto tw-max-w-6xl tw-p-4 md:tw-p-6">
+        {/* Cabecera */}
+        <div className="tw-mb-8 tw-text-center">
+          <div className="tw-inline-flex tw-items-center tw-justify-center tw-w-12 tw-h-12 tw-rounded-2xl tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-600 tw-mb-3">
+            <Users2 className="tw-w-6 tw-h-6" />
           </div>
-          <div>
-            <p className="tw-font-bold">
-              Comparar coleccion de vinilos con el usuario:
-            </p>
+          <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white">
+            Comparador de Vinilos
+          </h1>
+          <p className="tw-text-sm tw-text-gray-500 tw-mt-1 tw-max-w-md tw-mx-auto">
+            Descubre qué discos tiene otro coleccionista que aún faltan en tu estantería.
+          </p>
+        </div>
+
+        {/* Formulario de Comparación */}
+        <form
+          onSubmit={handleCompare}
+          className="tw-bg-white dark:tw-bg-gray-800 tw-p-6 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-xl tw-mx-auto tw-mb-8"
+        >
+          <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-4 tw-mb-5">
+            <div>
+              <label className="tw-block tw-text-xs tw-font-semibold tw-text-gray-600 dark:tw-text-gray-300 tw-mb-1.5">
+                Tu usuario (Discogs):
+              </label>
+              <input
+                type="text"
+                disabled
+                value={user1InputValue || user1 || "Cargando..."}
+                className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-100 dark:tw-bg-gray-900 tw-text-gray-500 tw-cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label className="tw-block tw-text-xs tw-font-semibold tw-text-gray-600 dark:tw-text-gray-300 tw-mb-1.5">
+                Usuario a comparar:
+              </label>
+              <input
+                type="text"
+                placeholder="Ej. vinyl_lover_99"
+                value={user2}
+                onChange={(e) => {
+                  setUser2(e.target.value);
+                  setComparePressed(false);
+                  resetComparison();
+                }}
+                className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-amber-500 focus:tw-ring-2 focus:tw-ring-amber-500/20"
+              />
+            </div>
           </div>
-          <div className="tw-flex tw-flex-col tw-gap-2">
-            <TextField
-              label="Usuario:"
-              variant="outlined"
-              fullWidth
-              value={user2}
-              onChange={(e) => {
-                setUser2(e.target.value);
-                setComparePressed(false);
-                resetComparison();
-              }}
-              className="tw-mb-4"
-              id="user2"
-              size="small"
-            />
-          </div>
-          <Button type="submit" variant="outlined">
-            Comparar colecciones de Discos
-          </Button>
+
+          <button
+            type="submit"
+            className="tw-w-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-2.5 tw-px-4 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-bold tw-text-sm tw-transition-colors tw-shadow-md"
+          >
+            <span>Comparar Colecciones</span>
+            <ArrowRight className="tw-w-4 tw-h-4" />
+          </button>
         </form>
 
+        {/* Estado de Carga */}
         {comparePressed && isLoading && (
-          <Layout centeredTopContent={true}>
+          <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-my-12">
             <CustomCircularProgress />
-          </Layout>
+            <p className="tw-mt-4 tw-text-sm tw-text-gray-500">
+              Analizando y comparando ambas colecciones desde Discogs...
+            </p>
+          </div>
         )}
 
+        {/* Resultados */}
         {comparePressed && !isLoading && albumsDifference && (
           <div>
-            <p className="tw-mb-4 tw-mt-4">
-              Discos que <span className="tw-font-bold">{user2}</span> tiene y
-              tu <span className="tw-font-bold">&quot;{user1}&quot;</span> no
-              tienes:{" "}
-              <span className="tw-font-bold tw-text-blue-500">
-                {albumsDifference[0].length}
-              </span>
-            </p>
-
-            <ul>
-              <div className="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
-                {Array.isArray(getDisplayedAlbums()) &&
-                  displayedAlbums.map((album: Album, index: number) => (
-                    <li key={`${album.id}-${index}`}>
-                      <Link href={`/albums/${album.id}?from=compare`} passHref>
-                        <div className="tw-relative tw-bg-white tw-p-0 tw-rounded-xl tw-shadow-md hover:tw-shadow-dark tw-cursor-pointer tw-overflow-hidden tw-inner-border-2">
-                          <Image
-                            src={album.basic_information.cover_image}
-                            alt={album.basic_information.title}
-                            width={500}
-                            height={240}
-                            className="tw-w-full tw-h-48 tw-object-cover tw-rounded tw-transform hover:tw-scale-110 hover:tw-opacity-90 tw-transition tw-duration-300 tw-ease-in-out"
-                          />
-                          <Chip
-                            className="tw-absolute tw-bottom-4 tw-left-4 tw-text-xs"
-                            label={album.basic_information.title}
-                            style={{
-                              backgroundColor: "#282828",
-                              color: "white",
-                              padding: "0",
-                              fontSize: "12px",
-                              height: "28px",
-                            }}
-                          />
-                          <Chip
-                            className="tw-absolute tw-bottom-10 tw-left-4 tw-text-xs"
-                            label={
-                              <>
-                                <span className="tw-font-bold">
-                                  {album.basic_information.artists &&
-                                  album.basic_information.artists.length > 0
-                                    ? removeAllSubstringsInParenthesis(
-                                        album.basic_information.artists[0].name
-                                      )
-                                    : "Artista desconocido"}
-                                </span>
-                              </>
-                            }
-                            style={{
-                              backgroundColor: "#f87171",
-                              color: "white",
-                              padding: "0",
-                              fontSize: "12px",
-                              height: "28px",
-                            }}
-                          />
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
+            <div className="tw-bg-amber-50 dark:tw-bg-amber-950/30 tw-border tw-border-amber-200 dark:tw-border-amber-800 tw-rounded-2xl tw-p-4 tw-mb-6 tw-text-sm tw-text-amber-900 dark:tw-text-amber-200 tw-flex tw-items-center tw-justify-between">
+              <div>
+                Vinilos que tiene <strong>{user2}</strong> y que te faltan a ti:
               </div>
-            </ul>
-            {/* Mostrar el botón "Cargar más" si es necesario */}
-            {displayedAlbums.length &&
-              currentPage * 50 < albumsDifference[0].length && (
-               <div className="tw-flex tw-flex-col tw-gap-2 tw-mt-8">
-                <Button type="submit" variant="outlined" 
-                  onClick={handleLoadMore}
-                  
-                >
-                  Cargar más Discos
-                </Button>
+              <span className="tw-text-lg tw-font-extrabold tw-bg-amber-500 tw-text-white tw-px-3 tw-py-0.5 tw-rounded-xl">
+                {albumsDifference[0]?.length || 0}
+              </span>
+            </div>
+
+            {/* Cuadrícula de Álbumes */}
+            <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 tw-gap-5">
+              {displayedAlbums.map((album: Album, index: number) => {
+                const artistName =
+                  album.basic_information.artists && album.basic_information.artists.length > 0
+                    ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
+                    : "Artista Desconocido";
+
+                return (
+                  <Link
+                    key={`${album.id}-${index}`}
+                    href={`/albums/${album.id}?from=compare`}
+                    className="tw-group tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-xs hover:tw-shadow-xl tw-transition-all tw-duration-300 tw-flex tw-flex-col"
+                  >
+                    <div className="tw-relative tw-w-full tw-h-52 tw-bg-gray-100 dark:tw-bg-gray-900 tw-overflow-hidden">
+                      <Image
+                        src={album.basic_information.cover_image || "/no-portada.gif"}
+                        alt={album.basic_information.title}
+                        fill
+                        className="tw-object-cover group-hover:tw-scale-105 tw-transition-transform tw-duration-500"
+                      />
+                    </div>
+
+                    <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
+                      <div>
+                        <span className="tw-text-xs tw-font-semibold tw-text-purple-600 dark:tw-text-purple-400 tw-block tw-truncate">
+                          {artistName}
+                        </span>
+                        <h3 className="tw-text-sm tw-font-bold tw-text-gray-900 dark:tw-text-white tw-truncate tw-mt-0.5" title={album.basic_information.title}>
+                          {album.basic_information.title}
+                        </h3>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Botón Cargar Más */}
+            {displayedAlbums.length > 0 &&
+              currentPage * 50 < (albumsDifference[0]?.length || 0) && (
+                <div className="tw-text-center tw-mt-8">
+                  <button
+                    type="button"
+                    onClick={handleLoadMore}
+                    className="tw-px-6 tw-py-2.5 tw-rounded-xl tw-bg-gray-900 dark:tw-bg-white hover:tw-bg-gray-800 dark:hover:tw-bg-gray-100 tw-text-white dark:tw-text-gray-900 tw-font-semibold tw-text-sm tw-transition-colors"
+                  >
+                    Cargar más vinilos
+                  </button>
                 </div>
               )}
           </div>
         )}
-
-        <Snackbar
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          open={snackbarOpen}
-          autoHideDuration={3000} // Duración en milisegundos
-          onClose={() => setSnackbarOpen(false)}
-          message={snackbarMessage}
-          action={
-            <IconButton
-              size="small"
-              color="inherit"
-              onClick={handleCloseSnackbar}
-            >
-              <CloseIcon />
-            </IconButton>
-          }
-        />
       </div>
+
+      <CustomSnackbar
+        isOpen={snackbarOpen}
+        message={snackbarMessage}
+        onClose={() => setSnackbarOpen(false)}
+      />
     </Layout>
   );
 }

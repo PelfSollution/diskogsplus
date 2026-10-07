@@ -62,6 +62,8 @@ export interface AlbumInfoInterface {
   catalogNo: string;
   rating: number;
   released: string;
+  year?: string | number;
+  releaseDate?: string;
   country: string;
   videos?: Video[];
   genres: string[];
@@ -95,19 +97,26 @@ export interface AlbumInfoPropsInterface {
   isValidating: boolean | undefined;
 }
 
-const useGetAlbumInfo = (id: number, masterId: number) => {
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/albums/albumInfo?id=${id}`;
-  const { data, error, isValidating } = useSWR(url, fetcher);
+const useGetAlbumInfo = (id: number, masterId?: number) => {
+  // Solo consultar si el ID es numérico y válido (> 0)
+  const isValidId = Boolean(id && !isNaN(id) && id > 0);
+  const url = isValidId ? `/api/albums/albumInfo?id=${id}` : null;
 
-  if (error) console.error("Error fetching album info:", error);
+  const { data, error, isValidating, mutate } = useSWR(url, fetcher, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
 
-  const isLoading = !data && !error;
+  if (error) console.error("[useGetAlbumInfo] Error fetching album info:", error);
+
+  const isLoading = isValidId && !data && !error;
 
   return {
-    data: data?.albumInfo,
+    data: data?.albumInfo as AlbumInfoInterface | undefined,
     error,
     isLoading,
     isValidating,
+    mutate,
   };
 };
 

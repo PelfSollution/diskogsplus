@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  Youtube,
+  SquarePlay,
   Music,
   Radio,
   ExternalLink,
@@ -71,7 +71,7 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
         {/* Cabecera y Selector de Plataforma */}
         <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-3">
           <div className="tw-flex tw-items-center tw-gap-2">
-            <Youtube className="tw-w-5 tw-h-5 tw-text-red-600" />
+            <SquarePlay className="tw-w-5 tw-h-5 tw-text-red-600" />
             <h3 className="tw-font-bold tw-text-gray-900 dark:tw-text-white tw-text-base">
               Reproducir Audio & Vídeo
             </h3>

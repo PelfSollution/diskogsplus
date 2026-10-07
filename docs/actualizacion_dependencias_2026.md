@@ -12,7 +12,7 @@
 | 1 | Next 13.4.17 → 14.2.35, React 18.2.0 → 18.3.1 | ✅ Hecha (`6ff646d`) |
 | 2 | Next 14 → 16.3.6, ESLint 8 → 9 (config plana `eslint.config.mjs`), `images.domains` → `remotePatterns` | ✅ Hecha (`e4492ff`) |
 | 3 | AI SDK v2 → v7 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`, `@ai-sdk/openai`, `zod`); se elimina `openai`. Node 24 con fnm | ✅ Hecha (pendiente de probar el chat en el navegador) |
-| 4 | React 18 → 19 (`react`, `swr`, `lucide-react`, `@radix-ui/react-slot`) | ⏳ Pendiente |
+| 4 | React 18.3.1 → 19.3.0 (+ tipos), `swr` 2.5.1, `lucide-react` 0.268 → 1.47 (icono `Youtube` → `SquarePlay`), `@radix-ui/react-slot` 1.3.3 | ✅ Hecha (pendiente de probar en el navegador) |
 
 Tras la fase 3 no queda ninguna vulnerabilidad crítica. Las altas restantes vienen de herramientas de desarrollo (ESLint, Tailwind 3, PostCSS) y del `sharp` 0.32 de primer nivel.
 

@@ -1,6 +1,6 @@
 import React, { memo, useState } from "react";
 import Link from "next/link";
-import { Play, Trash2, Youtube, ExternalLink } from "lucide-react";
+import { Play, Trash2, SquarePlay, ExternalLink } from "lucide-react";
 import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
 
 export type MixtapeTrack = {
@@ -121,7 +121,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
               }}
               className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-red-50 dark:tw-bg-red-950/40 tw-text-red-600 dark:tw-text-red-400 hover:tw-bg-red-100 dark:hover:tw-bg-red-900/50 tw-border tw-border-red-200 dark:tw-border-red-800 tw-transition-colors"
             >
-              <Youtube className="tw-w-4 tw-h-4" />
+              <SquarePlay className="tw-w-4 tw-h-4" />
               <span>{isPlaying ? "Reproduciendo" : "Escuchar audio"}</span>
             </button>
           )}

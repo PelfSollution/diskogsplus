@@ -102,3 +102,14 @@ npm run build
 ```
 
 El chat en streaming (fase 3) y los cambios de React (fase 4) deben probarse además en el navegador con `npm run dev`.
+
+---
+
+## 6. Pendiente (próxima sesión)
+
+1. **Experiencia de escucha frente a la v1 con Spotify.** Con Spotify se podía escuchar el disco entero en streaming; ahora el reproductor depende de los vídeos que Discogs enlaza en cada release, y muchas pistas no tienen vídeo. Evaluar alternativas: volver a Spotify (embed de álbum/playlist; ojo a las restricciones de su API desde febrero de 2026), YouTube Data API (necesita clave), previews de Deezer (30 s, sin clave) u otras.
+2. **Probar en el navegador** el chat de DiscBOT (herramientas), la ficha del disco y el mixtape, y después mezclar la rama `upgrade/next-react-ai` en `main`.
+3. Reproductor del mixtape con la API de JavaScript de YouTube: pausa real y paso automático a la siguiente pista.
+4. Vulnerabilidades altas restantes: Tailwind 3.3 / PostCSS (subir dentro de la versión 3) y `sharp` 0.32 (quitarlo de `package.json`, Next 16 trae el suyo).
+5. ESLint 10 cuando `eslint-config-next` la admita; los 5 avisos de `react-hooks/set-state-in-effect`.
+6. Script para rellenar BPM/tonalidad de las pistas que ya estaban en el mixtape.

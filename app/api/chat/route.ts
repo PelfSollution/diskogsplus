@@ -1,28 +1,64 @@
-import OpenAI from "openai";
 import { NextRequest } from "next/server";
-import { OpenAIStream, StreamingTextResponse } from "ai";
-import { getSessionUserFromCookie } from "../../../lib/session";
-import { rateLimit } from "../../../lib/rateLimit";
+import {
+  streamText,
+  convertToModelMessages,
+  isStepCount,
+  createUIMessageStreamResponse,
+  toUIMessageStream,
+  type UIMessage,
+} from "ai";
 import { addChatLog } from "../../../services/supabase/addChatLogs";
 import { updateChatLog } from "../../../services/supabase/updateChatLogs";
 import { getLastChatLogForUser } from "../../../services/supabase/getLastChatLogForUser";
-import { getUserApiKey } from "../../../services/supabase/getUserApiKey";
+import { getAIClient } from "../../../lib/aiClient";
+import { getSessionUserFromCookie } from "../../../lib/session";
+import { rateLimit } from "../../../lib/rateLimit";
 import {
-  MUSIC_AGENT_FUNCTIONS,
+  buildMusicAgentTools,
   buildSystemPrompt,
-  executeMusicAgentTool,
 } from "../../../services/agent/musicAgent";
 
 export const runtime = "nodejs";
 
 const MAX_HISTORY_MESSAGES = 30;
 const MAX_MESSAGE_CHARS = 4000;
+// Pasos del agente: llamadas a herramientas + respuesta final
+const MAX_AGENT_STEPS = 5;
 
 function jsonError(status: number, error: string, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify({ error }), {
     status,
     headers: { "Content-Type": "application/json", ...headers },
   });
+}
+
+/**
+ * Solo se aceptan mensajes user/assistant con partes de texto: el prompt de
+ * sistema lo pone el servidor y el historial de herramientas no se reenvía.
+ */
+function sanitizeMessages(raw: unknown): UIMessage[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((m: any) => m?.role === "user" || m?.role === "assistant")
+    .slice(-MAX_HISTORY_MESSAGES)
+    .map((m: any, index: number) => ({
+      id: typeof m.id === "string" && m.id ? m.id : `msg-${index}`,
+      role: m.role as "user" | "assistant",
+      parts: (Array.isArray(m.parts) ? m.parts : [])
+        .filter((p: any) => p?.type === "text" && typeof p.text === "string")
+        .map((p: any) => ({ type: "text" as const, text: p.text.slice(0, MAX_MESSAGE_CHARS) })),
+    }))
+    .filter((m) => m.parts.length > 0);
+}
+
+function lastUserText(messages: UIMessage[]): string {
+  const last = [...messages].reverse().find((m) => m.role === "user");
+  return (
+    last?.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join("")
+      .trim() || ""
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -40,147 +76,51 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const userMessages = await req.json();
-    const { artista, album, disco_id, messages: rawHistory = [] } = userMessages;
+    const body = await req.json();
+    const { artista, album, disco_id } = body ?? {};
+    const messages = sanitizeMessages(body?.messages);
 
-    // Solo se aceptan mensajes user/assistant del cliente: el prompt de sistema lo pone el servidor
-    const chatHistory: { role: "user" | "assistant"; content: string }[] = (
-      Array.isArray(rawHistory) ? rawHistory : []
-    )
-      .filter(
-        (m: any) =>
-          (m?.role === "user" || m?.role === "assistant") &&
-          typeof m?.content === "string"
-      )
-      .slice(-MAX_HISTORY_MESSAGES)
-      .map((m: any) => ({
-        role: m.role,
-        content: m.content.slice(0, MAX_MESSAGE_CHARS),
-      }));
+    if (messages.length === 0) {
+      return jsonError(400, "No hay mensajes que procesar.");
+    }
 
-    // Obtener la clave API del usuario o de las variables de entorno (Google AI Studio o OpenAI)
-    const userApiKey = await getUserApiKey(username);
-    const geminiApiKey = process.env.GEMINI_API_KEY;
-
-    // Detectar si usamos Google AI Studio (Gemini) o OpenAI
-    const isUsingGemini = Boolean(geminiApiKey || (userApiKey && userApiKey.startsWith("AIza")));
-    const apiKeyToUse = isUsingGemini
-      ? (geminiApiKey || userApiKey)
-      : (userApiKey || process.env.OPENAI_API_KEY);
-
-    if (!apiKeyToUse) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "No se ha configurado ninguna clave API. Agrega GEMINI_API_KEY (de aistudio.google.com) o OPENAI_API_KEY en tu .env.local.",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+    // Google AI Studio (Gemini) u OpenAI, con la clave del entorno o del usuario
+    const ai = await getAIClient(username);
+    if (!ai) {
+      return jsonError(
+        400,
+        "No se ha configurado ninguna clave API. Agrega GEMINI_API_KEY (de aistudio.google.com) o OPENAI_API_KEY en tu .env.local."
       );
     }
 
-    const baseURL = isUsingGemini
-      ? "https://generativelanguage.googleapis.com/v1beta/openai/"
-      : undefined;
+    const context = { username, discoId: disco_id, artist: artista, album };
+    const prompt = lastUserText(messages);
 
-    const preferredModel = isUsingGemini
-      ? (process.env.GEMINI_MODEL || "gemini-2.5-flash")
-      : (process.env.OPENAI_MODEL || "gpt-4o-mini");
-
-    const openai = new OpenAI({
-      apiKey: apiKeyToUse,
-      baseURL,
-    });
-
-    // 1. Construir el prompt de sistema del Agente Musical
-    const systemPromptContent = buildSystemPrompt({
-      artist: artista,
-      album: album,
-      discoId: disco_id,
-      username: username,
-    });
-
-    const conversationMessages: any[] = [
-      { role: "system", content: systemPromptContent },
-      ...chatHistory,
-    ];
-
-    let currentMessages = [...conversationMessages];
-
-    // 2. Loop de Agente: Comprobar si el modelo solicita invocar funciones/herramientas
+    // Registro del chat (si Supabase no está configurado, se omite)
     try {
-      const functionCheckResponse = await openai.chat.completions.create({
-        model: preferredModel,
-        messages: currentMessages,
-        functions: MUSIC_AGENT_FUNCTIONS,
-        function_call: "auto",
+      await addChatLog({
+        username,
+        prompt,
+        response: "",
+        artista,
+        album,
+        disco_id: disco_id ? Number(disco_id) : undefined,
       });
-
-      const choice = functionCheckResponse.choices[0];
-      if (choice?.message?.function_call) {
-        const fnCall = choice.message.function_call;
-        let parsedArgs: any = {};
-        try {
-          parsedArgs = JSON.parse(fnCall.arguments);
-        } catch {
-          parsedArgs = {};
-        }
-
-        const toolOutput = await executeMusicAgentTool(
-          fnCall.name,
-          parsedArgs,
-          { username, discoId: disco_id, artist: artista, album: album }
-        );
-
-        // Añadir el mensaje de llamada del asistente y la respuesta de la función
-        currentMessages.push({
-          role: "assistant",
-          content: null,
-          function_call: fnCall,
-        });
-
-        currentMessages.push({
-          role: "function",
-          name: fnCall.name,
-          content: JSON.stringify(toolOutput),
-        });
-      }
-    } catch (agentError: any) {
-      console.warn(
-        "Aviso en ejecución de herramientas del agente (continuando con flujo estándar):",
-        agentError?.message
-      );
+    } catch (e: any) {
+      console.warn("[ChatLog] Registro inicial de chat omitido:", e?.message);
     }
 
-    // 3. Transmitir en streaming la respuesta final fundada en datos reales
-    const streamResponse = await openai.chat.completions.create({
-      model: preferredModel,
-      messages: currentMessages,
-      stream: true,
-    });
-
-    const stream = OpenAIStream(streamResponse as any, {
-      onStart: async () => {
-        try {
-          const lastUserMsg = chatHistory[chatHistory.length - 1]?.content || "";
-          await addChatLog({
-            username: username,
-            prompt: lastUserMsg,
-            response: "",
-            artista: artista,
-            album: album,
-            disco_id: disco_id ? Number(disco_id) : undefined,
-          });
-        } catch (e: any) {
-          console.warn("[ChatLog] Registro inicial de chat omitido:", e?.message);
-        }
-      },
-      onCompletion: async (completion: string) => {
+    const result = streamText({
+      model: ai.model,
+      instructions: buildSystemPrompt(context),
+      messages: await convertToModelMessages(messages),
+      tools: buildMusicAgentTools(context),
+      stopWhen: isStepCount(MAX_AGENT_STEPS),
+      onEnd: async ({ text }) => {
         try {
           const lastChatLog = await getLastChatLogForUser(username);
           if (lastChatLog && lastChatLog.id) {
-            await updateChatLog(lastChatLog.id, {
-              response: completion,
-            });
+            await updateChatLog(lastChatLog.id, { response: text });
           }
         } catch (e: any) {
           console.warn("[ChatLog] Actualización de chat omitida:", e?.message);
@@ -188,14 +128,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return new StreamingTextResponse(stream);
+    return createUIMessageStreamResponse({
+      stream: toUIMessageStream({
+        stream: result.stream,
+        onError: (error) => {
+          console.error("Error en el stream del agente de chat:", error);
+          return "Error procesando la consulta del agente musical.";
+        },
+      }),
+    });
   } catch (err: any) {
     console.error("Error en endpoint de agente de chat:", err);
-    return new Response(
-      JSON.stringify({
-        error: "Error interno procesando la consulta del agente musical.",
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonError(500, "Error interno procesando la consulta del agente musical.");
   }
 }

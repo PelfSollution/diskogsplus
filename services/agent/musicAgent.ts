@@ -4,94 +4,80 @@ import {
   getLastFmContext,
   getUserMixtapeTracks,
 } from "./tools";
+import { tool } from "ai";
+import { z } from "zod";
 
-export interface AgentFunctionDefinition {
-  name: string;
-  description: string;
-  parameters: {
-    type: string;
-    properties: Record<string, any>;
-    required?: string[];
+export interface MusicAgentContext {
+  username?: string;
+  discoId?: number | string;
+  artist?: string;
+  album?: string;
+}
+
+/**
+ * Herramientas de DiscBOT para la AI SDK. Los valores que el modelo no
+ * indique se completan con el contexto del disco y del usuario.
+ */
+export function buildMusicAgentTools(context: MusicAgentContext) {
+  return {
+    get_discogs_release_info: tool({
+      description:
+        "Obtiene información oficial y en tiempo real del disco desde la base de datos de Discogs: tracklist completo, año, país, formato/edición (prensaje, color de vinilo, edición limitada), sello discográfico y estadísticas de mercado (precios mínimos, cuántas copias hay en venta, cuántos coleccionistas lo tienen y cuántos lo quieren).",
+      inputSchema: z.object({
+        releaseId: z.string().optional().describe("El ID numérico del release en Discogs si se conoce."),
+        artist: z.string().optional().describe("Nombre del artista o grupo musical."),
+        album: z.string().optional().describe("Título del disco o álbum."),
+      }),
+      execute: async (args) =>
+        getDiscogsReleaseDetails({
+          releaseId: args.releaseId || context.discoId,
+          artist: args.artist || context.artist,
+          album: args.album || context.album,
+        }),
+    }),
+
+    analyze_harmonic_dj_mix: tool({
+      description:
+        "Herramienta especializada para DJs y mezcla armónica. Analiza compatibilidad de BPM y clave tonal usando la rueda Camelot (ej: 8A, 11B). Además busca y sugiere canciones de la colección/mixtape del usuario que mezclan a la perfección.",
+      inputSchema: z.object({
+        camelotCode: z.string().optional().describe("Código Camelot de la canción base (ejemplo: '8A', '9B', '12A')."),
+        bpm: z.number().optional().describe("Tempo estimado en BPM (ejemplo: 124, 128)."),
+      }),
+      execute: async (args) =>
+        analyzeHarmonicMix({
+          camelotCode: args.camelotCode,
+          bpm: args.bpm,
+          username: context.username,
+        }),
+    }),
+
+    get_artist_bio_and_similar: tool({
+      description:
+        "Obtiene biografía verificada, etiquetas de género, contexto histórico y artistas recomendados similares desde Last.fm.",
+      inputSchema: z.object({
+        artist: z.string().describe("Nombre del artista."),
+        album: z.string().optional().describe("Título del álbum (opcional)."),
+      }),
+      execute: async (args) =>
+        getLastFmContext({
+          artist: args.artist || context.artist || "",
+          album: args.album || context.album,
+        }),
+    }),
+
+    get_user_mixtape: tool({
+      description:
+        "Lista los temas que el usuario tiene agregados a su Mixtape en Diskogs Plus con su información de BPM y clave musical.",
+      inputSchema: z.object({}),
+      execute: async () =>
+        getUserMixtapeTracks({
+          username: context.username || "",
+        }),
+    }),
   };
 }
 
-export const MUSIC_AGENT_FUNCTIONS: AgentFunctionDefinition[] = [
-  {
-    name: "get_discogs_release_info",
-    description:
-      "Obtiene información oficial y en tiempo real del disco desde la base de datos de Discogs: tracklist completo, año, país, formato/edición (prensaje, color de vinilo, edición limitada), sello discográfico y estadísticas de mercado (precios mínimos, cuántas copias hay en venta, cuántos coleccionistas lo tienen y cuántos lo quieren).",
-    parameters: {
-      type: "object",
-      properties: {
-        releaseId: {
-          type: "string",
-          description: "El ID numérico del release en Discogs si se conoce.",
-        },
-        artist: {
-          type: "string",
-          description: "Nombre del artista o grupo musical.",
-        },
-        album: {
-          type: "string",
-          description: "Título del disco o álbum.",
-        },
-      },
-    },
-  },
-  {
-    name: "analyze_harmonic_dj_mix",
-    description:
-      "Herramienta especializada para DJs y mezcla armónica. Analiza compatibilidad de BPM y clave tonal usando la rueda Camelot (ej: 8A, 11B). Además busca y sugiere canciones de la colección/mixtape del usuario que mezclan a la perfección.",
-    parameters: {
-      type: "object",
-      properties: {
-        camelotCode: {
-          type: "string",
-          description: "Código Camelot de la canción base (ejemplo: '8A', '9B', '12A').",
-        },
-        bpm: {
-          type: "number",
-          description: "Tempo estimado en BPM (ejemplo: 124, 128).",
-        },
-      },
-    },
-  },
-  {
-    name: "get_artist_bio_and_similar",
-    description:
-      "Obtiene biografía verificada, etiquetas de género, contexto histórico y artistas recomendados similares desde Last.fm.",
-    parameters: {
-      type: "object",
-      properties: {
-        artist: {
-          type: "string",
-          description: "Nombre del artista.",
-        },
-        album: {
-          type: "string",
-          description: "Título del álbum (opcional).",
-        },
-      },
-      required: ["artist"],
-    },
-  },
-  {
-    name: "get_user_mixtape",
-    description:
-      "Lista los temas que el usuario tiene agregados a su Mixtape en Diskogs Plus con su información de BPM y clave musical.",
-    parameters: {
-      type: "object",
-      properties: {},
-    },
-  },
-];
-
-export function buildSystemPrompt(context: {
-  artist?: string;
-  album?: string;
-  discoId?: number | string;
-  username?: string;
-}) {
+export function buildSystemPrompt(context: MusicAgentContext) {
   return `Eres "DiscBOT Agent", el asistente de inteligencia artificial musical de Diskogs Plus.
 Eres un archivista experto en vinilos, coleccionismo musical y DJ profesional especializado en mezcla armónica (Rueda Camelot).
 
@@ -107,40 +93,4 @@ Contexto actual de la conversación:
 - Álbum actual: ${context.album || "No especificado"}
 - Discogs Release ID: ${context.discoId || "No especificado"}
 - Usuario conectado: ${context.username || "Usuario anónimo"}`;
-}
-
-export async function executeMusicAgentTool(
-  toolName: string,
-  args: any,
-  context: { username?: string; discoId?: number | string; artist?: string; album?: string }
-): Promise<any> {
-  switch (toolName) {
-    case "get_discogs_release_info":
-      return await getDiscogsReleaseDetails({
-        releaseId: args.releaseId || context.discoId,
-        artist: args.artist || context.artist,
-        album: args.album || context.album,
-      });
-
-    case "analyze_harmonic_dj_mix":
-      return await analyzeHarmonicMix({
-        camelotCode: args.camelotCode,
-        bpm: args.bpm,
-        username: context.username,
-      });
-
-    case "get_artist_bio_and_similar":
-      return await getLastFmContext({
-        artist: args.artist || context.artist || "",
-        album: args.album || context.album,
-      });
-
-    case "get_user_mixtape":
-      return await getUserMixtapeTracks({
-        username: context.username || "",
-      });
-
-    default:
-      return { error: `Herramienta desconocida: ${toolName}` };
-  }
 }

@@ -1,4 +1,5 @@
-import OpenAI from "openai";
+import { generateImage } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { getUserApiKey } from "../supabase/getUserApiKey";
 
 /**
@@ -80,17 +81,18 @@ export async function generateImageFromPrompt(
   if (openaiKey) {
     try {
       console.log("[ImageGen] Intentando generar portada con OpenAI DALL-E...");
-      const openai = new OpenAI({ apiKey: openaiKey });
-      const response = await openai.images.generate({
+      const openai = createOpenAI({ apiKey: openaiKey });
+      // dall-e-2: el modelo que usaba por defecto el SDK `openai` anterior
+      const { image } = await generateImage({
+        model: openai.image("dall-e-2"),
         prompt: safePrompt.slice(0, 1000),
         n: 1,
         size: "1024x1024",
       });
 
-      const url = response.data?.[0]?.url;
-      if (url) {
+      if (image?.base64) {
         console.log("[ImageGen] ¡Portada generada con éxito con DALL-E!");
-        return url;
+        return `data:${image.mediaType || "image/png"};base64,${image.base64}`;
       }
     } catch (err: any) {
       console.warn("[ImageGen] Aviso con OpenAI DALL-E:", err?.message);

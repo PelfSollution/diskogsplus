@@ -11,10 +11,10 @@
 | :--- | :--- | :---: |
 | 1 | Next 13.4.17 → 14.2.35, React 18.2.0 → 18.3.1 | ✅ Hecha (`6ff646d`) |
 | 2 | Next 14 → 16.3.6, ESLint 8 → 9 (config plana `eslint.config.mjs`), `images.domains` → `remotePatterns` | ✅ Hecha (`e4492ff`) |
-| 3 | AI SDK v2 → v7 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`, `@ai-sdk/openai`, `zod`); se elimina `openai` | ⏸️ Bloqueada: necesita Node 22+ |
+| 3 | AI SDK v2 → v7 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`, `@ai-sdk/openai`, `zod`); se elimina `openai`. Node 24 con fnm | ✅ Hecha (pendiente de probar el chat en el navegador) |
 | 4 | React 18 → 19 (`react`, `swr`, `lucide-react`, `@radix-ui/react-slot`) | ⏳ Pendiente |
 
-Tras la fase 2 ya no queda ninguna vulnerabilidad crítica en `next`. Las críticas restantes (`solid-js`, `seroval`, `vue`) vienen de `ai` v2 y desaparecen con la fase 3.
+Tras la fase 3 no queda ninguna vulnerabilidad crítica. Las altas restantes vienen de herramientas de desarrollo (ESLint, Tailwind 3, PostCSS) y del `sharp` 0.32 de primer nivel.
 
 ---
 
@@ -47,7 +47,7 @@ cd "<ruta del proyecto>"
 node --version   # v24.x
 ```
 
-### Cambios en el repositorio (pendientes)
+### Cambios en el repositorio (hechos)
 
 - `.nvmrc` con el contenido `24`.
 - `package.json` → `"engines": { "node": ">=22" }`.
@@ -59,7 +59,7 @@ Borrar la línea de `fnm env` de `~/.zshrc` (vuelve el `node@20` de Homebrew) o,
 
 ---
 
-## 3. Fase 3: migración a la AI SDK v7
+## 3. Fase 3: migración a la AI SDK v7 (hecha)
 
 Paquetes (publicados hace más de 14 días al elegirlos):
 
@@ -72,13 +72,13 @@ Paquetes (publicados hace más de 14 días al elegirlos):
 | añadir | `zod` | 4.6.5 |
 | quitar | `openai` | 4.3.0 |
 
-Cambios de código previstos:
+Cambios de código:
 
 - **`lib/aiClient.ts`**: devuelve un modelo de la AI SDK (proveedor nativo de Gemini en lugar del endpoint "compatible con OpenAI"), manteniendo el orden de elección de clave: `GEMINI_API_KEY` → clave del usuario → `OPENAI_API_KEY`.
 - **`app/api/chat/route.ts`**: `streamText` con herramientas definidas con `zod` (`tool({ inputSchema, execute })`), bucle de varios pasos con `stopWhen: isStepCount(n)` e `instructions` en lugar de mensaje `system`. Elimina la selección de clave duplicada. Hoy solo se ejecuta una herramienta con la API antigua `functions`.
 - **`pages/chat.tsx`**: `useChat` de `@ai-sdk/react`; los mensajes pasan de `content` a `parts`, el envío pasa a `sendMessage`.
 - **`services/openai/enrichArtistInfo.ts`**: `generateText`.
-- **`services/openai/generateImageFromPrompt.ts`**: DALL·E mediante `generateImage` de la AI SDK.
+- **`services/openai/generateImageFromPrompt.ts`**: DALL·E mediante `generateImage` de la AI SDK (modelo `dall-e-2`, el que usaba por defecto el SDK anterior; devuelve una data URI).
 
 Referencia: la guía de migración viene dentro del paquete, en `node_modules/ai/docs/08-migration-guides/23-migration-guide-7-0.mdx`.
 

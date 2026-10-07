@@ -1,15 +1,16 @@
 import Layout from "@/components/Layout";
-import { useChat } from "ai/react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { useRouter } from "next/router";
 import React, { useEffect, useState, useRef } from "react";
 import { getChatByAlbumAndArtist } from "../services/supabase/getUserChats";
 import Link from "next/link";
 
-type Message = {
-  id: string;
-  role: "system" | "user" | "assistant";
-  content: string;
-};
+function messageText(message: UIMessage): string {
+  return message.parts
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("");
+}
 
 const SUGGESTED_PROMPTS = [
   {
@@ -37,9 +38,27 @@ const SUGGESTED_PROMPTS = [
 export default function Chat() {
   const router = useRouter();
   const { artista, album, username, disco_id } = router.query;
-  const [previousChats, setPreviousChats] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState("");
+  const [chatErrorMessage, setChatErrorMessage] = useState<string | null>(null);
 
+  const { messages, sendMessage, setMessages, status } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    onError: (err: Error) => {
+      console.error("[useChat] Error recibido:", err);
+      setChatErrorMessage(err.message || "Error al procesar la respuesta.");
+    },
+  });
+
+  const isLoading = status === "submitted" || status === "streaming";
+  const lastMessage = messages[messages.length - 1];
+  // Mientras el agente llama a herramientas todavía no hay texto que mostrar
+  const isWaitingForText =
+    status === "submitted" ||
+    (status === "streaming" &&
+      (lastMessage?.role !== "assistant" || !messageText(lastMessage).trim()));
+
+  // Cargar conversaciones previas de este disco
   useEffect(() => {
     if (artista && album && username) {
       getChatByAlbumAndArtist(
@@ -47,67 +66,47 @@ export default function Chat() {
         artista as string,
         album as string
       ).then((data) => {
-        const formattedChats: Message[] = [];
+        const formattedChats: UIMessage[] = [];
         data.forEach((chat) => {
           formattedChats.push({
             id: chat.id.toString() + "-prompt",
             role: "user",
-            content: chat.prompt,
+            parts: [{ type: "text", text: chat.prompt }],
           });
           if (chat.response) {
             formattedChats.push({
               id: chat.id.toString() + "-response",
               role: "assistant",
-              content: chat.response,
+              parts: [{ type: "text", text: chat.response }],
             });
           }
         });
-        setPreviousChats(formattedChats);
+        setMessages(formattedChats);
       });
     }
-  }, [artista, album, username]);
+  }, [artista, album, username, setMessages]);
 
-  const initialPrompt =
+  const welcomeMessage =
     artista && album
       ? `¡Hola! Soy tu DiscBOT Agent musical. Estoy conectado a Discogs, Last.fm y al analizador armónico Camelot para el disco "${album}" de ${artista}. ¿En qué te puedo asesorar?`
       : "Por favor, selecciona un álbum desde tu catálogo para conversar con el agente especializado.";
 
-  const initialId = "agent-welcome";
-
-  const [chatErrorMessage, setChatErrorMessage] = useState<string | null>(null);
-
-  const {
-    messages,
-    handleSubmit,
-    input,
-    setInput,
-    handleInputChange,
-    isLoading,
-    error: chatError,
-  } = useChat({
-    initialMessages: [
-      ...previousChats,
-      { id: initialId, role: "assistant", content: initialPrompt },
-    ],
-    body: {
-      username: username,
-      artista: artista,
-      album: album,
-      disco_id: disco_id,
-    },
-    onError: (err) => {
-      console.error("[useChat] Error recibido:", err);
-      setChatErrorMessage(err.message || "Error al procesar la respuesta.");
-    },
-    onResponse: () => {
-      setChatErrorMessage(null);
-    },
-  });
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const text = input.trim();
+    if (!text || isLoading) return;
+    setChatErrorMessage(null);
+    sendMessage(
+      { text },
+      { body: { artista, album, disco_id } }
+    );
+    setInput("");
+  };
 
   // Auto-scroll al final del chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, [messages, status]);
 
   const redirectToAlbum = () => {
     let albumUrl = `/albums/${disco_id}`;
@@ -185,7 +184,19 @@ export default function Chat() {
 
         {/* Contenedor de Mensajes */}
         <div className="tw-flex-1 tw-overflow-y-auto tw-bg-white/60 dark:tw-bg-gray-900/60 tw-backdrop-blur-sm tw-rounded-2xl tw-p-4 md:tw-p-6 tw-border tw-border-gray-200 dark:tw-border-gray-800 tw-space-y-4">
+          <div className="tw-flex tw-gap-3 tw-justify-start">
+            <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-purple-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
+              🤖
+            </div>
+            <div className="tw-max-w-[85%] md:tw-max-w-[75%] tw-rounded-2xl tw-p-4 tw-shadow-sm tw-bg-white dark:tw-bg-gray-800 tw-text-gray-800 dark:tw-text-gray-100 tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-rounded-tl-none">
+              <div className="tw-text-xs tw-font-semibold tw-mb-1 tw-opacity-80">DiscBOT Agent</div>
+              <div className="tw-text-sm tw-whitespace-pre-line tw-leading-relaxed">{welcomeMessage}</div>
+            </div>
+          </div>
+
           {messages.map((message) => {
+            const text = messageText(message);
+            if (!text.trim()) return null;
             const isUser = message.role === "user";
             return (
               <div
@@ -208,7 +219,7 @@ export default function Chat() {
                     {isUser ? (username ? `${username}` : "Tú") : "DiscBOT Agent"}
                   </div>
                   <div className="tw-text-sm tw-whitespace-pre-line tw-leading-relaxed">
-                    {message.content}
+                    {text}
                   </div>
                 </div>
                 {isUser && (
@@ -220,7 +231,7 @@ export default function Chat() {
             );
           })}
 
-          {isLoading && (
+          {isWaitingForText && (
             <div className="tw-flex tw-gap-3 tw-justify-start tw-items-center">
               <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-purple-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-animate-pulse">
                 🤖
@@ -271,7 +282,7 @@ export default function Chat() {
             <input
               type="text"
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => setInput(e.target.value)}
               placeholder={`Pregunta a DiscBOT sobre ${album || "este disco"}...`}
               disabled={isLoading}
               className="tw-flex-1 tw-bg-transparent tw-px-4 tw-py-2 tw-text-sm tw-text-gray-900 dark:tw-text-white tw-outline-none placeholder:tw-text-gray-400"

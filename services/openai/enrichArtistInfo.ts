@@ -1,3 +1,4 @@
+import { generateText } from "ai";
 import { getAIClient } from "@/lib/aiClient";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { getArtistInfoFromSupabase } from "../supabase/getArtistInfoSupabase";
@@ -43,28 +44,19 @@ export async function enrichArtistInfoWithChatGPT(
       `2. Estilo sonoro, producción e influencias musicales clave.\n` +
       `3. Repercusión cultural y por qué es una pieza valiosa para coleccionistas de vinilo.`;
 
-    const response = await ai.client.chat.completions.create({
+    const { text } = await generateText({
       model: ai.model,
-      messages: [
-        {
-          role: "system",
-          content:
-            "Eres un musicólogo e historiador musical experto. Proporcionas información detallada, " +
-            "precisa y apasionada sobre la historia de la música y lanzamientos discográficos en vinilo. " +
-            "Responde siempre en español con tono divulgativo de alta calidad.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      max_tokens: 850,
+      instructions:
+        "Eres un musicólogo e historiador musical experto. Proporcionas información detallada, " +
+        "precisa y apasionada sobre la historia de la música y lanzamientos discográficos en vinilo. " +
+        "Responde siempre en español con tono divulgativo de alta calidad.",
+      prompt,
+      maxOutputTokens: 850,
       temperature: 0.7,
     });
 
     const enrichedInfo =
-      response.choices?.[0]?.message?.content?.trim() ||
-      "No se pudo generar el análisis detallado para este álbum.";
+      text.trim() || "No se pudo generar el análisis detallado para este álbum.";
 
     // 4. Guardar en Supabase para el futuro si la base de datos está disponible
     if (isSupabaseConfigured && discoIdStr) {

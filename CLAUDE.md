@@ -6,7 +6,7 @@ Architecture overview and roadmap (Spanish): @docs/README.md
 
 ## Commands
 
-- `npm run dev` / `npm run build` / `npm run lint` (next lint, `next/core-web-vitals` only)
+- `npm run dev` / `npm run build` / `npm run lint` (`eslint .` with flat config `eslint.config.mjs` — Next 16 removed `next lint`)
 - `.npmrc` sets `ignore-scripts=true` and `save-exact=true` (supply-chain protection). Ask before installing any package; prefer versions published at least 1–2 weeks ago, review the `package-lock.json` diff and run `npm audit signatures` afterwards.
 - Type-check with `npx tsc --noEmit`. There are no tests and no CI — type-check + lint is the verification step.
 

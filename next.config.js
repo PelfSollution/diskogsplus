@@ -1,43 +1,25 @@
 /** @type {import('next').NextConfig} */
+
+// Hosts de imágenes remotas permitidos (dominio exacto y subdominios con "**.")
+const imageHosts = [
+  "discogs.com",
+  "**.discogs.com",
+  "gravatar.com",
+  "**.gravatar.com",
+  "**.scdn.co",
+  "**.fastly.net",
+  "images.unsplash.com",
+  "oaidalleapiprodscus.blob.core.windows.net",
+  "pollinations.ai",
+  "**.pollinations.ai",
+];
+
 const nextConfig = {
   images: {
-    domains: [
-      "st.discogs.com",
-      "i.discogs.com",
-      "img.discogs.com",
-      "api.discogs.com",
-      "secure.gravatar.com",
-      "gravatar.com",
-      "www.gravatar.com",
-      "i.scdn.co",
-      "lastfm.freetls.fastly.net",
-      "images.unsplash.com",
-      "oaidalleapiprodscus.blob.core.windows.net",
-      "image.pollinations.ai",
-      "pollinations.ai",
-    ],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.discogs.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.gravatar.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.scdn.co",
-      },
-      {
-        protocol: "https",
-        hostname: "**.fastly.net",
-      },
-      {
-        protocol: "https",
-        hostname: "**.pollinations.ai",
-      },
-    ],
+    remotePatterns: imageHosts.map((hostname) => ({
+      protocol: "https",
+      hostname,
+    })),
   },
 };
 

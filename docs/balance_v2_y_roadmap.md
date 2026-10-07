@@ -91,13 +91,13 @@ graph TD
 ---
 
 ### F. Modularización Frontend y Optimización de Rendimiento
-* Deconstrucción del monolito de 1.146 líneas en [`pages/albums/[id].tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/albums/%5Bid%5D.tsx) en 6 componentes atómicos mantenibles:
-  * [`AlbumCoverFlip.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/AlbumCoverFlip.tsx) (Giro 3D puro en Tailwind).
-  * [`AlbumHeader.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/AlbumHeader.tsx) (Metadatos, Wantlist y enlace a DiscBOT).
-  * [`AlbumTracklist.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/AlbumTracklist.tsx) (Tracklist con Camelot Wheel y botones Mixtape).
-  * [`AlbumBioAccordion.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/AlbumBioAccordion.tsx) (Biografía e IA).
-  * [`SimilarArtistsGrid.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/SimilarArtistsGrid.tsx) (Artistas similares).
-  * [`AlbumMediaSidebar.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/AlbumMediaSidebar.tsx) (YouTube + Last.fm).
+* Deconstrucción del monolito de 1.146 líneas en [`pages/albums/[id].tsx`](../pages/albums/%5Bid%5D.tsx) en 6 componentes atómicos mantenibles:
+  * [`AlbumCoverFlip.tsx`](../components/album/AlbumCoverFlip.tsx) (Giro 3D puro en Tailwind).
+  * [`AlbumHeader.tsx`](../components/album/AlbumHeader.tsx) (Metadatos, Wantlist y enlace a DiscBOT).
+  * [`AlbumTracklist.tsx`](../components/album/AlbumTracklist.tsx) (Tracklist con Camelot Wheel y botones Mixtape).
+  * [`AlbumBioAccordion.tsx`](../components/album/AlbumBioAccordion.tsx) (Biografía e IA).
+  * [`SimilarArtistsGrid.tsx`](../components/album/SimilarArtistsGrid.tsx) (Artistas similares).
+  * [`AlbumMediaSidebar.tsx`](../components/album/AlbumMediaSidebar.tsx) (YouTube + Last.fm).
 * **Purga y Eliminación Total de Material-UI (MUI):**
   * Se eliminaron todos los componentes de `@mui/material` y `@emotion/*` en todas las páginas y componentes del proyecto (`components/TopNavBar.tsx`, `pages/albums/index.tsx`, `pages/wantlist.tsx`, `pages/dashboard.tsx` y `pages/matching.tsx`).
   * Reemplazo por componentes nativos en **Tailwind CSS** e iconos vectoriales de **Lucide React**.
@@ -175,12 +175,12 @@ flowchart LR
 
 ## 5. Resumen de Archivos Clave Modificados en la v2.0
 
-* [`.env.local`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/.env.local): Configuración de `GEMINI_API_KEY`, `GEMINI_MODEL=gemini-2.5-flash` y `LASTFM_API_KEY`.
-* [`lib/aiClient.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/lib/aiClient.ts): Cliente unificado multimodelo para Google AI Studio y OpenAI.
-* [`lib/musicNotation.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/lib/musicNotation.ts): Utilidades de la Rueda Camelot y códigos de color armónicos.
-* [`services/local/mixtapeStorage.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/services/local/mixtapeStorage.ts): Motor de persistencia local para la Mixtape.
-* [`services/agent/musicAgent.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/services/agent/musicAgent.ts): Lógica del agente musical con despacho de herramientas.
-* [`pages/chat.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/chat.tsx): Interfaz de DiscBOT Agent con streaming.
-* [`pages/mixtapeplayer.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/mixtapeplayer.tsx): Nuevo reproductor tocadiscos interactivo con YouTube.
-* [`pages/mixtape.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/mixtape.tsx): Vista de gestión de Mixtape sin dependencias de Spotify.
-* [`components/album/AlbumMediaSidebar.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/album/AlbumMediaSidebar.tsx): Reproductor multimedia con YouTube por defecto y pestañas inteligentes.
+* [`.env.local`](../.env.local): Configuración de `GEMINI_API_KEY`, `GEMINI_MODEL=gemini-2.5-flash` y `LASTFM_API_KEY`.
+* [`lib/aiClient.ts`](../lib/aiClient.ts): Cliente unificado multimodelo para Google AI Studio y OpenAI.
+* [`lib/musicNotation.ts`](../lib/musicNotation.ts): Utilidades de la Rueda Camelot y códigos de color armónicos.
+* [`services/local/mixtapeStorage.ts`](../services/local/mixtapeStorage.ts): Motor de persistencia local para la Mixtape.
+* [`services/agent/musicAgent.ts`](../services/agent/musicAgent.ts): Lógica del agente musical con despacho de herramientas.
+* [`pages/chat.tsx`](../pages/chat.tsx): Interfaz de DiscBOT Agent con streaming.
+* [`pages/mixtapeplayer.tsx`](../pages/mixtapeplayer.tsx): Nuevo reproductor tocadiscos interactivo con YouTube.
+* [`pages/mixtape.tsx`](../pages/mixtape.tsx): Vista de gestión de Mixtape sin dependencias de Spotify.
+* [`components/album/AlbumMediaSidebar.tsx`](../components/album/AlbumMediaSidebar.tsx): Reproductor multimedia con YouTube por defecto y pestañas inteligentes.

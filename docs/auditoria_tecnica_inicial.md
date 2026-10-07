@@ -1,7 +1,7 @@
 # Auditoría Técnica y Propuesta de Evolución: Diskogs Plus
 
 > **Fecha:** Octubre 2026 (o 3 años tras desarrollo inicial ~2023)  
-> **Proyecto:** [Diskogs Plus](file:///Users/davidayatsros/Documents/mailings/Discogs%202)  
+> **Proyecto:** [Diskogs Plus](../README.md)  
 > **Objetivo:** Diagnóstico del estado actual de partida, identificación de deuda técnica y brechas de seguridad, y definición de una hoja de ruta para modernizar la aplicación y transformarla en una plataforma musical impulsada por **Agentes de IA**.
 
 ---
@@ -30,12 +30,12 @@ flowchart LR
 ### 2.1. Seguridad y Autenticación (Prioridad Crítica)
 
 > [!CAUTION]
-> **Vulnerabilidad Crítica detectada en [`pages/api/getApiKey.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/api/getApiKey.ts)**  
+> **Vulnerabilidad Crítica detectada en [`pages/api/getApiKey.ts`](../pages/api/getApiKey.ts)**  
 > Cualquier usuario o atacante puede enviar una petición `POST /api/getApiKey` con el cuerpo `{"username": "victima"}` y el servidor retornará la clave de OpenAI descifrada en texto plano sin comprobar sesión, cookie de autenticación ni tokens.
 
 1. **Exposición de claves**: Las claves API de OpenAI ingresadas por los usuarios se almacenan en Supabase cifradas con AES mediante `crypto-js`, pero el endpoint de lectura no tiene middleware ni comprobación de identidad.
 2. **Protección de rutas débil**:
-   * En [`components/Layout.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/Layout.tsx#L41), la verificación de sesión se realiza en el cliente:
+   * En [`components/Layout.tsx`](../components/Layout.tsx#L41), la verificación de sesión se realiza en el cliente:
      ```typescript
      const isUserLoggedIn = !!getCookie("username");
      if (!isUserLoggedIn && !allowPublicAccess) {
@@ -45,11 +45,11 @@ flowchart LR
      Cualquier usuario puede abrir la consola del navegador y ejecutar `document.cookie = "username=admin"` para saltarse el redireccionamiento.
    * No existe un `middleware.ts` en la raíz de Next.js para proteger las rutas en el Edge/Servidor antes de renderizar la página.
 3. **Cifrado de OAuth 1.0a en Cookies**:
-   * En [`pages/api/auth/authorize.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/api/auth/authorize.ts#L34), el token de solicitud de Discogs se cifra con `CryptoJS.AES` y se guarda en cookies del navegador usando `CRYPT_KEY`. Es vulnerable si la clave se ve comprometida o no se rota.
+   * En [`pages/api/auth/authorize.ts`](../pages/api/auth/authorize.ts#L34), el token de solicitud de Discogs se cifra con `CryptoJS.AES` y se guarda en cookies del navegador usando `CRYPT_KEY`. Es vulnerable si la clave se ve comprometida o no se rota.
 4. **Supabase sin RLS vinculado a Discogs**:
-   * [`lib/supabase.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/lib/supabase.ts) inicializa el cliente con `auth.persistSession: false`. Todas las consultas desde el frontend corren bajo el rol `anon`, lo que significa que o bien las tablas tienen RLS deshabilitado (inseguro) o políticas permisivas que aceptan cualquier `username` enviado por parámetro.
+   * [`lib/supabase.ts`](../lib/supabase.ts) inicializa el cliente con `auth.persistSession: false`. Todas las consultas desde el frontend corren bajo el rol `anon`, lo que significa que o bien las tablas tienen RLS deshabilitado (inseguro) o políticas permisivas que aceptan cualquier `username` enviado por parámetro.
 5. **Inconsistencia en Variables de Entorno**:
-   * [`.env.local.sample`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/.env.local.sample) define `SUPABASE_URL` y `SUPABASE_ANON_KEY`, mientras que [`lib/supabase.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/lib/supabase.ts) busca `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+   * [`.env.local.sample`](../.env.local.sample) define `SUPABASE_URL` y `SUPABASE_ANON_KEY`, mientras que [`lib/supabase.ts`](../lib/supabase.ts) busca `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 ---
 
@@ -59,17 +59,17 @@ flowchart LR
 > La implementación actual utiliza patrones de principios de 2023 (`gpt-3.5-turbo` simple, sin recuperación de contexto ni funciones).
 
 1. **Chat monolítico sin herramientas ni memoria real**:
-   * En [`app/api/chat/route.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/app/api/chat/route.ts#L48), el bot recibe únicamente el nombre del artista y del álbum en el prompt del sistema:
+   * En [`app/api/chat/route.ts`](../app/api/chat/route.ts#L48), el bot recibe únicamente el nombre del artista y del álbum en el prompt del sistema:
      ```typescript
      Eres un asistente especializado en música y discos. Debes responder preguntas exclusivamente relacionadas con el disco "${album}" del artista "${artista}".
      ```
    * **Problema:** El bot no tiene acceso a la lista de temas real, año de edición, sello discográfico, masterización, créditos, letras ni precios de venta. Si se le pregunta algo específico sobre una edición, tenderá a alucinar.
 2. **Llamadas relativas inválidas en Edge Runtime**:
-   * En [`app/api/chat/route.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/app/api/chat/route.ts#L13), una función ejecutada en `runtime = "edge"` hace `fetch('/api/getApiKey')`. En el entorno del servidor/edge de Next.js, un `fetch` con URL relativa lanza un error (`TypeError: Failed to parse URL` / `Invalid URL`).
+   * En [`app/api/chat/route.ts`](../app/api/chat/route.ts#L13), una función ejecutada en `runtime = "edge"` hace `fetch('/api/getApiKey')`. En el entorno del servidor/edge de Next.js, un `fetch` con URL relativa lanza un error (`TypeError: Failed to parse URL` / `Invalid URL`).
 3. **SDK de IA obsoleto**:
    * Se utiliza `ai: ^2.2.12` con `OpenAIStream` y `StreamingTextResponse`. La versión moderna de Vercel AI SDK (v3.x / v4.x) usa funciones unificadas como `streamText`, `generateObject`, y soporte nativo para `tools`.
 4. **Generación de imágenes legacy**:
-   * En [`services/openai/generateImageFromPrompt.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/services/openai/generateImageFromPrompt.ts), se solicita tamaño `512x512` con la API antigua de DALL-E 2, generando imágenes de baja resolución sin control de estilo artístico.
+   * En [`services/openai/generateImageFromPrompt.ts`](../services/openai/generateImageFromPrompt.ts), se solicita tamaño `512x512` con la API antigua de DALL-E 2, generando imágenes de baja resolución sin control de estilo artístico.
 
 ---
 
@@ -81,13 +81,13 @@ flowchart LR
    * Existen simultáneamente `tailwind.config.js` y `tailwind.config.ts`.
    * Ambos definen `prefix: 'tw-'`.
 3. **Bugs visuales por clases de Tailwind sin prefijo**:
-   * Dado que el prefijo configurado es `tw-`, clases comunes como `className="w-full max-w-md bg-white"` usadas en [`pages/mixtape.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/mixtape.tsx#L45) o [`components/MixtapeRow.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/MixtapeRow.tsx#L33) son ignoradas por el compilador de Tailwind, rompiendo estilos.
-   * Typo en [`components/ui/button.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/ui/button.tsx#L20): `htw-over:underline`.
+   * Dado que el prefijo configurado es `tw-`, clases comunes como `className="w-full max-w-md bg-white"` usadas en [`pages/mixtape.tsx`](../pages/mixtape.tsx#L45) o [`components/MixtapeRow.tsx`](../components/MixtapeRow.tsx#L33) son ignoradas por el compilador de Tailwind, rompiendo estilos.
+   * Typo en [`components/ui/button.tsx`](../components/ui/button.tsx#L20): `htw-over:underline`.
 4. **Páginas Monolíticas**:
-   * [`pages/albums/[id].tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/albums/%5Bid%5D.tsx) tiene **1.146 líneas de código** mezclando lógica de carrusel 3D (tocadiscos), llamadas API a Discogs, llamadas a Spotify, parseo con DOMPurify, peticiones a Supabase y gestión de alertas.
-   * Además, importa en el cliente la función [`enrichArtistInfoWithChatGPT`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/albums/%5Bid%5D.tsx#L30), arrastrando dependencias del servidor al bundle del navegador.
+   * [`pages/albums/[id].tsx`](../pages/albums/%5Bid%5D.tsx) tiene **1.146 líneas de código** mezclando lógica de carrusel 3D (tocadiscos), llamadas API a Discogs, llamadas a Spotify, parseo con DOMPurify, peticiones a Supabase y gestión de alertas.
+   * Además, importa en el cliente la función [`enrichArtistInfoWithChatGPT`](../pages/albums/%5Bid%5D.tsx#L30), arrastrando dependencias del servidor al bundle del navegador.
 5. **Navegación accesible defectuosa**:
-   * En [`components/TopNavBar.tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/components/TopNavBar.tsx#L50), la navegación se efectúa con `<button onClick={() => router.push(href)}>`, en lugar de elementos `<Link href={...}>` estándar, lo que impide abrir pestañas con botón central, afecta la accesibilidad y desactiva el prefetching automático de Next.js.
+   * En [`components/TopNavBar.tsx`](../components/TopNavBar.tsx#L50), la navegación se efectúa con `<button onClick={() => router.push(href)}>`, en lugar de elementos `<Link href={...}>` estándar, lo que impide abrir pestañas con botón central, afecta la accesibilidad y desactiva el prefetching automático de Next.js.
 
 ---
 
@@ -97,7 +97,7 @@ flowchart LR
 | :--- | :--- | :--- |
 | **Discogs API** | Librería `disconnect` (OAuth 1.0a) | La librería está prácticamente sin mantenimiento. Depende de flujos complejos de OAuth 1.0a que almacenan tokens en cookies cifradas. |
 | **Spotify API** | Auth vía Client Credentials y endpoints REST | En 2024 Spotify restringió el endpoint `/v1/audio-features/` a apps registradas antes de cierta fecha o que pasen revisión formal. Es imperativo tener un fallback o verificar permisos de la app en Spotify Dashboard. |
-| **Last.fm API** | Llamadas REST en [`services/last.fm/fetchData.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/services/last.fm/fetchData.ts) | No hay capa de caché ni control de rate-limit. |
+| **Last.fm API** | Llamadas REST en [`services/last.fm/fetchData.ts`](../services/last.fm/fetchData.ts) | No hay capa de caché ni control de rate-limit. |
 | **Supabase** | 20 archivos individuales en `services/supabase/` | Código fragmentado (`addUser.ts`, `addMixtape.ts`, `deleteApiKey.ts`, etc.) sin cliente tipado generado por Supabase CLI (`Database` types). |
 
 ---
@@ -136,7 +136,7 @@ gantt
 3. **Estandarizar variables de entorno**:
    * Homogeneizar las variables en `.env.local` y `.env.local.sample` (prefijos `NEXT_PUBLIC_` correctos).
 4. **Control de errores en API Routes**:
-   * Corregir retornos prematuros en endpoints como [`pages/api/albums/catalog.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/api/albums/catalog.ts) para evitar caídas del servidor Node por doble respuesta.
+   * Corregir retornos prematuros en endpoints como [`pages/api/albums/catalog.ts`](../pages/api/albums/catalog.ts) para evitar caídas del servidor Node por doble respuesta.
 
 ---
 
@@ -146,7 +146,7 @@ gantt
    * Reemplazar los componentes de MUI (`Dialog`, `TextField`, `Select`, `IconButton`, `Snackbar`, `Chip`) por la suite moderna de **Shadcn UI** (basada en Radix UI y Tailwind CSS ya presente en el proyecto).
    * **Beneficio directo:** Reducción de más del 50% del tamaño del bundle JavaScript, tiempos de carga más rápidos y diseño visual 100% coherente.
 2. **Modularización de Componentes**:
-   * Descomponer [`pages/albums/[id].tsx`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/pages/albums/%5Bid%5D.tsx) en componentes atómicos reutilizables:
+   * Descomponer [`pages/albums/[id].tsx`](../pages/albums/%5Bid%5D.tsx) en componentes atómicos reutilizables:
      * `AlbumHeader.tsx` (título, artista, año, sello, portada).
      * `VinylTurntable.tsx` (animación 3D del disco y plato).
      * `TrackListTable.tsx` (lista de pistas, BPM, key Camelot, botón de añadir a mixtape).
@@ -195,7 +195,7 @@ flowchart TD
    * Reemplazar los 20 archivos de `services/supabase/` por un servicio unificado `lib/db/` tipado automáticamente con `supabase gen types typescript`.
    * Habilitar Row Level Security (RLS) formal.
 3. **Tests y CI/CD**:
-   * Configurar **Vitest** y **React Testing Library** para probar las utilidades de música ([`lib/musicNotation.ts`](file:///Users/davidayatsros/Documents/mailings/Discogs%202/lib/musicNotation.ts)) y los flujos principales.
+   * Configurar **Vitest** y **React Testing Library** para probar las utilidades de música ([`lib/musicNotation.ts`](../lib/musicNotation.ts)) y los flujos principales.
 
 ---
 

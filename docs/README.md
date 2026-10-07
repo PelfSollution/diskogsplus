@@ -43,8 +43,8 @@ GEMINI_MODEL=gemini-2.5-flash
 LASTFM_API_KEY=tu_clave_lastfm
 
 # Discogs API
-DISCOGS_CONSUMER_KEY=tu_consumer_key
-DISCOGS_CONSUMER_SECRET=tu_consumer_secret
+CONSUMER_KEY=tu_consumer_key
+CONSUMER_SECRET=tu_consumer_secret
 ```
 
 ### 2. Comandos Clave

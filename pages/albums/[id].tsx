@@ -214,10 +214,10 @@ function AlbumDetails() {
         trackname: track.title,
         disco_id: idNumber.toString(),
         spotifytrackid: track.spotifyTrackId || null,
-        tempo: track.tempo || null,
-        key: track.key || null,
-        mode: track.mode || null,
-        duration: track.duration || null,
+        tempo: track.tempo ?? null,
+        key: track.key ?? null,
+        mode: track.mode ?? null,
+        duration: track.duration ?? null,
       });
       setTracksInMixtape((prev) => [...prev, track.title]);
       showNotification(`"${track.title}" añadida al Mixtape.`);

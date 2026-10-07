@@ -25,6 +25,7 @@ Architecture overview and roadmap (Spanish): @docs/README.md
 - `pages/api/auth/devLogin.ts` is a dev-only bypass (403 in production) that sets mock Discogs tokens — real Discogs API calls fail under it. The normal local setup is the full stack (real Discogs OAuth + Supabase in `.env.local`).
 - AI calls use the OpenAI SDK pointed at either Gemini or OpenAI. `lib/aiClient.ts` (`getAIClient`) picks the key: env `GEMINI_API_KEY` → user's stored key (`services/supabase/getUserApiKey.ts`, encrypted in `users.openai_api_key`) → `OPENAI_API_KEY`. Keys starting with `AIza` are routed to Gemini's OpenAI-compatible endpoint. `app/api/chat/route.ts` duplicates this logic inline — keep both in sync (or migrate it to `getAIClient`).
 - Supabase (`lib/supabase.ts`) degrades gracefully: if env vars are missing/placeholder, `isSupabaseConfigured` is false and services must check it. Mixtape services fall back to localStorage (`services/local/mixtapeStorage.ts`). Preserve this fallback when touching `services/supabase/*`.
+- BPM/key/mode come from `services/audioFeatures/getTrackAudioFeatures.ts` (ReccoBeats by album → by track → Deezer BPM-only; free, no API key). Spotify `/v1/audio-features` is dead (403 since Nov 2024) — don't reintroduce it. Spotify is only used for the album embed.
 - New remote image hosts must be added to `next.config.js` (`images.domains` / `remotePatterns`).
 
 ## Environment

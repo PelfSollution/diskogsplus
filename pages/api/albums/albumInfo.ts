@@ -11,7 +11,7 @@ import { getSpotifyAccessToken } from "../../../services/spotify/getAccessToken"
 import { getSpotifyAlbumId } from "../../../services/spotify/getAlbumId";
 import { getMostPopularAlbum } from "../../../services/spotify/getMostPopularAlbum";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
-import { getTracklistWithSpotifyIds } from "../../../services/spotify/getTracklistWithSpotifyIds";
+import { enrichTracklistWithAudioFeatures } from "../../../services/audioFeatures/getTrackAudioFeatures";
 import { getArtistImageFromSupabase } from "../../../services/supabase/getArtistImageFromSupabase";
 import { SimilarArtist } from "@/types/types";
 
@@ -137,17 +137,35 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
         : "Artista Desconocido";
 
     let selectedTracklist = Array.isArray(releaseData.tracklist)
-      ? releaseData.tracklist.map((t: any) => ({
-          position: t.position || "",
-          title: t.title || "",
-          duration: t.duration || "",
-        }))
+      ? releaseData.tracklist
+          // Discogs incluye cabeceras ("Side A", etc.) como entradas sin posición
+          .filter((t: any) => t.type_ !== "heading")
+          .map((t: any) => ({
+            position: t.position || "",
+            title: t.title || "",
+            duration: t.duration || "",
+            // En recopilatorios cada pista tiene su propio artista
+            artist: t.artists?.[0]?.name
+              ? removeAllSubstringsInParenthesis(t.artists[0].name)
+              : undefined,
+          }))
       : [];
 
-    // 3. Enriquecimiento opcional con Spotify (Audio features, BPM, Camelot, Embed ID)
+    // 3. BPM y tonalidad (ReccoBeats, con Deezer como respaldo)
+    let tracklistWithFeatures = selectedTracklist;
+    try {
+      tracklistWithFeatures = await enrichTracklistWithAudioFeatures(
+        selectedTracklist,
+        removeAllSubstringsInParenthesis(artistName),
+        releaseData.title
+      );
+    } catch (featuresError: any) {
+      console.warn("[AudioFeatures] Aviso (BPM/tonalidad omitidos):", featuresError?.message);
+    }
+
+    // 4. Enriquecimiento opcional con Spotify (solo el embed del álbum)
     let spotifyAlbumId: string | null = null;
     let isPopularAlbum = false;
-    let tracklistWithSpotifyIds = selectedTracklist;
 
     const hasSpotifyCredentials = Boolean(
       process.env.SPOTIFY_CLIENT_ID?.trim() && process.env.SPOTIFY_CLIENT_SECRET?.trim()
@@ -170,21 +188,6 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
               isPopularAlbum = true;
             }
           }
-
-          // Intentar enriquecer tracks con BPM y tonalidad
-          try {
-            tracklistWithSpotifyIds = await getTracklistWithSpotifyIds(
-              selectedTracklist,
-              releaseData,
-              accessToken
-            );
-          } catch (trackFeaturesError: any) {
-            console.warn(
-              "[Spotify Audio Features] Aviso (API restringida o fallida):",
-              trackFeaturesError?.message
-            );
-            tracklistWithSpotifyIds = selectedTracklist;
-          }
         }
       } catch (spotifyError: any) {
         console.warn(
@@ -194,7 +197,7 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
       }
     }
 
-    // 4. Portadas (Front y Back cover)
+    // 5. Portadas (Front y Back cover)
     interface DiscogsImage {
       type: string;
       uri: string;
@@ -214,7 +217,7 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
     const generatedBackCover =
       backCover || (await getArtistImageFromSupabase(artistName));
 
-    // 5. Enriquecimiento opcional con Last.fm (Bio, tags, artistas similares, tracks similares)
+    // 6. Enriquecimiento opcional con Last.fm (Bio, tags, artistas similares, tracks similares)
     let lastfmTags: string[] = [];
     let similarArtists: any[] = [];
     let similarTracks: any[] = [];
@@ -266,7 +269,7 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
       }
     }
 
-    // 6. Información enriquecida previa de Supabase
+    // 7. Información enriquecida previa de Supabase
     let enrichedArtistInfoFromDb = "";
     try {
       const dbInfo = await getArtistInfoFromSupabase(releaseData.id);
@@ -290,7 +293,7 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
       country: releaseData.country || "Desconocido",
       genres: releaseData.genres || [],
       styles: releaseData.styles || [],
-      tracklist: tracklistWithSpotifyIds,
+      tracklist: tracklistWithFeatures,
       coverImage: generatedFrontCover || "/no-portada.gif",
       backCoverImage: generatedBackCover || null,
       artist: removeAllSubstringsInParenthesis(artistName),

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useSWR from "swr";
 import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -23,6 +24,12 @@ import {
   Check,
 } from "lucide-react";
 import CustomSnackbar from "@/components/CustomSnackbar";
+
+const jsonFetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+};
 
 export default function MixtapePlayer() {
   const router = useRouter();
@@ -120,10 +127,23 @@ export default function MixtapePlayer() {
     );
   };
 
-  const youtubeEmbedUrl = currentTrack
-    ? `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(
+  // Vídeo de la pista a partir de los vídeos que Discogs enlaza en el disco
+  // (el embed de YouTube por búsqueda dejó de funcionar en 2020)
+  const videoKey =
+    currentTrack?.disco_id && currentTrack?.trackname
+      ? `/api/mixtape/video?disco_id=${encodeURIComponent(currentTrack.disco_id)}&track=${encodeURIComponent(currentTrack.trackname)}`
+      : null;
+  const { data: videoData, isLoading: isVideoLoading } = useSWR(videoKey, jsonFetcher, {
+    revalidateOnFocus: false,
+  });
+  const videoId: string | undefined = videoData?.video?.videoId;
+  const youtubeEmbedUrl = videoId
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`
+    : "";
+  const youtubeSearchUrl = currentTrack
+    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(
         `${currentTrack.artista} ${currentTrack.trackname}`
-      )}&autoplay=1`
+      )}`
     : "";
 
   const keyInfo =
@@ -281,15 +301,36 @@ export default function MixtapePlayer() {
 
                 {/* IFrame de YouTube Embebido */}
                 <div className="tw-mt-5 tw-h-[140px] md:tw-h-[160px] tw-w-full tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-800 tw-bg-black tw-shadow-inner">
-                  <iframe
-                    src={youtubeEmbedUrl}
-                    title={`${currentTrack.artista} - ${currentTrack.trackname}`}
-                    width="100%"
-                    height="100%"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="tw-w-full tw-h-full"
-                  />
+                  {youtubeEmbedUrl ? (
+                    <iframe
+                      key={videoId}
+                      src={youtubeEmbedUrl}
+                      title={`${currentTrack.artista} - ${currentTrack.trackname}`}
+                      width="100%"
+                      height="100%"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="tw-w-full tw-h-full"
+                    />
+                  ) : (
+                    <div className="tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-px-4 tw-text-gray-400 tw-text-sm">
+                      {isVideoLoading ? (
+                        <span>Buscando el vídeo de la pista…</span>
+                      ) : (
+                        <>
+                          <span>Discogs no tiene vídeo enlazado para esta pista.</span>
+                          <a
+                            href={youtubeSearchUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="tw-inline-flex tw-items-center tw-gap-1 tw-text-red-400 hover:tw-text-red-300 tw-font-semibold"
+                          >
+                            Buscar en YouTube <ExternalLink className="tw-w-3.5 tw-h-3.5" />
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Controles de Reproducción */}

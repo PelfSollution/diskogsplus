@@ -56,10 +56,6 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
   }
 
   const currentVideo = videos[activeVideoIndex];
-  const youtubeSearchEmbedUrl = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(
-    `${artist} ${title}`
-  )}`;
-
   const youtubeExternalUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
     `${artist} ${title}`
   )}`;
@@ -111,20 +107,23 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
           <div>
             {/* Reproductor Embebido de YouTube */}
             <div className="tw-rounded-xl tw-overflow-hidden tw-shadow-inner tw-bg-black tw-aspect-video">
-              <iframe
-                width="100%"
-                height="100%"
-                src={
-                  videos.length > 0
-                    ? transformYouTubeUrlToEmbed(currentVideo.uri)
-                    : youtubeSearchEmbedUrl
-                }
-                title={`Reproductor YouTube: ${artist} - ${title}`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="tw-w-full tw-h-full"
-              />
+              {videos.length > 0 ? (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={transformYouTubeUrlToEmbed(currentVideo.uri)}
+                  title={`Reproductor YouTube: ${artist} - ${title}`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="tw-w-full tw-h-full"
+                />
+              ) : (
+                // El embed de YouTube por búsqueda dejó de funcionar en 2020
+                <div className="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-text-center tw-px-4 tw-text-gray-400 tw-text-sm">
+                  Discogs no tiene vídeos enlazados para este disco.
+                </div>
+              )}
             </div>
 
             {/* Selector de pistas de vídeo si hay varios clips en Discogs */}
@@ -170,7 +169,7 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
             {/* Enlace alternativo si Discogs no tiene vídeos enlazados directamente */}
             {videos.length === 0 && (
               <div className="tw-mt-3 tw-flex tw-items-center tw-justify-between tw-text-xs tw-text-gray-500">
-                <span>Búsqueda automática en YouTube Music</span>
+                <span>Búscalo directamente en YouTube</span>
                 <a
                   href={youtubeExternalUrl}
                   target="_blank"

@@ -1,4 +1,5 @@
 import React, { memo, useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { Play, Trash2, SquarePlay, ExternalLink } from "lucide-react";
 import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
@@ -23,6 +24,12 @@ type MixtapeRowProps = {
   isPlaying?: boolean;
 };
 
+const jsonFetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+};
+
 const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
   data,
   onDelete,
@@ -35,9 +42,18 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
     `${data.artista} ${data.trackname}`
   )}`;
 
-  const youtubeEmbedUrl = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(
-    `${data.artista} ${data.trackname}`
-  )}&autoplay=1`;
+  // Vídeo de la pista a partir de los vídeos de Discogs; solo se pide al abrir la preescucha
+  const { data: videoData, isLoading: isVideoLoading } = useSWR(
+    showPreview && data.disco_id
+      ? `/api/mixtape/video?disco_id=${encodeURIComponent(data.disco_id)}&track=${encodeURIComponent(data.trackname)}`
+      : null,
+    jsonFetcher,
+    { revalidateOnFocus: false }
+  );
+  const videoId: string | undefined = videoData?.video?.videoId;
+  const youtubeEmbedUrl = videoId
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`
+    : "";
 
   const keyInfo =
     typeof data.key === "number" && typeof data.mode === "number"
@@ -99,15 +115,30 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
         <div className="tw-w-full lg:tw-w-auto tw-flex tw-flex-wrap tw-items-center tw-gap-2">
           {showPreview ? (
             <div className="tw-w-full sm:tw-w-[320px] tw-h-[85px] tw-rounded-xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-inner tw-bg-black">
-              <iframe
-                src={youtubeEmbedUrl}
-                width="100%"
-                height="100%"
-                title={`Reproductor YouTube: ${data.trackname}`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="tw-w-full tw-h-full"
-              />
+              {youtubeEmbedUrl ? (
+                <iframe
+                  src={youtubeEmbedUrl}
+                  width="100%"
+                  height="100%"
+                  title={`Reproductor YouTube: ${data.trackname}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="tw-w-full tw-h-full"
+                />
+              ) : (
+                <div className="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-3 tw-text-xs tw-text-gray-400">
+                  {isVideoLoading ? (
+                    "Buscando vídeo…"
+                  ) : (
+                    <>
+                      Sin vídeo en Discogs ·
+                      <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="tw-text-red-400 hover:tw-underline">
+                        Buscar en YouTube
+                      </a>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <button

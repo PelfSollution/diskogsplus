@@ -15,7 +15,10 @@ export default async function devLogin(req: NextApiRequest, res: NextApiResponse
   }
 
   const username = (req.query.username as string) || (req.body?.username as string) || "demo_collector";
-  const cryptKey = process.env.CRYPT_KEY || "clave_secreta_default_32_chars";
+  const cryptKey = process.env.CRYPT_KEY;
+  if (!cryptKey) {
+    return res.status(500).json({ error: "Falta CRYPT_KEY en .env.local." });
+  }
 
   const cookieOptionsClient = {
     req,

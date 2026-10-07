@@ -1,19 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "../../lib/supabase";
+import { requireSessionUser } from "../../lib/session";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { username } = req.body;
-
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!username || typeof username !== "string") {
-    return res.status(400).json({ error: "Username is required" });
-  }
+  // El usuario sale siempre de la sesión, nunca del body
+  const username = requireSessionUser(req, res);
+  if (!username) return;
 
   try {
     const { data, error } = await supabase
@@ -31,7 +30,7 @@ export default async function handler(
     // Security: Only return a boolean indicator, never the decrypted plaintext key!
     return res.status(200).json({ hasApiKey });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal error";
-    return res.status(500).json({ error: message });
+    console.error("Error consultando la clave API:", error);
+    return res.status(500).json({ error: "Error interno" });
   }
 }

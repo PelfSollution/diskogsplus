@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 import deleteWantlistEntry from "@/services/supabase/deleteWantlistEntry";
+import { decryptCookieJSON, requireSessionUser } from "@/lib/session";
 var Discogs = require("disconnect").Client;
-var CryptoJS = require("crypto-js");
 
 
 export default async function removeFromWantlist(
@@ -10,22 +10,20 @@ export default async function removeFromWantlist(
   res: NextApiResponse
 ) {
   try {
-    const { username, disco_id } = req.body;
-    const accessDatacipherObj = getCookie("accessData", { req, res });
+    // El usuario sale siempre de la sesión, nunca del body
+    const username = requireSessionUser(req, res);
+    if (!username) return;
 
-    if (!accessDatacipherObj) {
+    const { disco_id } = req.body;
+    const accessData = decryptCookieJSON(getCookie("accessData", { req, res }));
+
+    if (!accessData) {
       return res.send({
         success: false,
         message: "No se encontraron datos de acceso.",
       });
     }
 
-    const bytes = await CryptoJS.AES.decrypt(
-      accessDatacipherObj,
-      process.env.CRYPT_KEY
-    );
-
-    const accessData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
     const userClient = new Discogs(accessData).user();
     const userWantlist = userClient.wantlist();
 

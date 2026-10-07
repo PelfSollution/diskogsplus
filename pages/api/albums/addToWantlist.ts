@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 import addWantlistEntry, { WantlistEntry } from "@/services/supabase/addWantlistEntry";
+import { decryptCookieJSON, requireSessionUser } from "@/lib/session";
 var Discogs = require("disconnect").Client;
-var CryptoJS = require("crypto-js");
 
 
 export default async function addToWantlist(
@@ -10,19 +10,15 @@ export default async function addToWantlist(
   res: NextApiResponse
 ) {
   try {
-    const { username, disco_id, notes, rating, artista, album, image_url } =
-      req.body;
+    // El usuario sale siempre de la sesión, nunca del body
+    const username = requireSessionUser(req, res);
+    if (!username) return;
 
-    const accessDatacipherObj = getCookie("accessData", { req, res });
+    const { disco_id, notes, rating, artista, album, image_url } = req.body;
 
-    if (accessDatacipherObj) {
-      const bytes = await CryptoJS.AES.decrypt(
-        accessDatacipherObj,
-        process.env.CRYPT_KEY
-      );
+    const accessData = decryptCookieJSON(getCookie("accessData", { req, res }));
 
-      const accessData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
+    if (accessData) {
       const userClient = new Discogs(accessData).user();
       const userWantlist = userClient.wantlist();
 

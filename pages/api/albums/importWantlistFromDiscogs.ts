@@ -3,8 +3,8 @@ import { getCookie } from "cookies-next";
 import addWantlistEntry, {
   WantlistEntry,
 } from "@/services/supabase/addWantlistEntry";
+import { decryptCookieJSON, requireSessionUser } from "@/lib/session";
 var Discogs = require("disconnect").Client;
-var CryptoJS = require("crypto-js");
 
 interface DiscogsRelease {
   id: number;
@@ -25,15 +25,17 @@ export default async function importWantlistFromDiscogs(
   res: NextApiResponse
 ) {
   try {
-    const { username } = req.body;
+    // El usuario sale siempre de la sesión, nunca del body
+    const username = requireSessionUser(req, res);
+    if (!username) return;
 
-    const accessDatacipherObj = getCookie("accessData", { req, res });
-
-    const bytes = CryptoJS.AES.decrypt(
-      accessDatacipherObj,
-      process.env.CRYPT_KEY
-    );
-    const accessData = await JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const accessData = decryptCookieJSON(getCookie("accessData", { req, res }));
+    if (!accessData) {
+      return res.status(401).json({
+        error_code: "no_access_data",
+        message: "No se encontraron datos de acceso de Discogs.",
+      });
+    }
 
     const userClient = new Discogs(accessData).user();
 

@@ -1,5 +1,8 @@
 import OpenAI from "openai";
+import { NextRequest } from "next/server";
 import { OpenAIStream, StreamingTextResponse } from "ai";
+import { getSessionUserFromCookie } from "../../../lib/session";
+import { rateLimit } from "../../../lib/rateLimit";
 import { addChatLog } from "../../../services/supabase/addChatLogs";
 import { updateChatLog } from "../../../services/supabase/updateChatLogs";
 import { getLastChatLogForUser } from "../../../services/supabase/getLastChatLogForUser";
@@ -12,10 +15,48 @@ import {
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+const MAX_HISTORY_MESSAGES = 30;
+const MAX_MESSAGE_CHARS = 4000;
+
+function jsonError(status: number, error: string, headers: Record<string, string> = {}) {
+  return new Response(JSON.stringify({ error }), {
+    status,
+    headers: { "Content-Type": "application/json", ...headers },
+  });
+}
+
+export async function POST(req: NextRequest) {
   try {
+    // El usuario sale siempre de la sesión, nunca del body
+    const username = getSessionUserFromCookie(req.cookies.get("usernameCipher")?.value);
+    if (!username) {
+      return jsonError(401, "No autenticado. Inicia sesión de nuevo.");
+    }
+
+    const limit = rateLimit(`chat:${username}`, 20, 60_000);
+    if (!limit.ok) {
+      return jsonError(429, "Demasiadas peticiones. Espera un momento.", {
+        "Retry-After": String(limit.retryAfterSeconds),
+      });
+    }
+
     const userMessages = await req.json();
-    const { artista, album, username, disco_id, messages: chatHistory = [] } = userMessages;
+    const { artista, album, disco_id, messages: rawHistory = [] } = userMessages;
+
+    // Solo se aceptan mensajes user/assistant del cliente: el prompt de sistema lo pone el servidor
+    const chatHistory: { role: "user" | "assistant"; content: string }[] = (
+      Array.isArray(rawHistory) ? rawHistory : []
+    )
+      .filter(
+        (m: any) =>
+          (m?.role === "user" || m?.role === "assistant") &&
+          typeof m?.content === "string"
+      )
+      .slice(-MAX_HISTORY_MESSAGES)
+      .map((m: any) => ({
+        role: m.role,
+        content: m.content.slice(0, MAX_MESSAGE_CHARS),
+      }));
 
     // Obtener la clave API del usuario o de las variables de entorno (Google AI Studio o OpenAI)
     const userApiKey = await getUserApiKey(username);
@@ -60,10 +101,7 @@ export async function POST(req: Request) {
 
     const conversationMessages: any[] = [
       { role: "system", content: systemPromptContent },
-      ...chatHistory.map((m: any) => ({
-        role: m.role,
-        content: m.content,
-      })),
+      ...chatHistory,
     ];
 
     let currentMessages = [...conversationMessages];
@@ -156,7 +194,6 @@ export async function POST(req: Request) {
     return new Response(
       JSON.stringify({
         error: "Error interno procesando la consulta del agente musical.",
-        detalles: err.message,
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

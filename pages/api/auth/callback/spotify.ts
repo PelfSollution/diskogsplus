@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { setCookie } from "cookies-next";
+import { deleteCookie, getCookie, setCookie } from "cookies-next";
+import { requireSessionUser } from "@/lib/session";
 import { saveMixtapeURL } from "../../../../services/supabase/saveMixtapeURL";
 import { generateMixtape } from "../../../../services/spotify/getSpotifyMixtape";
 
@@ -25,7 +26,18 @@ export default async function callbackSpotify(
 ) {
   if (req.method === "GET") {
     const code = req.query.code as string;
-    const username = req.query.state as string;
+    const state = req.query.state as string;
+    const expectedState = getCookie("spotifyOAuthState", { req, res });
+    deleteCookie("spotifyOAuthState", { req, res });
+
+    if (!state || !expectedState || state !== expectedState) {
+      res.status(400).json({ error: "Estado OAuth inválido" });
+      return;
+    }
+
+    // El usuario sale de la sesión, no del parámetro `state`
+    const username = requireSessionUser(req, res);
+    if (!username) return;
 
     if (!code) {
       res
@@ -106,10 +118,10 @@ export default async function callbackSpotify(
       // Redirigir al usuario a la página que muestra la mixtape
       res.redirect(`/mixtapeplayer?embedUrl=${encodeURIComponent(embedUrl)}`);
     } catch (err: unknown) {
+      console.error("Error en el callback de Spotify:", err);
       if (!res.writableEnded) {
         res.status(500).json({
           error: "Error interno del servidor",
-          detalles: (err as Error).message,
         });
       }
     }

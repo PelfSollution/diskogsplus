@@ -1,7 +1,12 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  // Si la API responde con error, SWR lo expone en `error` y `data` mantiene el valor por defecto
+  if (!res.ok) throw new Error(`Error ${res.status} al obtener la identidad`);
+  return res.json();
+};
 
 interface UserObjectInterface {
   id: number;

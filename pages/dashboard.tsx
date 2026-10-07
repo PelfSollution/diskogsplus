@@ -134,18 +134,18 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
     <div className="tw-bg-white dark:tw-bg-gray-800 tw-p-6 tw-rounded-2xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-max-w-md tw-w-full">
       <div className="tw-flex tw-justify-between tw-items-center tw-mb-4">
         <h2 className="tw-text-2xl tw-font-bold tw-text-gray-900 dark:tw-text-white">
-          {data.userProfile.username}
+          {data?.userProfile?.username}
         </h2>
         <span className="tw-text-xs tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-800 dark:tw-text-amber-300 tw-font-semibold tw-px-2.5 tw-py-1 tw-rounded-full">
           Coleccionista
         </span>
       </div>
 
-      {data.userProfile.avatar_url && (
+      {data?.userProfile?.avatar_url && (
         <div className="tw-relative tw-w-44 tw-h-44 tw-mx-auto tw-my-4 tw-rounded-full tw-overflow-hidden tw-shadow-md tw-border-4 tw-border-gray-100 dark:tw-border-gray-750">
           <Image
-            src={data.userProfile.avatar_url}
-            alt={data.userProfile.username}
+            src={data?.userProfile?.avatar_url}
+            alt={data?.userProfile?.username}
             fill
             className={`tw-object-cover tw-transition-opacity tw-duration-300 ${
               isImageLoaded ? "tw-opacity-100" : "tw-opacity-0"
@@ -160,15 +160,15 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         <div className="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">
           <Calendar className="tw-w-4 tw-h-4" />
           <span>
-            {Date.parse(data.userProfile.registered)
-              ? `Registrado el ${format(new Date(data.userProfile.registered), "dd/MM/yyyy")}`
+            {Date.parse(data?.userProfile?.registered)
+              ? `Registrado el ${format(new Date(data?.userProfile?.registered), "dd/MM/yyyy")}`
               : "Fecha de registro desconocida"}
           </span>
         </div>
         <p className="tw-text-sm tw-text-gray-700 dark:tw-text-gray-200">
           Tienes{" "}
           <strong className="tw-text-purple-600 dark:tw-text-purple-400">
-            {data.userProfile.num_collection}
+            {data?.userProfile?.num_collection}
           </strong>{" "}
           discos en tu colección.
         </p>

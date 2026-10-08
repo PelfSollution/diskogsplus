@@ -10,9 +10,6 @@ export async function addMixtape(mixtape: Mixtape) {
   // 2. Si Supabase está configurado, sincronizar con la base de datos
   if (isSupabaseConfigured) {
     try {
-      if (mixtape.key === null) mixtape.key = 0;
-      if (mixtape.mode === null) mixtape.mode = 0;
-
       const { data, error } = await supabase
         .from("mixtape")
         .insert([mixtape]);

@@ -75,10 +75,10 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
                   className={`tw-flex tw-items-center tw-gap-1.5 tw-px-3.5 tw-py-2 tw-rounded-xl tw-text-xs tw-font-semibold tw-transition-all ${
                     link.isSpecial
                       ? isActive
-                        ? "tw-bg-purple-600 tw-text-white tw-shadow-sm"
-                        : "tw-bg-purple-50 dark:tw-bg-purple-950/40 tw-text-purple-700 dark:tw-text-purple-300 hover:tw-bg-purple-100 dark:hover:tw-bg-purple-900/50"
+                        ? "tw-bg-brand-600 tw-text-white tw-shadow-sm"
+                        : "tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-100 dark:hover:tw-bg-brand-900/50"
                       : isActive
-                      ? "tw-bg-amber-500 tw-text-white tw-shadow-sm"
+                      ? "tw-bg-brand-500 tw-text-white tw-shadow-sm"
                       : "tw-text-gray-600 dark:tw-text-gray-300 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-800 hover:tw-text-gray-900 dark:hover:tw-text-white"
                   }`}
                 >
@@ -130,7 +130,7 @@ export default function TopNavBar({ isLoggedIn }: TopNavBarProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`tw-flex tw-items-center tw-gap-2.5 tw-w-full tw-px-4 tw-py-2.5 tw-rounded-xl tw-text-sm tw-font-semibold tw-transition-colors ${
                   isActive
-                    ? "tw-bg-amber-500 tw-text-white"
+                    ? "tw-bg-brand-500 tw-text-white"
                     : "tw-text-gray-700 dark:tw-text-gray-300 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-800"
                 }`}
               >

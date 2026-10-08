@@ -136,7 +136,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         <h2 className="tw-text-2xl tw-font-bold tw-text-gray-900 dark:tw-text-white">
           {data?.userProfile?.username}
         </h2>
-        <span className="tw-text-xs tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-800 dark:tw-text-amber-300 tw-font-semibold tw-px-2.5 tw-py-1 tw-rounded-full">
+        <span className="tw-text-xs tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-800 dark:tw-text-brand-300 tw-font-semibold tw-px-2.5 tw-py-1 tw-rounded-full">
           Coleccionista
         </span>
       </div>
@@ -167,14 +167,14 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         </div>
         <p className="tw-text-sm tw-text-gray-700 dark:tw-text-gray-200">
           Tienes{" "}
-          <strong className="tw-text-purple-600 dark:tw-text-purple-400">
+          <strong className="tw-text-brand-600 dark:tw-text-brand-400">
             {data?.userProfile?.num_collection}
           </strong>{" "}
           discos en tu colección.
         </p>
         <p className="tw-text-sm tw-text-gray-700 dark:tw-text-gray-200">
           Tienes{" "}
-          <strong className="tw-text-blue-600 dark:tw-text-blue-400">
+          <strong className="tw-text-brand-600 dark:tw-text-brand-400">
             {wantlistItems ? wantlistItems.length : 0}
           </strong>{" "}
           discos en tu Wantlist.
@@ -184,7 +184,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
       {/* Selector de Chats */}
       <div className="tw-mt-4">
         <label className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-semibold tw-text-gray-600 dark:tw-text-gray-300 tw-mb-1.5">
-          <MessageSquare className="tw-w-3.5 tw-h-3.5 tw-text-purple-500" />
+          <MessageSquare className="tw-w-3.5 tw-h-3.5 tw-text-brand-500" />
           <span>Historial de Chats con DiscBOT:</span>
         </label>
         <select
@@ -194,7 +194,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
             }
           }}
           defaultValue=""
-          className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-purple-500"
+          className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-brand-500"
         >
           <option value="" disabled>
             {chatLogs.length > 0 ? "Seleccionar un chat previo..." : "No hay chats disponibles"}
@@ -212,7 +212,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
       {/* Selector de Mixtapes */}
       <div className="tw-mt-4">
         <label className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-semibold tw-text-gray-600 dark:tw-text-gray-300 tw-mb-1.5">
-          <ListMusic className="tw-w-3.5 tw-h-3.5 tw-text-amber-500" />
+          <ListMusic className="tw-w-3.5 tw-h-3.5 tw-text-vinyl-500" />
           <span>Tus Mixtapes:</span>
         </label>
         <select
@@ -222,7 +222,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
             }
           }}
           defaultValue=""
-          className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-amber-500"
+          className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-vinyl-500"
         >
           <option value="" disabled>
             Seleccionar reproductor...
@@ -249,7 +249,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         <button
           type="button"
           onClick={handleDialogOpen}
-          className="tw-text-xs tw-font-semibold tw-text-purple-600 dark:tw-text-purple-400 hover:tw-underline tw-flex tw-items-center tw-gap-1.5"
+          className="tw-text-xs tw-font-semibold tw-text-brand-600 dark:tw-text-brand-400 hover:tw-underline tw-flex tw-items-center tw-gap-1.5"
         >
           <Key className="tw-w-3.5 tw-h-3.5" />
           <span>Gestionar API Key (IA)</span>
@@ -265,7 +265,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-6 tw-max-w-md tw-w-full tw-shadow-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-animate-in tw-fade-in tw-zoom-in-95 tw-duration-150">
             <div className="tw-flex tw-items-center tw-justify-between tw-mb-4">
               <h3 className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white tw-flex tw-items-center tw-gap-2">
-                <Key className="tw-w-5 tw-h-5 tw-text-purple-500" />
+                <Key className="tw-w-5 tw-h-5 tw-text-brand-500" />
                 <span>Configurar Clave de IA</span>
               </h3>
               <button
@@ -286,7 +286,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
               placeholder={hasApiKey ? "•••••••••••••••••••••••••••••••" : "AIzaSy... o sk-..."}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-purple-500 tw-mb-5"
+              className="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-brand-500 tw-mb-5"
             />
 
             <div className="tw-flex tw-items-center tw-justify-end tw-gap-2">
@@ -314,7 +314,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
                   handleDialogClose();
                 }}
                 disabled={!apiKey}
-                className="tw-flex tw-items-center tw-gap-1 tw-px-4 tw-py-2 tw-rounded-xl tw-text-xs tw-font-semibold tw-bg-purple-600 hover:tw-bg-purple-700 disabled:tw-opacity-50 tw-text-white tw-transition-colors tw-shadow-sm"
+                className="tw-flex tw-items-center tw-gap-1 tw-px-4 tw-py-2 tw-rounded-xl tw-text-xs tw-font-semibold tw-bg-brand-600 hover:tw-bg-brand-700 disabled:tw-opacity-50 tw-text-white tw-transition-colors tw-shadow-sm"
               >
                 <Check className="tw-w-3.5 tw-h-3.5" />
                 <span>Guardar</span>

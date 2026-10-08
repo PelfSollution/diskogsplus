@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors');
+
 module.exports = {
   mode: 'jit',
   prefix: 'tw-',
@@ -7,6 +9,9 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+    // lib/musicNotation.ts genera las clases de color de la rueda Camelot
+    './lib/**/*.{ts,tsx}',
+    './hooks/**/*.{ts,tsx}',
 ],
   darkMode: ["class"],
   theme: {
@@ -54,6 +59,10 @@ module.exports = {
         '40': '40px',
       },
       colors: {
+        // Paleta de la app (docs/design.md): brand = acción principal, vinyl = mixtape/vinilo
+        // (no usar «accent»: es un color de shadcn definido más abajo)
+        brand: colors.purple,
+        vinyl: colors.amber,
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

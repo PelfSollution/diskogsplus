@@ -208,6 +208,13 @@ export default async function albumInfo(req: NextApiRequest, res: NextApiRespons
       year: releaseData.year || releaseData.released || "",
       releaseDate: releaseData.released || releaseData.year || "",
       country: releaseData.country || "Desconocido",
+      // "Vinyl · 12\" · EP": soporte y descripciones del primer formato
+      format: Array.isArray(releaseData.formats) && releaseData.formats[0]
+        ? [releaseData.formats[0].name, ...(releaseData.formats[0].descriptions || [])]
+            .filter(Boolean)
+            .slice(0, 3)
+            .join(" · ")
+        : "",
       genres: releaseData.genres || [],
       styles: releaseData.styles || [],
       tracklist: tracklistWithFeatures,

@@ -219,7 +219,7 @@ export default function MixtapePlayer() {
         {/* Cabecera */}
         <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
           <div className="tw-flex tw-items-center tw-gap-3">
-            <div className="tw-w-12 tw-h-12 tw-rounded-2xl tw-bg-gradient-to-tr tw-from-amber-500 tw-to-purple-600 tw-flex tw-items-center tw-justify-center tw-text-white tw-shadow-md">
+            <div className="tw-w-12 tw-h-12 tw-rounded-2xl tw-bg-gradient-to-tr tw-from-vinyl-500 tw-to-brand-600 tw-flex tw-items-center tw-justify-center tw-text-white tw-shadow-md">
               <Disc className={`tw-w-7 tw-h-7 ${isPlaying ? "tw-animate-spin" : ""}`} style={{ animationDuration: "6s" }} />
             </div>
             <div>
@@ -227,9 +227,6 @@ export default function MixtapePlayer() {
                 <h1 className="tw-text-2xl tw-font-bold tw-text-gray-900 dark:tw-text-white">
                   Mixtape Player
                 </h1>
-                <span className="tw-text-xs tw-bg-red-100 dark:tw-bg-red-950/50 tw-text-red-600 dark:tw-text-red-400 tw-px-2 tw-py-0.5 tw-rounded-md tw-font-semibold">
-                  YouTube Audio
-                </span>
               </div>
               <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400">
                 {mixtape ? `${mixtape.length} canciones seleccionadas` : "Cargando..."}
@@ -242,7 +239,7 @@ export default function MixtapePlayer() {
             <button
               type="button"
               onClick={redirectToDiscbot}
-              className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-purple-100 dark:tw-bg-purple-950/50 tw-text-purple-700 dark:tw-text-purple-300 hover:tw-bg-purple-200 dark:hover:tw-bg-purple-900/60 tw-transition-colors"
+              className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-200 dark:hover:tw-bg-brand-900/60 tw-transition-colors"
             >
               <Bot className="tw-w-4 tw-h-4" />
               <span>Analizar Armonía con DiscBOT</span>
@@ -261,7 +258,7 @@ export default function MixtapePlayer() {
         {/* Estado Vacío */}
         {!isLoading && (!mixtape || mixtape.length === 0) && (
           <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-lg tw-mx-auto tw-my-12">
-            <div className="tw-w-16 tw-h-16 tw-rounded-2xl tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-600 tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
+            <div className="tw-w-16 tw-h-16 tw-rounded-2xl tw-bg-vinyl-100 dark:tw-bg-vinyl-950/50 tw-text-vinyl-600 tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
               <Music2 className="tw-w-8 tw-h-8" />
             </div>
             <h2 className="tw-text-xl tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-2">
@@ -272,7 +269,7 @@ export default function MixtapePlayer() {
             </p>
             <Link
               href="/albums"
-              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-medium tw-text-sm tw-transition-colors tw-shadow-md"
+              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-vinyl-500 hover:tw-bg-vinyl-600 tw-text-white tw-font-medium tw-text-sm tw-transition-colors tw-shadow-md"
             >
               <Disc className="tw-w-4 tw-h-4" />
               <span>Explorar Catálogo de Vinilos</span>
@@ -288,7 +285,7 @@ export default function MixtapePlayer() {
               <div className="tw-bg-gradient-to-b tw-from-gray-900 tw-to-gray-950 tw-rounded-3xl tw-p-6 md:tw-p-8 tw-text-white tw-shadow-2xl tw-border tw-border-gray-800 tw-relative tw-overflow-hidden">
                 {/* Visualizador de Vinilo Giratorio */}
                 <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-my-4">
-                  <div className="tw-relative tw-w-48 tw-h-48 md:tw-w-64 md:tw-h-64">
+                  <div className="tw-relative tw-w-40 tw-h-40 md:tw-w-52 md:tw-h-52">
                     {/* Disco de Vinilo */}
                     <div
                       className={`tw-w-full tw-h-full tw-rounded-full tw-bg-gradient-to-tr tw-from-black tw-via-gray-900 tw-to-zinc-800 tw-border-4 tw-border-zinc-700 tw-shadow-2xl tw-flex tw-items-center tw-justify-center ${
@@ -300,14 +297,11 @@ export default function MixtapePlayer() {
                       <div className="tw-w-4/5 tw-h-4/5 tw-rounded-full tw-border tw-border-zinc-700/50 tw-flex tw-items-center tw-justify-center">
                         <div className="tw-w-3/5 tw-h-3/5 tw-rounded-full tw-border tw-border-zinc-700/40 tw-flex tw-items-center tw-justify-center">
                           {/* Galleta Central con Título */}
-                          <div className="tw-w-20 tw-h-20 md:tw-w-24 md:tw-h-24 tw-rounded-full tw-bg-gradient-to-tr tw-from-amber-600 tw-to-purple-600 tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-2 tw-text-center tw-shadow-inner">
-                            <span className="tw-text-[10px] tw-font-bold tw-text-white tw-truncate tw-max-w-full">
+                          <div className="tw-w-20 tw-h-20 md:tw-w-24 md:tw-h-24 tw-rounded-full tw-bg-gradient-to-tr tw-from-vinyl-600 tw-to-brand-600 tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-2 tw-text-center tw-shadow-inner">
+                            <span className="tw-text-[11px] md:tw-text-xs tw-font-bold tw-leading-tight tw-text-white tw-line-clamp-2 tw-max-w-full">
                               {currentTrack.artista}
                             </span>
-                            <div className="tw-w-3 tw-h-3 tw-rounded-full tw-bg-white tw-my-1" />
-                            <span className="tw-text-[8px] tw-text-white/80 tw-truncate tw-max-w-full">
-                              {currentTrack.trackname}
-                            </span>
+                            <div className="tw-w-2.5 tw-h-2.5 tw-rounded-full tw-bg-gray-950 tw-mt-1.5" />
                           </div>
                         </div>
                       </div>
@@ -327,7 +321,7 @@ export default function MixtapePlayer() {
                   <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-2 tw-mt-3">
                     <Link
                       href={`/albums/${currentTrack.disco_id}`}
-                      className="tw-text-xs tw-text-purple-400 hover:tw-text-purple-300 tw-flex tw-items-center tw-gap-1 tw-bg-purple-950/50 tw-border tw-border-purple-800 tw-px-2.5 tw-py-1 tw-rounded-lg"
+                      className="tw-text-xs tw-text-brand-400 hover:tw-text-brand-300 tw-flex tw-items-center tw-gap-1 tw-bg-brand-950/50 tw-border tw-border-brand-800 tw-px-2.5 tw-py-1 tw-rounded-lg"
                     >
                       <span>Ver vinilo en catálogo</span>
                       <ExternalLink className="tw-w-3 tw-h-3" />
@@ -352,7 +346,7 @@ export default function MixtapePlayer() {
                 </div>
 
                 {/* Reproductor de YouTube (API de JavaScript) o preview de Deezer */}
-                <div className="tw-relative tw-mt-5 tw-h-[140px] md:tw-h-[160px] tw-w-full tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-800 tw-bg-black tw-shadow-inner">
+                <div className="tw-relative tw-mt-5 tw-aspect-video tw-w-full tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-800 tw-bg-black tw-shadow-inner">
                   <div ref={containerRef} className="tw-absolute tw-inset-0" />
                   {mode !== "video" && (
                     <div className="tw-absolute tw-inset-0 tw-bg-black tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-px-4 tw-text-gray-400 tw-text-sm">
@@ -370,7 +364,7 @@ export default function MixtapePlayer() {
                             href={youtubeSearchUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="tw-inline-flex tw-items-center tw-gap-1 tw-text-red-400 hover:tw-text-red-300 tw-font-semibold"
+                            className="tw-inline-flex tw-items-center tw-gap-1 tw-text-brand-300 hover:tw-text-brand-200 tw-font-semibold"
                           >
                             Buscar en YouTube <ExternalLink className="tw-w-3.5 tw-h-3.5" />
                           </a>
@@ -387,7 +381,7 @@ export default function MixtapePlayer() {
                     onClick={() => setIsShuffle(!isShuffle)}
                     className={`tw-p-2.5 tw-rounded-full tw-transition-colors ${
                       isShuffle
-                        ? "tw-bg-purple-600 tw-text-white"
+                        ? "tw-bg-brand-600 tw-text-white"
                         : "tw-text-gray-400 hover:tw-text-white hover:tw-bg-gray-800"
                     }`}
                     title="Reproducción aleatoria"
@@ -407,7 +401,7 @@ export default function MixtapePlayer() {
                   <button
                     type="button"
                     onClick={togglePlay}
-                    className="tw-p-4 tw-rounded-full tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-shadow-lg tw-transition-transform hover:tw-scale-105"
+                    className="tw-p-4 tw-rounded-full tw-bg-vinyl-500 hover:tw-bg-vinyl-600 tw-text-white tw-shadow-lg tw-transition-transform hover:tw-scale-105"
                     title={isPlaying ? "Pausar" : "Reproducir"}
                   >
                     {isPlaying ? <Pause className="tw-w-7 tw-h-7" /> : <Play className="tw-w-7 tw-h-7" />}
@@ -427,7 +421,7 @@ export default function MixtapePlayer() {
                     onClick={() => setIsLoop(!isLoop)}
                     className={`tw-p-2.5 tw-rounded-full tw-transition-colors ${
                       isLoop
-                        ? "tw-bg-purple-600 tw-text-white"
+                        ? "tw-bg-brand-600 tw-text-white"
                         : "tw-text-gray-400 hover:tw-text-white hover:tw-bg-gray-800"
                     }`}
                     title="Repetir lista"
@@ -439,29 +433,29 @@ export default function MixtapePlayer() {
 
               {/* Botones de Compartir */}
               <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
-                <span className="tw-text-xs tw-font-semibold tw-text-gray-500 dark:tw-text-gray-400 tw-uppercase">
-                  Compartir Mixtape
+                <span className="tw-text-[11px] tw-font-semibold tw-text-gray-400 tw-uppercase tw-tracking-wide">
+                  Compartir
                 </span>
                 <div className="tw-flex tw-items-center tw-gap-2">
                   <button
                     type="button"
                     onClick={() => handleShare("copy")}
-                    className="tw-flex tw-items-center tw-gap-1 tw-text-xs tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-gray-100 dark:tw-bg-gray-700 hover:tw-bg-gray-200 tw-text-gray-800 dark:tw-text-gray-200 tw-transition-colors"
+                    className="tw-flex tw-items-center tw-gap-1 tw-text-xs tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-gray-100 dark:tw-bg-gray-700 hover:tw-bg-gray-200 dark:hover:tw-bg-gray-600 tw-text-gray-800 dark:tw-text-gray-200 tw-transition-colors"
                   >
-                    {copied ? <Check className="tw-w-3.5 tw-h-3.5 tw-text-green-500" /> : <Share2 className="tw-w-3.5 tw-h-3.5" />}
-                    <span>{copied ? "Copiado" : "Copiar Enlace"}</span>
+                    {copied ? <Check className="tw-w-3.5 tw-h-3.5 tw-text-brand-500" /> : <Share2 className="tw-w-3.5 tw-h-3.5" />}
+                    <span>{copied ? "Copiado" : "Copiar enlace"}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleShare("whatsapp")}
-                    className="tw-text-xs tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-green-600 hover:tw-bg-green-700 tw-text-white tw-transition-colors"
+                    className="tw-flex tw-items-center tw-gap-1 tw-text-xs tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-gray-100 dark:tw-bg-gray-700 hover:tw-bg-gray-200 dark:hover:tw-bg-gray-600 tw-text-gray-800 dark:tw-text-gray-200 tw-transition-colors"
                   >
                     WhatsApp
                   </button>
                   <button
                     type="button"
                     onClick={() => handleShare("twitter")}
-                    className="tw-text-xs tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-black hover:tw-bg-gray-900 tw-text-white tw-transition-colors"
+                    className="tw-flex tw-items-center tw-gap-1 tw-text-xs tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-gray-100 dark:tw-bg-gray-700 hover:tw-bg-gray-200 dark:hover:tw-bg-gray-600 tw-text-gray-800 dark:tw-text-gray-200 tw-transition-colors"
                   >
                     X / Twitter
                   </button>
@@ -474,7 +468,7 @@ export default function MixtapePlayer() {
               <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-5 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-sticky tw-top-4">
                 <div className="tw-flex tw-items-center tw-justify-between tw-pb-3 tw-border-b tw-border-gray-100 dark:tw-border-gray-700 tw-mb-3">
                   <h3 className="tw-font-bold tw-text-base tw-text-gray-900 dark:tw-text-white tw-flex tw-items-center tw-gap-2">
-                    <ListMusic className="tw-w-5 tw-h-5 tw-text-amber-500" />
+                    <ListMusic className="tw-w-5 tw-h-5 tw-text-vinyl-500" />
                     <span>Cola de la Mixtape</span>
                   </h3>
                   <span className="tw-text-xs tw-font-semibold tw-text-gray-500">
@@ -500,7 +494,7 @@ export default function MixtapePlayer() {
                         }}
                         className={`tw-flex tw-items-center tw-justify-between tw-p-3 tw-rounded-2xl tw-cursor-pointer tw-transition-all ${
                           isCurrent
-                            ? "tw-bg-amber-500/10 dark:tw-bg-amber-500/20 tw-border tw-border-amber-400 dark:tw-border-amber-600"
+                            ? "tw-bg-vinyl-500/10 dark:tw-bg-vinyl-500/20 tw-border tw-border-vinyl-400 dark:tw-border-vinyl-600"
                             : "hover:tw-bg-gray-50 dark:hover:tw-bg-gray-750 tw-border tw-border-transparent"
                         }`}
                       >
@@ -508,7 +502,7 @@ export default function MixtapePlayer() {
                           <span
                             className={`tw-text-xs tw-font-bold tw-w-6 tw-text-center ${
                               isCurrent
-                                ? "tw-text-amber-600 dark:tw-text-amber-400"
+                                ? "tw-text-vinyl-600 dark:tw-text-vinyl-400"
                                 : "tw-text-gray-400"
                             }`}
                           >
@@ -518,7 +512,7 @@ export default function MixtapePlayer() {
                             <p
                               className={`tw-text-sm tw-font-bold tw-truncate ${
                                 isCurrent
-                                  ? "tw-text-amber-600 dark:tw-text-amber-400"
+                                  ? "tw-text-vinyl-600 dark:tw-text-vinyl-400"
                                   : "tw-text-gray-800 dark:tw-text-gray-200"
                               }`}
                             >

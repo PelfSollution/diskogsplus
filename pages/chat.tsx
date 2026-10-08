@@ -130,7 +130,7 @@ export default function Chat() {
         {/* Cabecera del Agente */}
         <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-shadow-sm tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
           <div className="tw-flex tw-items-center tw-gap-3">
-            <div className="tw-w-12 tw-h-12 tw-rounded-xl tw-bg-gradient-to-tr tw-from-purple-600 tw-to-blue-500 tw-flex tw-items-center tw-justify-center tw-text-white tw-text-2xl tw-shadow-md">
+            <div className="tw-w-12 tw-h-12 tw-rounded-xl tw-bg-gradient-to-tr tw-from-brand-600 tw-to-brand-500 tw-flex tw-items-center tw-justify-center tw-text-white tw-text-2xl tw-shadow-md">
               🤖
             </div>
             <div>
@@ -138,7 +138,7 @@ export default function Chat() {
                 <h1 className="tw-text-xl tw-font-bold tw-text-gray-900 dark:tw-text-white">
                   DiscBOT Agent
                 </h1>
-                <span className="tw-bg-green-100 tw-text-green-800 dark:tw-bg-green-900/40 dark:tw-text-green-300 tw-text-xs tw-px-2 tw-py-0.5 tw-rounded-full tw-font-medium">
+                <span className="tw-bg-brand-100 tw-text-brand-800 dark:tw-bg-brand-900/40 dark:tw-text-brand-300 tw-text-xs tw-px-2 tw-py-0.5 tw-rounded-full tw-font-medium">
                   Tool Calling v2
                 </span>
               </div>
@@ -158,7 +158,7 @@ export default function Chat() {
             {disco_id && (
               <button
                 onClick={redirectToAlbum}
-                className="tw-text-sm tw-font-medium tw-text-blue-600 hover:tw-text-blue-700 dark:tw-text-blue-400 tw-border tw-border-blue-200 dark:tw-border-blue-800 tw-bg-blue-50/50 dark:tw-bg-blue-950/40 tw-px-3 tw-py-1.5 tw-rounded-lg tw-transition-colors"
+                className="tw-text-sm tw-font-medium tw-text-brand-600 hover:tw-text-brand-700 dark:tw-text-brand-400 tw-border tw-border-brand-200 dark:tw-border-brand-800 tw-bg-brand-50/50 dark:tw-bg-brand-950/40 tw-px-3 tw-py-1.5 tw-rounded-lg tw-transition-colors"
               >
                 ← Volver al Disco
               </button>
@@ -185,7 +185,7 @@ export default function Chat() {
         {/* Contenedor de Mensajes */}
         <div className="tw-flex-1 tw-overflow-y-auto tw-bg-white/60 dark:tw-bg-gray-900/60 tw-backdrop-blur-sm tw-rounded-2xl tw-p-4 md:tw-p-6 tw-border tw-border-gray-200 dark:tw-border-gray-800 tw-space-y-4">
           <div className="tw-flex tw-gap-3 tw-justify-start">
-            <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-purple-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
+            <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-brand-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
               🤖
             </div>
             <div className="tw-max-w-[85%] md:tw-max-w-[75%] tw-rounded-2xl tw-p-4 tw-shadow-sm tw-bg-white dark:tw-bg-gray-800 tw-text-gray-800 dark:tw-text-gray-100 tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-rounded-tl-none">
@@ -204,14 +204,14 @@ export default function Chat() {
                 className={`tw-flex tw-gap-3 ${isUser ? "tw-justify-end" : "tw-justify-start"}`}
               >
                 {!isUser && (
-                  <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-purple-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
+                  <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-brand-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
                     🤖
                   </div>
                 )}
                 <div
                   className={`tw-max-w-[85%] md:tw-max-w-[75%] tw-rounded-2xl tw-p-4 tw-shadow-sm ${
                     isUser
-                      ? "tw-bg-blue-600 tw-text-white tw-rounded-tr-none"
+                      ? "tw-bg-brand-600 tw-text-white tw-rounded-tr-none"
                       : "tw-bg-white dark:tw-bg-gray-800 tw-text-gray-800 dark:tw-text-gray-100 tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-rounded-tl-none"
                   }`}
                 >
@@ -223,7 +223,7 @@ export default function Chat() {
                   </div>
                 </div>
                 {isUser && (
-                  <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-blue-500 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
+                  <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-brand-500 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-shadow">
                     👤
                   </div>
                 )}
@@ -233,11 +233,11 @@ export default function Chat() {
 
           {isWaitingForText && (
             <div className="tw-flex tw-gap-3 tw-justify-start tw-items-center">
-              <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-purple-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-animate-pulse">
+              <div className="tw-w-8 tw-h-8 tw-rounded-full tw-bg-brand-600 tw-text-white tw-flex tw-items-center tw-justify-center tw-text-sm tw-shrink-0 tw-animate-pulse">
                 🤖
               </div>
               <div className="tw-bg-white dark:tw-bg-gray-800 tw-text-gray-500 dark:tw-text-gray-400 tw-text-sm tw-px-4 tw-py-2 tw-rounded-2xl tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-flex tw-items-center tw-gap-2">
-                <span className="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-purple-500 tw-animate-ping" />
+                <span className="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-brand-500 tw-animate-ping" />
                 DiscBOT está consultando herramientas y analizando la música...
               </div>
             </div>
@@ -266,10 +266,10 @@ export default function Chat() {
               key={idx}
               type="button"
               onClick={() => handleSelectSuggestion(item.prompt)}
-              className="tw-text-left tw-p-2 tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-white/80 dark:tw-bg-gray-800/80 hover:tw-border-blue-400 dark:hover:tw-border-blue-500 tw-transition-all tw-group"
+              className="tw-text-left tw-p-2 tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-white/80 dark:tw-bg-gray-800/80 hover:tw-border-brand-400 dark:hover:tw-border-brand-500 tw-transition-all tw-group"
             >
               <div className="tw-text-base tw-mb-0.5">{item.icon}</div>
-              <div className="tw-text-xs tw-font-semibold tw-text-gray-700 dark:tw-text-gray-200 group-hover:tw-text-blue-600 dark:group-hover:tw-text-blue-400">
+              <div className="tw-text-xs tw-font-semibold tw-text-gray-700 dark:tw-text-gray-200 group-hover:tw-text-brand-600 dark:group-hover:tw-text-brand-400">
                 {item.title}
               </div>
             </button>
@@ -290,7 +290,7 @@ export default function Chat() {
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-opacity-50 tw-text-white tw-font-medium tw-text-sm tw-px-5 tw-py-2.5 tw-rounded-xl tw-transition-colors tw-flex tw-items-center tw-gap-1.5 tw-shadow-sm"
+              className="tw-bg-brand-600 hover:tw-bg-brand-700 disabled:tw-opacity-50 tw-text-white tw-font-medium tw-text-sm tw-px-5 tw-py-2.5 tw-rounded-xl tw-transition-colors tw-flex tw-items-center tw-gap-1.5 tw-shadow-sm"
             >
               <span>Enviar</span>
               <span>→</span>

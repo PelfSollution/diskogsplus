@@ -62,7 +62,7 @@ export default function Home() {
                 href="https://discogs.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="tw-text-blue-500 hover:tw-underline tw-font-semibold"
+                className="tw-text-brand-500 hover:tw-underline tw-font-semibold"
               >
                 Discogs
               </a>{" "}
@@ -77,7 +77,7 @@ export default function Home() {
             variant="outline"
             size={"lg"}
             onClick={() => router.push("/api/auth/authorize")}
-            className="tw-w-full tw-font-bold tw-text-base tw-py-3 tw-border-blue-400 tw-text-blue-600 hover:tw-bg-blue-50 dark:hover:tw-bg-blue-950/40 tw-shadow-sm"
+            className="tw-w-full tw-font-bold tw-text-base tw-py-3 tw-border-brand-400 tw-text-brand-600 hover:tw-bg-brand-50 dark:hover:tw-bg-brand-950/40 tw-shadow-sm"
           >
             Hacer Login con Discogs (OAuth)
           </Button>

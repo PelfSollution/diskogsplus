@@ -64,7 +64,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
     <div
       className={`tw-border tw-rounded-2xl tw-p-4 tw-transition-all tw-duration-200 tw-shadow-sm hover:tw-shadow-md ${
         isPlaying
-          ? "tw-bg-purple-50/60 dark:tw-bg-purple-950/30 tw-border-purple-300 dark:tw-border-purple-700 ring-2 ring-purple-400"
+          ? "tw-bg-brand-50/60 dark:tw-bg-brand-950/30 tw-border-brand-300 dark:tw-border-brand-700 ring-2 ring-purple-400"
           : "tw-bg-white dark:tw-bg-gray-800 tw-border-gray-200 dark:tw-border-gray-700"
       }`}
     >
@@ -79,7 +79,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
 
           <Link
             href={`/albums/${data.disco_id}`}
-            className="tw-text-sm tw-font-medium tw-text-purple-600 dark:tw-text-purple-400 hover:tw-underline tw-block tw-truncate"
+            className="tw-text-sm tw-font-medium tw-text-brand-600 dark:tw-text-brand-400 hover:tw-underline tw-block tw-truncate"
             title="Ver vinilo en el catálogo"
           >
             {data.trackname}
@@ -132,7 +132,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
                   ) : (
                     <>
                       Sin vídeo en Discogs ·
-                      <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="tw-text-red-400 hover:tw-underline">
+                      <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="tw-text-brand-400 hover:tw-underline">
                         Buscar en YouTube
                       </a>
                     </>
@@ -150,7 +150,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
                   setShowPreview(true);
                 }
               }}
-              className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-red-50 dark:tw-bg-red-950/40 tw-text-red-600 dark:tw-text-red-400 hover:tw-bg-red-100 dark:hover:tw-bg-red-900/50 tw-border tw-border-red-200 dark:tw-border-red-800 tw-transition-colors"
+              className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-100 dark:hover:tw-bg-brand-900/50 tw-border tw-border-brand-200 dark:tw-border-brand-800 tw-transition-colors"
             >
               <SquarePlay className="tw-w-4 tw-h-4" />
               <span>{isPlaying ? "Reproduciendo" : "Escuchar audio"}</span>

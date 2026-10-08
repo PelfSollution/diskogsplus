@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Reproductor de pistas: vídeos con la API de JavaScript de YouTube (pausa real
  * y aviso al terminar) y previews de 30 s de Deezer con un <audio>.
  *
- * Uso: renderizar `<div ref={containerRef} />` donde deba ir el vídeo y llamar a
+ * Uso: renderizar `<div ref={containerRef} />` donde deba ir el vídeo (callback ref,
+ * para poder pasar el objeto del hook entre componentes) y llamar a
  * `load({ videoId, preview })`. `onEnded` salta cuando termina la pista y
  * `onError` cuando YouTube no deja reproducir el vídeo incrustado.
  */
@@ -48,7 +49,18 @@ function loadYouTubeApi(): Promise<any> {
 }
 
 export default function useTrackPlayer({ onEnded, onError }: Options = {}) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerElRef = useRef<HTMLDivElement | null>(null);
+  // Vídeo pedido antes de que el contenedor esté en pantalla
+  const pendingRef = useRef<{ videoId: string; autoplay: boolean } | null>(null);
+  const loadVideoRef = useRef<(videoId: string, autoplay: boolean) => Promise<void>>(async () => {});
+  const containerRef = useCallback((el: HTMLDivElement | null) => {
+    containerElRef.current = el;
+    if (el && pendingRef.current) {
+      const { videoId, autoplay } = pendingRef.current;
+      pendingRef.current = null;
+      loadVideoRef.current(videoId, autoplay);
+    }
+  }, []);
   const playerRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const modeRef = useRef<"video" | "audio" | null>(null);
@@ -79,10 +91,13 @@ export default function useTrackPlayer({ onEnded, onError }: Options = {}) {
       else playerRef.current.cueVideoById(videoId);
       return;
     }
-    if (!containerRef.current) return;
+    if (!containerElRef.current) {
+      pendingRef.current = { videoId, autoplay };
+      return;
+    }
     // YT.Player sustituye el elemento por un iframe: usar un hijo que React no gestione
     const mount = document.createElement("div");
-    containerRef.current.appendChild(mount);
+    containerElRef.current.appendChild(mount);
     playerRef.current = new YT.Player(mount, {
       host: "https://www.youtube-nocookie.com",
       width: "100%",
@@ -106,6 +121,9 @@ export default function useTrackPlayer({ onEnded, onError }: Options = {}) {
       },
     });
   }, []);
+  useEffect(() => {
+    loadVideoRef.current = loadVideo;
+  }, [loadVideo]);
 
   const load = useCallback(
     (track: PlayableTrack, autoplay = true) => {

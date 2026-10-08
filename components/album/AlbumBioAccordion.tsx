@@ -28,7 +28,7 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
         className="tw-w-full tw-p-4 tw-flex tw-items-center tw-justify-between tw-text-left hover:tw-bg-gray-50 dark:hover:tw-bg-gray-750 tw-transition-colors"
       >
         <div className="tw-flex tw-items-center tw-gap-2.5">
-          <BookOpen className="tw-w-5 tw-h-5 tw-text-blue-500" />
+          <BookOpen className="tw-w-5 tw-h-5 tw-text-brand-500" />
           <span className="tw-font-bold tw-text-gray-900 dark:tw-text-white tw-text-base">
             Biografía & Contexto
           </span>
@@ -59,8 +59,8 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
           )}
 
           {/* Información Enriquecida con IA */}
-          <div className="tw-mt-3 tw-p-3.5 tw-bg-purple-50/60 dark:tw-bg-purple-950/20 tw-rounded-xl tw-border tw-border-purple-100 dark:tw-border-purple-900/40">
-            <div className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-semibold tw-text-purple-700 dark:tw-text-purple-300 tw-mb-2">
+          <div className="tw-mt-3 tw-p-3.5 tw-bg-brand-50/60 dark:tw-bg-brand-950/20 tw-rounded-xl tw-border tw-border-brand-100 dark:tw-border-brand-900/40">
+            <div className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-semibold tw-text-brand-700 dark:tw-text-brand-300 tw-mb-2">
               <Sparkles className="tw-w-3.5 tw-h-3.5" />
               <span>Análisis Enriquecido con IA</span>
             </div>
@@ -78,7 +78,7 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
                   type="button"
                   disabled={isGenerating}
                   onClick={onEnrichArtistInfo}
-                  className="tw-self-start tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-purple-600 hover:tw-bg-purple-700 tw-text-white tw-shadow-sm tw-transition-colors disabled:tw-opacity-50"
+                  className="tw-self-start tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-shadow-sm tw-transition-colors disabled:tw-opacity-50"
                 >
                   {isGenerating ? "Generando texto..." : "Generar Información Enriquecida"}
                 </button>

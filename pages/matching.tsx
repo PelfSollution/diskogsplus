@@ -89,7 +89,7 @@ export default function Comparador() {
       <div className="tw-container tw-mx-auto tw-max-w-6xl tw-p-4 md:tw-p-6">
         {/* Cabecera */}
         <div className="tw-mb-8 tw-text-center">
-          <div className="tw-inline-flex tw-items-center tw-justify-center tw-w-12 tw-h-12 tw-rounded-2xl tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-600 tw-mb-3">
+          <div className="tw-inline-flex tw-items-center tw-justify-center tw-w-12 tw-h-12 tw-rounded-2xl tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-600 tw-mb-3">
             <Users2 className="tw-w-6 tw-h-6" />
           </div>
           <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white">
@@ -131,14 +131,14 @@ export default function Comparador() {
                   setComparePressed(false);
                   resetComparison();
                 }}
-                className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-amber-500 focus:tw-ring-2 focus:tw-ring-amber-500/20"
+                className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-brand-500 focus:tw-ring-2 focus:tw-ring-brand-500/20"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="tw-w-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-2.5 tw-px-4 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-bold tw-text-sm tw-transition-colors tw-shadow-md"
+            className="tw-w-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-2.5 tw-px-4 tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-font-bold tw-text-sm tw-transition-colors tw-shadow-md"
           >
             <span>Comparar Colecciones</span>
             <ArrowRight className="tw-w-4 tw-h-4" />
@@ -158,11 +158,11 @@ export default function Comparador() {
         {/* Resultados */}
         {comparePressed && !isLoading && albumsDifference && (
           <div>
-            <div className="tw-bg-amber-50 dark:tw-bg-amber-950/30 tw-border tw-border-amber-200 dark:tw-border-amber-800 tw-rounded-2xl tw-p-4 tw-mb-6 tw-text-sm tw-text-amber-900 dark:tw-text-amber-200 tw-flex tw-items-center tw-justify-between">
+            <div className="tw-bg-brand-50 dark:tw-bg-brand-950/30 tw-border tw-border-brand-200 dark:tw-border-brand-800 tw-rounded-2xl tw-p-4 tw-mb-6 tw-text-sm tw-text-brand-900 dark:tw-text-brand-200 tw-flex tw-items-center tw-justify-between">
               <div>
                 Vinilos que tiene <strong>{user2}</strong> y que te faltan a ti:
               </div>
-              <span className="tw-text-lg tw-font-extrabold tw-bg-amber-500 tw-text-white tw-px-3 tw-py-0.5 tw-rounded-xl">
+              <span className="tw-text-lg tw-font-extrabold tw-bg-brand-500 tw-text-white tw-px-3 tw-py-0.5 tw-rounded-xl">
                 {albumsDifference[0]?.length || 0}
               </span>
             </div>
@@ -192,7 +192,7 @@ export default function Comparador() {
 
                     <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
                       <div>
-                        <span className="tw-text-xs tw-font-semibold tw-text-purple-600 dark:tw-text-purple-400 tw-block tw-truncate">
+                        <span className="tw-text-xs tw-font-semibold tw-text-brand-600 dark:tw-text-brand-400 tw-block tw-truncate">
                           {artistName}
                         </span>
                         <h3 className="tw-text-sm tw-font-bold tw-text-gray-900 dark:tw-text-white tw-truncate tw-mt-0.5" title={album.basic_information.title}>

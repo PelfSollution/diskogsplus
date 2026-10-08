@@ -17,6 +17,7 @@ Architecture overview and roadmap (Spanish): @docs/README.md
 - Write code comments, UI strings, error messages and commit messages in **Spanish**, matching the existing code. Some data fields are Spanish too (`artista`, `trackname`, `disco_id`) — keep those names.
 - Commit directly to `main` (solo project, no PR flow).
 - Tailwind v3 with `prefix: 'tw-'` (`tailwind.config.js`): every utility must be prefixed — `tw-flex`, `dark:tw-text-white`, `hover:tw-bg-...`. Unprefixed classes silently do nothing. Dark mode is class-based.
+- Design rules live in `docs/design.md`: use the `brand` (purple) and `vinyl` (amber, mixtape only) color tokens, never ad-hoc blue/green/orange; red only for destructive actions/errors; Camelot colors only via `getCamelotColor()`. Don't name a color `accent` (shadcn token).
 - Styling is Tailwind + shadcn (`components/ui/`, `@/lib/utils`). MUI/Emotion are still in package.json but no longer used — don't add new MUI code.
 - Path alias `@/*` → repo root.
 

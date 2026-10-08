@@ -122,7 +122,7 @@ function Albums() {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="tw-px-4 tw-py-2 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-text-sm tw-font-medium"
+            className="tw-px-4 tw-py-2 tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-text-sm tw-font-medium"
           >
             Reintentar
           </button>
@@ -173,7 +173,7 @@ function Albums() {
               placeholder={filter === "name" ? "Buscar por artista..." : "Buscar por título de disco..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-amber-500 focus:tw-ring-2 focus:tw-ring-amber-500/20"
+              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-brand-500 focus:tw-ring-2 focus:tw-ring-brand-500/20"
             />
           </div>
 
@@ -184,7 +184,7 @@ function Albums() {
             className={`tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
               orderAsc
                 ? "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-800"
-                : "tw-bg-amber-500 tw-text-white tw-border-amber-600"
+                : "tw-bg-brand-500 tw-text-white tw-border-brand-600"
             }`}
             title={orderAsc ? "Orden alfabético A-Z (clic para invertir)" : "Orden alfabético Z-A"}
           >
@@ -233,7 +233,7 @@ function Albums() {
 
                   <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
                     <div>
-                      <span className="tw-text-xs tw-font-bold tw-text-purple-600 dark:tw-text-purple-400 tw-block tw-truncate">
+                      <span className="tw-text-xs tw-font-bold tw-text-brand-600 dark:tw-text-brand-400 tw-block tw-truncate">
                         {artistName}
                       </span>
                       <h3
@@ -248,7 +248,7 @@ function Albums() {
                       <span className="tw-text-[11px] tw-text-gray-400">
                         Edición LP
                       </span>
-                      <span className="tw-text-xs tw-font-semibold tw-text-amber-500 group-hover:tw-translate-x-0.5 tw-transition-transform">
+                      <span className="tw-text-xs tw-font-semibold tw-text-brand-500 group-hover:tw-translate-x-0.5 tw-transition-transform">
                         Ver detalles →
                       </span>
                     </div>

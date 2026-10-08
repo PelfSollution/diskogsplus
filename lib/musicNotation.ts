@@ -67,9 +67,10 @@ export const PITCH_CLASSES = [
   "B",
 ];
 
+/** Fondo de la etiqueta Camelot (con texto blanco para que se lea en todos los tonos) */
 export function getCamelotColor(camelotCode?: string): string {
-  if (!camelotCode) return "tw-bg-gray-500";
-  return PITCH_CLASS_COLORS[camelotCode] || "tw-bg-gray-500";
+  const bg = (camelotCode && PITCH_CLASS_COLORS[camelotCode]) || "tw-bg-gray-500";
+  return `${bg} tw-text-white`;
 }
 
 export function getPitchClassNotation(key: number, modeNumber: number) {

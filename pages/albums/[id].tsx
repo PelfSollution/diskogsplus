@@ -5,6 +5,7 @@ import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 import useGetMixtape from "@/hooks/useGetMixtape";
+import useAlbumPlayer from "@/hooks/useAlbumPlayer";
 import useGetUserData from "@/hooks/useGetUserData";
 import addMixtape from "@/services/supabase/addMixtape";
 import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
@@ -50,6 +51,8 @@ function AlbumDetails() {
   const [enrichedInfo, setEnrichedInfo] = useState<string | null>(null);
 
   const { data: mixtape } = useGetMixtape(username);
+  // Reproductor compartido por el tracklist y la tarjeta de escucha
+  const albumPlayer = useAlbumPlayer(idNumber, albumInfo?.videos);
 
   // Cargar estado inicial de mixtape del usuario
   useEffect(() => {
@@ -277,7 +280,7 @@ function AlbumDetails() {
             </button>
             <button
               onClick={() => mutateAlbum()}
-              className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-transition-colors"
+              className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-sm tw-font-medium tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-transition-colors"
             >
               <RefreshCw className="tw-w-4 tw-h-4" />
               Reintentar
@@ -333,6 +336,7 @@ function AlbumDetails() {
                 artist={albumInfo.artist}
                 title={albumInfo.title}
                 year={yearReleased}
+                format={albumInfo.format}
                 label={albumInfo.label}
                 genres={albumInfo.genres}
                 lastfmTags={albumInfo.lastfmTags}
@@ -349,6 +353,7 @@ function AlbumDetails() {
             {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
               <AlbumTracklist
                 tracklist={albumInfo.tracklist}
+                player={albumPlayer}
                 isSongInMixtape={isSongInMixtape}
                 onAddToMixtape={handleAddToMixtape}
                 onDeleteFromMixtape={handleDeleteFromMixtape}
@@ -376,13 +381,12 @@ function AlbumDetails() {
           <div className="lg:tw-col-span-5">
             <div className="tw-sticky tw-top-4">
               <AlbumMediaSidebar
-                discoId={idNumber}
+                player={albumPlayer}
                 title={albumInfo.title}
                 spotifyAlbumId={albumInfo.spotifyAlbumId}
                 isPopularAlbum={albumInfo.isPopularAlbum}
                 artist={albumInfo.artist}
                 similarTracks={albumInfo.similarTracks}
-                videos={albumInfo.videos}
               />
             </div>
           </div>

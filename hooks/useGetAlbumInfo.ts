@@ -65,6 +65,7 @@ export interface AlbumInfoInterface {
   year?: string | number;
   releaseDate?: string;
   country: string;
+  format?: string;
   videos?: Video[];
   genres: string[];
   styles: string[];

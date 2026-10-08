@@ -72,7 +72,7 @@ export const AlbumCoverFlip: React.FC<AlbumCoverFlipProps> = ({
             e.stopPropagation();
             onGenerateImage();
           }}
-          className="tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-border tw-border-purple-300 dark:tw-border-purple-800 tw-bg-purple-50 dark:tw-bg-purple-950/40 tw-text-purple-700 dark:tw-text-purple-300 hover:tw-bg-purple-100 dark:hover:tw-bg-purple-900/50 tw-transition-all tw-flex tw-items-center tw-gap-1.5"
+          className="tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-border tw-border-brand-300 dark:tw-border-brand-800 tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-100 dark:hover:tw-bg-brand-900/50 tw-transition-all tw-flex tw-items-center tw-gap-1.5"
         >
           <span>✨</span>
           <span>

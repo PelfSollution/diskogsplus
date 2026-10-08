@@ -158,7 +158,7 @@ export default function Mixtape() {
               <>
                 <Link
                   href="/mixtapeplayer"
-                  className="tw-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-bold tw-text-sm tw-shadow-md hover:tw-shadow-lg tw-transition-all"
+                  className="tw-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-vinyl-500 hover:tw-bg-vinyl-600 tw-text-white tw-font-bold tw-text-sm tw-shadow-md hover:tw-shadow-lg tw-transition-all"
                 >
                   <Play className="tw-w-4 tw-h-4 tw-fill-current" />
                   <span>Reproducir Mixtape (YouTube)</span>
@@ -166,7 +166,7 @@ export default function Mixtape() {
 
                 <Link
                   href={`/chat?username=${encodeURIComponent(username)}&artista=Mixtape&album=Mixtape%20Personal`}
-                  className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-purple-100 dark:tw-bg-purple-950/50 tw-text-purple-700 dark:tw-text-purple-300 hover:tw-bg-purple-200 dark:hover:tw-bg-purple-900/60 tw-font-semibold tw-text-sm tw-border tw-border-purple-200 dark:tw-border-purple-800 tw-transition-colors"
+                  className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-200 dark:hover:tw-bg-brand-900/60 tw-font-semibold tw-text-sm tw-border tw-border-brand-200 dark:tw-border-brand-800 tw-transition-colors"
                 >
                   <Bot className="tw-w-4 tw-h-4" />
                   <span>Analizar Armonía con DiscBOT</span>
@@ -187,7 +187,7 @@ export default function Mixtape() {
         {/* Estado Vacío */}
         {mixtape.length === 0 ? (
           <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-lg tw-mx-auto tw-my-12">
-            <div className="tw-w-16 tw-h-16 tw-rounded-2xl tw-bg-amber-100 dark:tw-bg-amber-950/50 tw-text-amber-600 tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
+            <div className="tw-w-16 tw-h-16 tw-rounded-2xl tw-bg-vinyl-100 dark:tw-bg-vinyl-950/50 tw-text-vinyl-600 tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
               <Music2 className="tw-w-8 tw-h-8" />
             </div>
             <h2 className="tw-text-xl tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-2">
@@ -198,7 +198,7 @@ export default function Mixtape() {
             </p>
             <Link
               href="/albums"
-              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-medium tw-text-sm tw-transition-colors tw-shadow-md"
+              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-vinyl-500 hover:tw-bg-vinyl-600 tw-text-white tw-font-medium tw-text-sm tw-transition-colors tw-shadow-md"
             >
               <Disc className="tw-w-4 tw-h-4" />
               <span>Explorar Catálogo de Vinilos</span>
@@ -216,7 +216,7 @@ export default function Mixtape() {
                   placeholder="Buscar por artista o canción en tu mixtape..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-amber-500 focus:tw-ring-2 focus:tw-ring-amber-500/20"
+                  className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-vinyl-500 focus:tw-ring-2 focus:tw-ring-vinyl-500/20"
                 />
               </div>
 
@@ -238,7 +238,7 @@ export default function Mixtape() {
                       setSearchMode(m);
                     }
                   }}
-                  className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-amber-500"
+                  className="tw-w-full tw-px-3.5 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-vinyl-500"
                 >
                   <option value="all">Todas las tonalidades (Camelot)</option>
                   {Array.from({ length: 12 }).map((_, keyIdx) =>
@@ -263,7 +263,7 @@ export default function Mixtape() {
                 onClick={toggleBpmOrder}
                 className={`tw-flex tw-items-center tw-justify-center tw-gap-1.5 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
                   bpmOrder
-                    ? "tw-bg-amber-500 tw-text-white tw-border-amber-600"
+                    ? "tw-bg-vinyl-500 tw-text-white tw-border-vinyl-600"
                     : "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100"
                 }`}
                 title="Ordenar por BPM"

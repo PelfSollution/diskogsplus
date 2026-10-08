@@ -8,6 +8,7 @@ Bienvenido a la carpeta de documentación técnica y de evolución de **Diskogs 
 
 | Documento | Descripción | Estado |
 | :--- | :--- | :---: |
+| [**`docs/design.md`**](./design.md) | **Sistema de diseño**: paleta `brand`/`vinyl`, tipografía, componentes (tarjetas, botones, chips, fila de pista, reproductor) y modo oscuro. | 🟢 Actualizado |
 | [**`docs/roadmap.md`**](./roadmap.md) | **Roadmap (oct. 2026)**: comparativa de servicios de streaming para volver a escuchar los discos enteros, y fases de sesiones, exportación, colección e infraestructura. | 🟡 En curso |
 | [**`docs/actualizacion_dependencias_2026.md`**](./actualizacion_dependencias_2026.md) | **Actualización de dependencias (oct. 2026)**: fases de Next 13 → 16, AI SDK v2 → v7 y React 19, requisito de Node 24 con fnm y normas para instalar paquetes de forma segura. | 🟡 En curso |
 | [**`docs/supabase.md`**](./supabase.md) | **Supabase (oct. 2026)**: auditoría del esquema, `supabase/schema.sql` y paso a paso para crear el proyecto nuevo; fase 2 para cerrar el acceso público. | 🟡 En curso |

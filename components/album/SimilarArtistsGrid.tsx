@@ -27,11 +27,11 @@ export const SimilarArtistsGrid: React.FC<SimilarArtistsGridProps> = ({
         className="tw-w-full tw-p-4 tw-flex tw-items-center tw-justify-between tw-text-left hover:tw-bg-gray-50 dark:hover:tw-bg-gray-750 tw-transition-colors"
       >
         <div className="tw-flex tw-items-center tw-gap-2.5">
-          <Users className="tw-w-5 tw-h-5 tw-text-orange-500" />
+          <Users className="tw-w-5 tw-h-5 tw-text-brand-500" />
           <span className="tw-font-bold tw-text-gray-900 dark:tw-text-white tw-text-base">
             Artistas Similares
           </span>
-          <span className="tw-text-xs tw-bg-orange-50 dark:tw-bg-orange-950/40 tw-text-orange-700 dark:tw-text-orange-300 tw-px-2 tw-py-0.5 tw-rounded-md">
+          <span className="tw-text-xs tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 tw-px-2 tw-py-0.5 tw-rounded-md">
             Last.fm
           </span>
         </div>
@@ -57,14 +57,14 @@ export const SimilarArtistsGrid: React.FC<SimilarArtistsGridProps> = ({
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="tw-text-sm tw-font-semibold tw-text-gray-800 dark:tw-text-gray-200 hover:tw-text-blue-600 dark:hover:tw-text-blue-400 tw-flex tw-items-center tw-gap-1 tw-truncate"
+                      className="tw-text-sm tw-font-semibold tw-text-gray-800 dark:tw-text-gray-200 hover:tw-text-brand-600 dark:hover:tw-text-brand-400 tw-flex tw-items-center tw-gap-1 tw-truncate"
                       title={item.name}
                     >
                       <span className="tw-truncate">{item.name}</span>
                       <ExternalLink className="tw-w-3.5 tw-h-3.5 tw-shrink-0 tw-text-gray-400" />
                     </a>
                     <div className="tw-mt-2">
-                      <span className="tw-text-xs tw-font-medium tw-px-2 tw-py-0.5 tw-rounded-full tw-bg-orange-100 dark:tw-bg-orange-900/40 tw-text-orange-800 dark:tw-text-orange-300">
+                      <span className="tw-text-xs tw-font-medium tw-px-2 tw-py-0.5 tw-rounded-full tw-bg-brand-100 dark:tw-bg-brand-900/40 tw-text-brand-800 dark:tw-text-brand-300">
                         {matchPct}% coincidencia
                       </span>
                     </div>

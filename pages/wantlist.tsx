@@ -141,7 +141,7 @@ function Wantlist() {
         <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
           <div>
             <div className="tw-flex tw-items-center tw-gap-2.5">
-              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-blue-100 dark:tw-bg-blue-950/50 tw-text-blue-600 dark:tw-text-blue-400 tw-flex tw-items-center tw-justify-center">
+              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-600 dark:tw-text-brand-400 tw-flex tw-items-center tw-justify-center">
                 <Bookmark className="tw-w-5 tw-h-5" />
               </div>
               <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-tracking-tight">
@@ -157,7 +157,7 @@ function Wantlist() {
             type="button"
             onClick={handleImportWantlist}
             disabled={isImporting}
-            className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-opacity-50 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors tw-shadow-sm"
+            className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 disabled:tw-opacity-50 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors tw-shadow-sm"
           >
             <Download className="tw-w-4 tw-h-4" />
             <span>{isImporting ? "Importando de Discogs..." : "Importar de Discogs"}</span>
@@ -185,7 +185,7 @@ function Wantlist() {
               placeholder={filter === "name" ? "Buscar por artista en wantlist..." : "Buscar por título de disco..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-blue-500 focus:tw-ring-2 focus:tw-ring-blue-500/20"
+              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-brand-500 focus:tw-ring-2 focus:tw-ring-brand-500/20"
             />
           </div>
 
@@ -195,7 +195,7 @@ function Wantlist() {
             className={`tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
               orderAsc
                 ? "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100"
-                : "tw-bg-blue-600 tw-text-white tw-border-blue-700"
+                : "tw-bg-brand-600 tw-text-white tw-border-brand-700"
             }`}
             title={orderAsc ? "Orden alfabético A-Z" : "Orden alfabético Z-A"}
           >
@@ -216,7 +216,7 @@ function Wantlist() {
             </p>
             <Link
               href="/albums"
-              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors"
+              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors"
             >
               <Disc className="tw-w-4 tw-h-4" />
               <span>Explorar Vinilos</span>
@@ -244,7 +244,7 @@ function Wantlist() {
 
                   <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
                     <div>
-                      <span className="tw-text-xs tw-font-bold tw-text-blue-600 dark:tw-text-blue-400 tw-block tw-truncate">
+                      <span className="tw-text-xs tw-font-bold tw-text-brand-600 dark:tw-text-brand-400 tw-block tw-truncate">
                         {artistName}
                       </span>
                       <h3
@@ -256,10 +256,10 @@ function Wantlist() {
                     </div>
 
                     <div className="tw-flex tw-items-center tw-justify-between tw-mt-4 tw-pt-3 tw-border-t tw-border-gray-100 dark:tw-border-gray-750">
-                      <span className="tw-text-[11px] tw-text-amber-500 tw-font-semibold">
+                      <span className="tw-text-[11px] tw-text-brand-500 tw-font-semibold">
                         ★ En tu Wantlist
                       </span>
-                      <span className="tw-text-xs tw-font-semibold tw-text-gray-400 group-hover:tw-text-blue-500 tw-transition-colors">
+                      <span className="tw-text-xs tw-font-semibold tw-text-gray-400 group-hover:tw-text-brand-500 tw-transition-colors">
                         Ver ficha →
                       </span>
                     </div>

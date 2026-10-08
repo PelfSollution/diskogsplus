@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import useGetUserData from "@/hooks/useGetUserData";
 import useGetMixtape from "@/hooks/useGetMixtape";
+import useTrackPlayer from "@/hooks/useTrackPlayer";
 import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
 import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
 import {
@@ -39,7 +40,8 @@ export default function MixtapePlayer() {
   const { data: mixtape, isLoading } = useGetMixtape(username);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  // Intención del usuario de escuchar: los navegadores bloquean el autoplay hasta el primer clic
+  const [wantsToPlay, setWantsToPlay] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isLoop, setIsLoop] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -63,14 +65,34 @@ export default function MixtapePlayer() {
     } else {
       setCurrentIndex((prev) => (prev + 1) % mixtape.length);
     }
-    setIsPlaying(true);
+    setWantsToPlay(true);
   };
 
   const handlePrev = () => {
     if (!mixtape || mixtape.length === 0) return;
     setCurrentIndex((prev) => (prev - 1 + mixtape.length) % mixtape.length);
-    setIsPlaying(true);
+    setWantsToPlay(true);
   };
+
+  // Fin de pista: siguiente, o parar al final de la lista si no está activado repetir
+  const handleTrackEnded = () => {
+    if (!mixtape || mixtape.length === 0) return;
+    if (!isShuffle && !isLoop && currentIndex >= mixtape.length - 1) {
+      setWantsToPlay(false);
+      return;
+    }
+    // Con una sola pista, handleNext no cambia de índice: volver a empezar
+    if (mixtape.length === 1) {
+      play();
+      return;
+    }
+    handleNext();
+  };
+
+  const { containerRef, load, play, pause, isPlaying, mode } = useTrackPlayer({
+    onEnded: handleTrackEnded,
+    onError: handleTrackEnded,
+  });
 
   const handleDeleteCurrent = async (trackToDelete: any) => {
     if (!trackToDelete) return;
@@ -136,10 +158,40 @@ export default function MixtapePlayer() {
   const { data: videoData, isLoading: isVideoLoading } = useSWR(videoKey, jsonFetcher, {
     revalidateOnFocus: false,
   });
-  const videoId: string | undefined = videoData?.video?.videoId;
-  const youtubeEmbedUrl = videoId
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`
-    : "";
+  const videoId: string | null = videoData?.video?.videoId ?? null;
+  const preview: string | null = videoData?.video?.preview ?? null;
+  const hasAudio = Boolean(videoId || preview);
+
+  // Cargar la pista actual en el reproductor cuando llega su vídeo o preview
+  const wantsToPlayRef = useRef(wantsToPlay);
+  useEffect(() => {
+    wantsToPlayRef.current = wantsToPlay;
+  }, [wantsToPlay]);
+  useEffect(() => {
+    if (!videoKey || isVideoLoading) return;
+    load({ videoId, preview }, wantsToPlayRef.current);
+  }, [videoKey, isVideoLoading, videoId, preview, load]);
+
+  // Pista sin audio en ninguna fuente: saltarla si se estaba escuchando la lista
+  const skipRef = useRef(handleTrackEnded);
+  useEffect(() => {
+    skipRef.current = handleTrackEnded;
+  });
+  useEffect(() => {
+    if (!videoKey || isVideoLoading || hasAudio || !wantsToPlay) return;
+    const timer = setTimeout(() => skipRef.current(), 3000);
+    return () => clearTimeout(timer);
+  }, [videoKey, isVideoLoading, hasAudio, wantsToPlay]);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      pause();
+      setWantsToPlay(false);
+    } else {
+      setWantsToPlay(true);
+      play();
+    }
+  };
   const youtubeSearchUrl = currentTrack
     ? `https://www.youtube.com/results?search_query=${encodeURIComponent(
         `${currentTrack.artista} ${currentTrack.trackname}`
@@ -299,26 +351,21 @@ export default function MixtapePlayer() {
                   </div>
                 </div>
 
-                {/* IFrame de YouTube Embebido */}
-                <div className="tw-mt-5 tw-h-[140px] md:tw-h-[160px] tw-w-full tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-800 tw-bg-black tw-shadow-inner">
-                  {youtubeEmbedUrl ? (
-                    <iframe
-                      key={videoId}
-                      src={youtubeEmbedUrl}
-                      title={`${currentTrack.artista} - ${currentTrack.trackname}`}
-                      width="100%"
-                      height="100%"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="tw-w-full tw-h-full"
-                    />
-                  ) : (
-                    <div className="tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-px-4 tw-text-gray-400 tw-text-sm">
+                {/* Reproductor de YouTube (API de JavaScript) o preview de Deezer */}
+                <div className="tw-relative tw-mt-5 tw-h-[140px] md:tw-h-[160px] tw-w-full tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-800 tw-bg-black tw-shadow-inner">
+                  <div ref={containerRef} className="tw-absolute tw-inset-0" />
+                  {mode !== "video" && (
+                    <div className="tw-absolute tw-inset-0 tw-bg-black tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-px-4 tw-text-gray-400 tw-text-sm">
                       {isVideoLoading ? (
-                        <span>Buscando el vídeo de la pista…</span>
+                        <span>Buscando la pista…</span>
+                      ) : mode === "audio" ? (
+                        <span>Preview de 30 s · Deezer</span>
                       ) : (
                         <>
-                          <span>Discogs no tiene vídeo enlazado para esta pista.</span>
+                          <span>
+                            No se ha encontrado audio para esta pista
+                            {wantsToPlay ? "; pasando a la siguiente…" : "."}
+                          </span>
                           <a
                             href={youtubeSearchUrl}
                             target="_blank"
@@ -359,9 +406,9 @@ export default function MixtapePlayer() {
 
                   <button
                     type="button"
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={togglePlay}
                     className="tw-p-4 tw-rounded-full tw-bg-amber-500 hover:tw-bg-amber-600 tw-text-white tw-shadow-lg tw-transition-transform hover:tw-scale-105"
-                    title={isPlaying ? "Pausar animación" : "Reproducir"}
+                    title={isPlaying ? "Pausar" : "Reproducir"}
                   >
                     {isPlaying ? <Pause className="tw-w-7 tw-h-7" /> : <Play className="tw-w-7 tw-h-7" />}
                   </button>
@@ -449,7 +496,7 @@ export default function MixtapePlayer() {
                         key={idx}
                         onClick={() => {
                           setCurrentIndex(idx);
-                          setIsPlaying(true);
+                          setWantsToPlay(true);
                         }}
                         className={`tw-flex tw-items-center tw-justify-between tw-p-3 tw-rounded-2xl tw-cursor-pointer tw-transition-all ${
                           isCurrent

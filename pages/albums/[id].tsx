@@ -376,6 +376,7 @@ function AlbumDetails() {
           <div className="lg:tw-col-span-5">
             <div className="tw-sticky tw-top-4">
               <AlbumMediaSidebar
+                discoId={idNumber}
                 title={albumInfo.title}
                 spotifyAlbumId={albumInfo.spotifyAlbumId}
                 isPopularAlbum={albumInfo.isPopularAlbum}

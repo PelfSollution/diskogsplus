@@ -19,6 +19,8 @@ interface AlbumTracklistProps {
   isSongInMixtape: (title: string) => boolean;
   onAddToMixtape: (track: TrackItem) => void;
   onDeleteFromMixtape: (track: TrackItem) => void;
+  /** Selector de la mixtape a la que se añaden las pistas */
+  mixtapeSelector?: React.ReactNode;
 }
 
 const SOURCE_LABEL = {
@@ -34,6 +36,7 @@ export const AlbumTracklist: React.FC<AlbumTracklistProps> = ({
   isSongInMixtape,
   onAddToMixtape,
   onDeleteFromMixtape,
+  mixtapeSelector,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -64,6 +67,12 @@ export const AlbumTracklist: React.FC<AlbumTracklistProps> = ({
           }`}
         />
       </button>
+
+      {isOpen && mixtapeSelector && (
+        <div className="tw-px-4 tw-py-2 tw-border-t tw-border-gray-100 dark:tw-border-gray-700/60">
+          {mixtapeSelector}
+        </div>
+      )}
 
       {isOpen && (
         <ol className="tw-px-2 tw-pb-2 tw-border-t tw-border-gray-100 dark:tw-border-gray-700/60">

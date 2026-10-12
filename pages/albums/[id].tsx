@@ -5,6 +5,8 @@ import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 import useGetMixtape from "@/hooks/useGetMixtape";
+import useMixtapes from "@/hooks/useMixtapes";
+import MixtapeSelect from "@/components/MixtapeSelect";
 import useAlbumPlayer from "@/hooks/useAlbumPlayer";
 import useGetUserData from "@/hooks/useGetUserData";
 import { addMixtape, deleteFromMixtape } from "@/services/client/mixtape";
@@ -48,16 +50,21 @@ function AlbumDetails() {
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichedInfo, setEnrichedInfo] = useState<string | null>(null);
 
-  const { data: mixtape } = useGetMixtape(username);
+  const mixtapes = useMixtapes(username);
+  const { data: mixtape } = useGetMixtape(username, mixtapes.activeId);
   // Reproductor compartido por el tracklist y la tarjeta de escucha
   const albumPlayer = useAlbumPlayer(idNumber, albumInfo?.videos);
 
-  // Cargar estado inicial de mixtape del usuario
+  // Pistas de este disco que ya están en la mixtape activa
   useEffect(() => {
     if (mixtape) {
-      setTracksInMixtape(mixtape.map((t: any) => t.trackname));
+      setTracksInMixtape(
+        mixtape
+          .filter((t: any) => t.disco_id === idNumber.toString())
+          .map((t: any) => t.trackname)
+      );
     }
-  }, [mixtape]);
+  }, [mixtape, idNumber]);
 
   // Verificar si el álbum está en la Wantlist
   useEffect(() => {
@@ -211,6 +218,7 @@ function AlbumDetails() {
     try {
       await addMixtape({
         username,
+        mixtape_id: mixtapes.activeId ?? null,
         artista: albumInfo?.artist || "",
         trackname: track.title,
         disco_id: idNumber.toString(),
@@ -221,7 +229,7 @@ function AlbumDetails() {
         duration: track.duration ?? null,
       });
       setTracksInMixtape((prev) => [...prev, track.title]);
-      showNotification(`"${track.title}" añadida al Mixtape.`);
+      showNotification(`"${track.title}" añadida a «${mixtapes.active?.nombre ?? "tu mixtape"}».`);
     } catch (err) {
       console.error(err);
       showNotification("Error al añadir la pista al mixtape.");
@@ -232,12 +240,13 @@ function AlbumDetails() {
     try {
       await deleteFromMixtape(
         username,
+        mixtapes.activeId ?? null,
         albumInfo?.artist || "",
         track.title,
         idNumber.toString()
       );
       setTracksInMixtape((prev) => prev.filter((t) => t !== track.title));
-      showNotification(`"${track.title}" eliminada del Mixtape.`);
+      showNotification(`"${track.title}" eliminada de «${mixtapes.active?.nombre ?? "tu mixtape"}».`);
     } catch (err) {
       console.error(err);
       showNotification("Error al eliminar la pista del mixtape.");
@@ -355,6 +364,15 @@ function AlbumDetails() {
                 isSongInMixtape={isSongInMixtape}
                 onAddToMixtape={handleAddToMixtape}
                 onDeleteFromMixtape={handleDeleteFromMixtape}
+                mixtapeSelector={
+                  mixtapes.mixtapes && mixtapes.mixtapes.length > 0 ? (
+                    <MixtapeSelect
+                      mixtapes={mixtapes.mixtapes}
+                      activeId={mixtapes.activeId}
+                      onChange={mixtapes.setActiveId}
+                    />
+                  ) : undefined
+                }
               />
             )}
 

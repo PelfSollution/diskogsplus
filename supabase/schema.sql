@@ -18,10 +18,20 @@ create table if not exists public.users (
   constraint users_email_key unique (email)
 );
 
--- Pistas del mixtape
+-- Mixtapes con nombre de cada usuario ("Sesión jazz-funk sábado")
+create table if not exists public.mixtapes (
+  id         bigint generated always as identity primary key,
+  username   text not null references public.users (username) on delete cascade,
+  nombre     text not null check (length(trim(nombre)) between 1 and 80),
+  created_at timestamptz not null default now(),
+  constraint mixtapes_unique_nombre unique (username, nombre)
+);
+
+-- Pistas de las mixtapes (la tabla conserva su nombre histórico, en singular)
 create table if not exists public.mixtape (
   id             bigint generated always as identity primary key,
   username       text not null references public.users (username) on delete cascade,
+  mixtape_id     bigint not null references public.mixtapes (id) on delete cascade,
   artista        text not null,
   trackname      text not null,
   disco_id       text not null,                 -- el código lo maneja como string
@@ -31,8 +41,35 @@ create table if not exists public.mixtape (
   mode           smallint check (mode in (0, 1)),        -- 0 = menor, 1 = mayor
   duration       text,
   created_at     timestamptz not null default now(),
-  constraint mixtape_unique_track unique (username, disco_id, artista, trackname)
+  constraint mixtape_unique_track unique (mixtape_id, disco_id, artista, trackname)
 );
+
+-- Migración desde una sola lista por usuario (oct. 2026): las pistas sin
+-- mixtape_id pasan a una mixtape «Mi mixtape» de su usuario.
+alter table public.mixtape
+  add column if not exists mixtape_id bigint references public.mixtapes (id) on delete cascade;
+
+insert into public.mixtapes (username, nombre)
+select distinct username, 'Mi mixtape' from public.mixtape where mixtape_id is null
+on conflict (username, nombre) do nothing;
+
+update public.mixtape t set mixtape_id = m.id
+from public.mixtapes m
+where t.mixtape_id is null and m.username = t.username and m.nombre = 'Mi mixtape';
+
+alter table public.mixtape alter column mixtape_id set not null;
+
+do $$
+begin
+  if exists (select 1 from pg_constraint where conname = 'mixtape_unique_track'
+             and pg_get_constraintdef(oid) not like '%mixtape_id%') then
+    alter table public.mixtape drop constraint mixtape_unique_track;
+    alter table public.mixtape
+      add constraint mixtape_unique_track unique (mixtape_id, disco_id, artista, trackname);
+  end if;
+end $$;
+
+create index if not exists mixtape_username_idx on public.mixtape (username);
 
 -- Playlists de Spotify exportadas desde el mixtape
 create table if not exists public.mixtape_urls (
@@ -117,6 +154,7 @@ on conflict (id) do update
 
 -- RLS activado en todas las tablas. Sin políticas, el rol anon no ve nada.
 alter table public.users                     enable row level security;
+alter table public.mixtapes                  enable row level security;
 alter table public.mixtape                   enable row level security;
 alter table public.mixtape_urls              enable row level security;
 alter table public.wantlist                  enable row level security;
@@ -146,7 +184,7 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['users','mixtape','mixtape_urls','wantlist','chat_logs',
+  foreach t in array array['users','mixtapes','mixtape','mixtape_urls','wantlist','chat_logs',
                            'enriched_artist_info','generated_images_metadata','album_playlists']
   loop
     execute format('drop policy if exists "provisional_anon_all" on public.%I', t);

@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import useGetUserData from "@/hooks/useGetUserData";
-import { getMixtape, deleteFromMixtape } from "@/services/client/mixtape";
+import { deleteFromMixtape } from "@/services/client/mixtape";
+import useMixtapes from "@/hooks/useMixtapes";
+import useGetMixtape from "@/hooks/useGetMixtape";
+import MixtapeManager from "@/components/MixtapeManager";
 import MixtapeRow, { MixtapeTrack } from "@/components/MixtapeRow";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
@@ -20,8 +23,6 @@ import {
 import { CAMELOT_CODES, getPitchClassNotation } from "@/lib/musicNotation";
 
 export default function Mixtape() {
-  const [mixtape, setMixtape] = useState<MixtapeTrack[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBPM, setSearchBPM] = useState<number | null>(null);
   const [searchKey, setSearchKey] = useState<number | null>(null);
@@ -36,6 +37,17 @@ export default function Mixtape() {
   const username = userData?.userProfile?.username || "";
   const router = useRouter();
 
+  const mixtapes = useMixtapes(username);
+  const {
+    data: tracks,
+    isLoading: tracksLoading,
+    reload: reloadTracks,
+  } = useGetMixtape(username, mixtapes.activeId);
+  const mixtape = tracks as MixtapeTrack[];
+  const loading = Boolean(username) && (mixtapes.isLoading || tracksLoading);
+  const mixtapeName = mixtapes.active?.nombre || "Mi Mixtape";
+  const playerHref = mixtapes.activeId ? `/mixtapeplayer?id=${mixtapes.activeId}` : "/mixtapeplayer";
+
   const handleOpenSnackbar = (message: string) => {
     setSnackbar({ isOpen: true, message });
   };
@@ -48,46 +60,18 @@ export default function Mixtape() {
     try {
       await deleteFromMixtape(
         track.username,
+        mixtapes.activeId ?? null,
         track.artista,
         track.trackname,
         track.disco_id
       );
-      setMixtape((prev) =>
-        prev.filter(
-          (item) =>
-            !(
-              item.artista === track.artista &&
-              item.trackname === track.trackname &&
-              item.disco_id === track.disco_id
-            )
-        )
-      );
-      handleOpenSnackbar(`"${track.trackname}" eliminada de tu Mixtape.`);
+      await Promise.all([reloadTracks(), mixtapes.reload()]);
+      handleOpenSnackbar(`"${track.trackname}" eliminada de «${mixtapeName}».`);
     } catch (error) {
       console.error("Error eliminando tema de Mixtape:", error);
       handleOpenSnackbar("Hubo un error al eliminar la canción.");
     }
   }
-
-  useEffect(() => {
-    async function fetchData() {
-      if (!username) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await getMixtape(username);
-        setMixtape(data || []);
-      } catch (err) {
-        console.error("Error cargando mixtape:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [username]);
 
   const toggleBpmOrder = () => {
     if (bpmOrder === null || bpmOrder === "DESC") {
@@ -144,7 +128,7 @@ export default function Mixtape() {
         <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
           <div>
             <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-tracking-tight">
-              Mi Mixtape
+              {mixtapeName}
             </h1>
             <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-mt-1">
               {mixtape.length} canciones seleccionadas para mezcla y escucha continua
@@ -156,7 +140,7 @@ export default function Mixtape() {
             {mixtape.length > 0 && (
               <>
                 <Link
-                  href="/mixtapeplayer"
+                  href={playerHref}
                   className="tw-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-vinyl-500 hover:tw-bg-vinyl-600 tw-text-white tw-font-bold tw-text-sm tw-shadow-md hover:tw-shadow-lg tw-transition-all"
                 >
                   <Play className="tw-w-4 tw-h-4 tw-fill-current" />
@@ -183,6 +167,16 @@ export default function Mixtape() {
           </div>
         </div>
 
+        {mixtapes.mixtapes && (
+          <MixtapeManager
+            mixtapes={mixtapes.mixtapes}
+            activeId={mixtapes.activeId}
+            onSelect={mixtapes.setActiveId}
+            onChanged={mixtapes.reload}
+            onMessage={handleOpenSnackbar}
+          />
+        )}
+
         {/* Estado Vacío */}
         {mixtape.length === 0 ? (
           <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-lg tw-mx-auto tw-my-12">
@@ -190,7 +184,7 @@ export default function Mixtape() {
               <Music2 className="tw-w-8 tw-h-8" />
             </div>
             <h2 className="tw-text-xl tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-2">
-              Aún no tienes temas en tu Mixtape
+              «{mixtapeName}» está vacía
             </h2>
             <p className="tw-text-sm tw-text-gray-500 tw-mb-6">
               Navega por los vinilos de tu catálogo y pulsa el botón &quot;+ Mixtape&quot; en las pistas que quieras incluir en tu sesión.
@@ -290,7 +284,7 @@ export default function Mixtape() {
                     key={`${track.artista}-${track.trackname}-${track.disco_id}`}
                     data={track}
                     onDelete={handleDelete}
-                    onPlay={() => router.push("/mixtapeplayer")}
+                    onPlay={() => router.push(playerHref)}
                   />
                 ))
               )}

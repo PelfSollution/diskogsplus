@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import useGetUserData from "@/hooks/useGetUserData";
 import useGetMixtape from "@/hooks/useGetMixtape";
+import useMixtapes from "@/hooks/useMixtapes";
 import useTrackPlayer from "@/hooks/useTrackPlayer";
 import { deleteFromMixtape } from "@/services/client/mixtape";
 import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
@@ -37,7 +38,17 @@ export default function MixtapePlayer() {
   const { data: userData } = useGetUserData();
   const username = userData?.userProfile?.username || "";
 
-  const { data: mixtape, isLoading } = useGetMixtape(username);
+  // Mixtape de ?id= o, si no viene, la activa. undefined mientras carga; null en modo local
+  const mixtapes = useMixtapes(username);
+  const queryId = Number(router.query.id);
+  const mixtapeId =
+    mixtapes.activeId == null
+      ? mixtapes.activeId
+      : Number.isInteger(queryId) && mixtapes.mixtapes?.some((m) => m.id === queryId)
+      ? queryId
+      : mixtapes.activeId;
+  const mixtapeName = mixtapes.mixtapes?.find((m) => m.id === mixtapeId)?.nombre;
+  const { data: mixtape, isLoading, reload: reloadMixtape } = useGetMixtape(username, mixtapeId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   // Intención del usuario de escuchar: los navegadores bloquean el autoplay hasta el primer clic
@@ -99,6 +110,7 @@ export default function MixtapePlayer() {
     try {
       await deleteFromMixtape(
         username,
+        mixtapeId ?? null,
         trackToDelete.artista,
         trackToDelete.trackname,
         trackToDelete.disco_id
@@ -108,6 +120,7 @@ export default function MixtapePlayer() {
       if (currentIndex >= mixtape.length - 1) {
         setCurrentIndex(Math.max(0, mixtape.length - 2));
       }
+      reloadMixtape();
     } catch (err) {
       console.error(err);
     }
@@ -225,7 +238,7 @@ export default function MixtapePlayer() {
             <div>
               <div className="tw-flex tw-items-center tw-gap-2">
                 <h1 className="tw-text-2xl tw-font-bold tw-text-gray-900 dark:tw-text-white">
-                  Mixtape Player
+                  {mixtapeName || "Mixtape Player"}
                 </h1>
               </div>
               <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400">

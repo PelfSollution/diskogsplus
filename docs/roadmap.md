@@ -61,7 +61,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 > Prueba con la colección real (`dayats`, oct. 2026): 9 de 15 discos al ≥80 % solo con Discogs + YouTube; con Deezer, 36 de 47 pistas en 8 discos. Lo que falta son sobre todo casetes y EP de tirada mínima.
 
 ### Fase 2: preparar sesiones
-- [ ] **Varias mixtapes con nombre** ("Sesión jazz-funk sábado") en lugar de una sola lista por usuario: tabla `sessions` + `session_tracks` con posición.
+- [x] **Varias mixtapes con nombre** ("Sesión jazz-funk sábado") en lugar de una sola lista por usuario: tabla `mixtapes` y columna `mixtape_id` en `mixtape` (oct. 2026). La posición para reordenar queda para el punto siguiente.
 - [ ] Reordenar arrastrando y **ordenar automáticamente por armonía y BPM** (Camelot, que ya existe en `lib/musicNotation.ts`).
 - [ ] Datos de vinilo en cada pista: **cara y posición** (A1, B2), duración por cara y aviso de "dar la vuelta".
 - [ ] Rellenar BPM y tonalidad de las pistas antiguas (script pendiente).

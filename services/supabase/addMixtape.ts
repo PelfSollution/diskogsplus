@@ -10,7 +10,7 @@ export async function addMixtape(mixtape: Mixtape) {
   const { data, error } = await supabase
     .from("mixtape")
     .upsert([mixtape], {
-      onConflict: "username,disco_id,artista,trackname",
+      onConflict: "mixtape_id,disco_id,artista,trackname",
       ignoreDuplicates: true,
     })
     .select();

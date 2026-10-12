@@ -1,6 +1,7 @@
 export type LocalMixtapeTrack = {
   id?: number | string;
   username: string;
+  mixtape_id?: number | null; // solo en Supabase; en local hay una sola lista
   artista: string;
   trackname: string;
   disco_id: string;

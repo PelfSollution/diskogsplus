@@ -4,6 +4,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import getMixtape from "@/services/supabase/getMixtape";
 import addMixtape from "@/services/supabase/addMixtape";
 import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
+import { userOwnsMixtape } from "@/services/supabase/mixtapes";
 
 /** Número finito o null (evita que "" o undefined se guarden como 0 = Do menor). */
 function toNumberOrNull(value: unknown): number | null {
@@ -16,7 +17,8 @@ function requiredString(value: unknown): string | null {
   return typeof value === "string" && value ? value : null;
 }
 
-// GET: pistas del mixtape · POST: añadir pista · DELETE: quitar pista.
+// Pistas de una mixtape (mixtape_id en la query para GET, en el body para el resto).
+// GET: listar · POST: añadir pista · DELETE: quitar pista.
 // El usuario sale siempre de la sesión, nunca del body.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const username = requireSessionUser(req, res);
@@ -28,8 +30,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const mixtapeId = Number(req.method === "GET" ? req.query.mixtape_id : req.body?.mixtape_id);
+    if (!Number.isInteger(mixtapeId)) {
+      return res.status(400).json({ error: "mixtape_id no válido" });
+    }
+    if (!(await userOwnsMixtape(username, mixtapeId))) {
+      return res.status(404).json({ error: "Mixtape no encontrada" });
+    }
+
     if (req.method === "GET") {
-      return res.status(200).json(await getMixtape(username));
+      return res.status(200).json(await getMixtape(username, mixtapeId));
     }
 
     const artista = requiredString(req.body?.artista);
@@ -43,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { spotifytrackid, tempo, key, mode, duration } = req.body;
       await addMixtape({
         username,
+        mixtape_id: mixtapeId,
         artista,
         trackname,
         disco_id,
@@ -56,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === "DELETE") {
-      await deleteFromMixtape(username, artista, trackname, disco_id);
+      await deleteFromMixtape(username, mixtapeId, artista, trackname, disco_id);
       return res.status(200).json({ success: true });
     }
 

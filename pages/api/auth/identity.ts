@@ -2,6 +2,8 @@ var Discogs = require("disconnect").Client;
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 import { decryptCookieJSON, getSessionUser } from "@/lib/session";
+import { addUser } from "@/services/supabase/addUser";
+import { checkUserExists } from "@/services/supabase/checkUserExists";
 
 /** Perfil mínimo a partir de la sesión, cuando no se puede consultar Discogs. */
 function sessionProfile(username: string) {
@@ -28,6 +30,12 @@ export default async function identity(
   // Sesión de desarrollo (devLogin): tokens falsos, Discogs no reconoce al usuario
   if (typeof accessData.token === "string" && accessData.token.startsWith("dev_")) {
     return res.send({ userProfile: sessionProfile(username), offline: true });
+  }
+
+  // Alta en Supabase si falta: sesiones iniciadas antes de configurar Supabase
+  // o con la base de datos recreada. Sin la fila, el resto de tablas fallan (FK).
+  if (!(await checkUserExists(username))) {
+    await addUser({ username });
   }
 
   try {

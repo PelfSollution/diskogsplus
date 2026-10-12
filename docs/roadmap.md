@@ -46,7 +46,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 ## 2. Roadmap por fases
 
 ### Fase 0: cerrar la actualización (en curso)
-- [ ] Crear el proyecto nuevo de Supabase ([`supabase.md`](./supabase.md)) y probar que guarda y carga.
+- [x] Crear el proyecto nuevo de Supabase ([`supabase.md`](./supabase.md)) y probar que guarda y carga.
 - [ ] Probar en el navegador DiscBOT, la ficha del disco y el mixtape; mezclar `upgrade/next-react-ai` en `main`.
 - [ ] Vulnerabilidades altas: Tailwind/PostCSS dentro de la v3 y quitar `sharp` 0.32.
 

@@ -51,11 +51,13 @@ function Wantlist() {
         body: JSON.stringify({ username }),
       });
       const data = await response.json();
-      if (data && data.length > 0) {
-        setWantlistItems(data);
-        handleOpenSnackbar("¡Wantlist importada con éxito desde Discogs!");
+      if (!response.ok) {
+        handleOpenSnackbar(data?.message || "No se pudo importar la Wantlist de Discogs.");
+      } else if (data.added > 0) {
+        if (username) setWantlistItems(await getWantlistItemsUser(username));
+        handleOpenSnackbar(`${data.added} discos nuevos importados de Discogs.`);
       } else {
-        handleOpenSnackbar("No se encontraron nuevos discos en tu Wantlist de Discogs.");
+        handleOpenSnackbar("Tu Wantlist ya estaba al día con Discogs.");
       }
     } catch {
       handleOpenSnackbar("No se pudo conectar con Discogs para importar la Wantlist.");

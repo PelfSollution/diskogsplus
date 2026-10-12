@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
-import addWantlistEntry, {
-  WantlistEntry,
-} from "@/services/supabase/addWantlistEntry";
+import { WantlistEntry } from "@/services/supabase/addWantlistEntry";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { decryptCookieJSON, requireSessionUser } from "@/lib/session";
 var Discogs = require("disconnect").Client;
 
@@ -29,6 +28,13 @@ export default async function importWantlistFromDiscogs(
     const username = requireSessionUser(req, res);
     if (!username) return;
 
+    if (!isSupabaseConfigured) {
+      return res.status(503).json({
+        error_code: "supabase_not_configured",
+        message: "Supabase no está configurado: la wantlist no se puede guardar.",
+      });
+    }
+
     const accessData = decryptCookieJSON(getCookie("accessData", { req, res }));
     if (!accessData) {
       return res.status(401).json({
@@ -39,21 +45,26 @@ export default async function importWantlistFromDiscogs(
 
     const userClient = new Discogs(accessData).user();
 
-    const userWantlist = await userClient.wantlist().getReleases(username);
+    // Discogs pagina la wantlist (máx. 100 por página): recorrer todas
+    const wants: DiscogsRelease[] = [];
+    for (let page = 1, pages = 1; page <= pages; page++) {
+      const userWantlist = await userClient
+        .wantlist()
+        .getReleases(username, { page, per_page: 100 });
 
-    if (
-      !userWantlist ||
-      !userWantlist.wants ||
-      !Array.isArray(userWantlist.wants)
-    ) {
-      res.status(400).json({
-        error_code: "no_valid_releases",
-        message: "Respuesta de Discogs no contiene releases válidos.",
-      });
-      return;
+      if (!userWantlist || !Array.isArray(userWantlist.wants)) {
+        res.status(400).json({
+          error_code: "no_valid_releases",
+          message: "Respuesta de Discogs no contiene releases válidos.",
+        });
+        return;
+      }
+
+      wants.push(...userWantlist.wants);
+      pages = userWantlist.pagination?.pages || 1;
     }
 
-    const formattedEntries: WantlistEntry[] = userWantlist.wants.map(
+    const formattedEntries: WantlistEntry[] = wants.map(
       (release: DiscogsRelease) => {
         const basicInfo = release.basic_information;
 
@@ -62,18 +73,28 @@ export default async function importWantlistFromDiscogs(
           disco_id: release.id,
           notes: release.notes || "Sin notas",
           rating: release.rating || 0,
-          artista: basicInfo.artists[0].name,
+          artista: basicInfo.artists?.[0]?.name || "",
           album: basicInfo.title,
           image_url: basicInfo.thumb || "/no-portada.gif",
         };
       }
     );
 
-    for (let entry of formattedEntries) {
-      await addWantlistEntry(entry);
-    }
+    // Una sola petición; los discos que ya estaban se ignoran
+    const { data, error } = await supabase
+      .from("wantlist")
+      .upsert(formattedEntries, {
+        onConflict: "username,disco_id",
+        ignoreDuplicates: true,
+      })
+      .select("disco_id");
+    if (error) throw error;
 
-    res.send({ success: true, message: "Wantlist importada exitosamente." });
+    res.send({
+      success: true,
+      total: formattedEntries.length,
+      added: data?.length ?? 0,
+    });
   } catch (err: any) {
     console.error("Error al importar wantlist:", err);
     res.status(400).json({

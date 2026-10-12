@@ -31,7 +31,10 @@ Otros puntos detectados fuera del esquema:
 
 ## 2. Paso a paso: crear el proyecto nuevo
 
-1. **Crear el proyecto.** En [supabase.com/dashboard](https://supabase.com/dashboard) → *New project*. Nombre: `diskogsplus`. Región: *West EU* (Irlanda o París). Genera una contraseña de base de datos y guárdala en tu gestor de contraseñas. Plan *Free*.
+1. **Crear el proyecto.** En [supabase.com/dashboard](https://supabase.com/dashboard) → *New project*. Nombre: `diskogsplus`. Región: *West EU* (Irlanda o París). Genera una contraseña de base de datos y guárdala en tu gestor de contraseñas. Plan *Free*. En las opciones de seguridad:
+   - **Enable Data API**: activado (lo usa `supabase-js`).
+   - **Automatically expose new tables**: desactivado. `schema.sql` da los permisos de forma explícita (`grant`).
+   - **Enable automatic RLS**: activado. `schema.sql` ya activa RLS, esto cubre las tablas que se creen después.
 2. **Crear las tablas.** *SQL Editor* → *New query* → pega `supabase/schema.sql` entero → *Run*. Debe terminar con "Success. No rows returned".
 3. **Comprobar.** *Table Editor* debe mostrar 8 tablas, todas con la etiqueta *RLS enabled*. *Storage* debe mostrar el bucket `generated_images` como *Public*.
 4. **Copiar las claves.** *Project Settings → API Keys*: copia la **Project URL** y la clave **publishable** (`sb_publishable_…`). La clave *secret* (`sb_secret_…`) **no** va todavía en `.env.local`, y nunca con el prefijo `NEXT_PUBLIC_`.
@@ -73,4 +76,4 @@ Después, en una terminal normal: `claude /mcp` → *supabase* → *Authenticate
    - `pages/wantlist.tsx`
    - `pages/chat.tsx`
    - `hooks/useGetMixtape.ts`
-3. Borrar el bloque `provisional_anon_*` de `schema.sql` y ejecutar en el SQL Editor los `drop policy` correspondientes. RLS sin políticas deja fuera al rol anon, y la clave secreta se salta RLS.
+3. Borrar el bloque `provisional_anon_*` de `schema.sql` y ejecutar en el SQL Editor los `drop policy` correspondientes y `revoke all on all tables in schema public from anon`. RLS sin políticas deja fuera al rol anon, y la clave secreta se salta RLS.

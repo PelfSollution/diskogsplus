@@ -125,11 +125,30 @@ alter table public.enriched_artist_info      enable row level security;
 alter table public.generated_images_metadata enable row level security;
 alter table public.album_playlists           enable row level security;
 
+-- Permisos explícitos: el proyecto se crea con «Automatically expose new tables»
+-- desactivado, así que ningún rol de la Data API tiene acceso por defecto.
+-- service_role (clave secreta, solo servidor) se salta RLS pero necesita el GRANT.
+grant usage on schema public to service_role;
+grant select, insert, update, delete on all tables in schema public to service_role;
+
+-- «Enable automatic RLS» crea la función public.rls_auto_enable() (SECURITY DEFINER)
+-- ejecutable por anon. Es de un event trigger: nadie de la API necesita llamarla.
+do $$
+begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+  end if;
+end $$;
+
 -- ⚠️ ACCESO PROVISIONAL. Hoy el navegador consulta Supabase directamente con la
 -- clave pública y sin Supabase Auth, así que la app solo funciona si anon puede
 -- leer y escribir todo. Cualquiera con esa clave (visible en el navegador) puede
 -- hacer lo mismo. Cuando todo el acceso pase a rutas API con la clave secreta
--- (docs/supabase.md, fase 2), borrar este bloque entero.
+-- (docs/supabase.md, fase 2), borrar este bloque entero y revocar los permisos
+-- de anon (revoke all on all tables in schema public from anon).
+grant usage on schema public to anon;
+grant select, insert, update, delete on all tables in schema public to anon;
+
 do $$
 declare t text;
 begin

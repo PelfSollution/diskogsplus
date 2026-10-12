@@ -1,22 +1,19 @@
-import { supabase } from "../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
+/** Borra la clave API guardada del usuario. Solo servidor. */
 export async function deleteApiKey(username: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .update({ openai_api_key: null })
-      .eq('username', username);  
+  if (!isSupabaseConfigured) return false;
 
-    if (error) {
-      throw error;
-    }
+  const { error } = await supabase
+    .from("users")
+    .update({ openai_api_key: null })
+    .eq("username", username);
 
-    return true; 
-  } catch (error) {
+  if (error) {
     console.error("Error eliminando la API Key:", error);
-    return false; 
+    return false;
   }
+  return true;
 }
 
 export default deleteApiKey;
-

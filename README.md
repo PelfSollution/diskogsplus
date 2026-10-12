@@ -228,7 +228,7 @@ OPENAI_API_KEY=<tu_clave_api_de_openai>
 SPOTIFY_CLIENT_ID=<tu_id_de_spotify
 SPOTIFY_CLIENT_SECRET=<tu_clave_secreta_de_spotify>
 SUPABASE_URL=<tu_url_de_supabase>
-SUPABASE_ANON_KEY=<tu_clave_de_supabase>
+SUPABASE_SECRET_KEY=<tu_clave_secreta_de_supabase>
 ```
 
 3 - Inicia servidor de desarrollo:

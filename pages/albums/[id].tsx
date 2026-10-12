@@ -7,10 +7,8 @@ import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 import useGetMixtape from "@/hooks/useGetMixtape";
 import useAlbumPlayer from "@/hooks/useAlbumPlayer";
 import useGetUserData from "@/hooks/useGetUserData";
-import addMixtape from "@/services/supabase/addMixtape";
-import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
-import { getArtistImageFromSupabase } from "@/services/supabase/getArtistImageFromSupabase";
-import { isAlbumInWantlist } from "@/services/supabase/checkAlbumInWantlist";
+import { addMixtape, deleteFromMixtape } from "@/services/client/mixtape";
+import { getArtistImage, isAlbumInWantlist } from "@/services/client/userData";
 
 import { Disc, AlertCircle, RefreshCw } from "lucide-react";
 
@@ -64,7 +62,7 @@ function AlbumDetails() {
   // Verificar si el álbum está en la Wantlist
   useEffect(() => {
     if (username && idNumber) {
-      isAlbumInWantlist(username, idNumber).then((exists) => {
+      isAlbumInWantlist(idNumber).then((exists) => {
         setInWantlist(exists);
       });
     }
@@ -73,7 +71,7 @@ function AlbumDetails() {
   // Obtener imagen del artista en Supabase si no hay portada oficial
   useEffect(() => {
     if (albumInfo && !albumInfo.coverImage && albumInfo.artist) {
-      getArtistImageFromSupabase(albumInfo.artist).then((img) => {
+      getArtistImage(albumInfo.artist).then((img) => {
         if (img) setCoverImage(img);
       });
     }

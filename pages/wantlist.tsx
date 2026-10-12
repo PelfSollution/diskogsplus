@@ -5,10 +5,8 @@ import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetUserData from "@/hooks/useGetUserData";
-import {
-  getWantlistItemsUser,
-  WantlistEntry,
-} from "@/services/supabase/getWantlistItemsUser";
+import type { WantlistEntry } from "@/services/supabase/getWantlistItemsUser";
+import { getWantlist } from "@/services/client/userData";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
 import {
   Bookmark,
@@ -54,7 +52,7 @@ function Wantlist() {
       if (!response.ok) {
         handleOpenSnackbar(data?.message || "No se pudo importar la Wantlist de Discogs.");
       } else if (data.added > 0) {
-        if (username) setWantlistItems(await getWantlistItemsUser(username));
+        setWantlistItems(await getWantlist());
         handleOpenSnackbar(`${data.added} discos nuevos importados de Discogs.`);
       } else {
         handleOpenSnackbar("Tu Wantlist ya estaba al día con Discogs.");
@@ -68,7 +66,7 @@ function Wantlist() {
 
   useEffect(() => {
     if (!username) return;
-    getWantlistItemsUser(username)
+    getWantlist()
       .then((items) => {
         setWantlistItems(items || []);
       })

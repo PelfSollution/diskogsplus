@@ -140,15 +140,9 @@ begin
   end if;
 end $$;
 
--- ⚠️ ACCESO PROVISIONAL. Hoy el navegador consulta Supabase directamente con la
--- clave pública y sin Supabase Auth, así que la app solo funciona si anon puede
--- leer y escribir todo. Cualquiera con esa clave (visible en el navegador) puede
--- hacer lo mismo. Cuando todo el acceso pase a rutas API con la clave secreta
--- (docs/supabase.md, fase 2), borrar este bloque entero y revocar los permisos
--- de anon (revoke all on all tables in schema public from anon).
-grant usage on schema public to anon;
-grant select, insert, update, delete on all tables in schema public to anon;
-
+-- Sin acceso para anon ni authenticated: el navegador nunca habla con Supabase.
+-- Todo pasa por rutas API con la clave secreta (lib/supabase.ts). RLS activado y
+-- sin políticas deja fuera a cualquiera que tenga la clave publishable.
 do $$
 declare t text;
 begin
@@ -156,13 +150,10 @@ begin
                            'enriched_artist_info','generated_images_metadata','album_playlists']
   loop
     execute format('drop policy if exists "provisional_anon_all" on public.%I', t);
-    execute format(
-      'create policy "provisional_anon_all" on public.%I for all to anon using (true) with check (true)', t);
   end loop;
 end $$;
-
 drop policy if exists "provisional_anon_generated_images" on storage.objects;
-create policy "provisional_anon_generated_images" on storage.objects
-  for all to anon
-  using (bucket_id = 'generated_images')
-  with check (bucket_id = 'generated_images');
+
+revoke all on all tables in schema public from anon, authenticated;
+revoke all on all sequences in schema public from anon, authenticated;
+revoke all on all functions in schema public from anon, authenticated;

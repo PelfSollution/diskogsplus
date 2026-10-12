@@ -6,7 +6,7 @@ import Link from "next/link";
 import useGetUserData from "@/hooks/useGetUserData";
 import useGetMixtape from "@/hooks/useGetMixtape";
 import useTrackPlayer from "@/hooks/useTrackPlayer";
-import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
+import { deleteFromMixtape } from "@/services/client/mixtape";
 import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
 import {
   Play,

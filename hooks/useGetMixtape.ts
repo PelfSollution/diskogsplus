@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import getMixtape from "../services/supabase/getMixtape";
+import { getMixtape } from "../services/client/mixtape";
 
 function useGetMixtape(username: string) {
     const [data, setData] = useState<any[]>([]);

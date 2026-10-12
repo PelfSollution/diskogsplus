@@ -11,7 +11,7 @@ Fuentes: el diagrama ER del README antiguo y lo que usa realmente el código (`s
 | # | Hallazgo | Gravedad | Cambio en `schema.sql` |
 | :-- | :-- | :--: | :-- |
 | 1 | El esquema **no estaba en el repo**: sin el proyecto antiguo no había forma de recrear la base de datos. | Alta | `supabase/schema.sql` versionado e idempotente. |
-| 2 | **Todo el acceso es con la clave pública desde el navegador** y sin Supabase Auth. Cualquiera con la clave puede leer o modificar los datos de todos los usuarios, incluidas las claves API cifradas. `pages/dashboard.tsx` borra la clave API llamando a `users` desde el cliente. | Alta | RLS activado en todas las tablas y políticas `provisional_anon_all` en un bloque aparte, listo para borrarlo en la fase 2 (§3). |
+| 2 | **Todo el acceso es con la clave pública desde el navegador** y sin Supabase Auth. Cualquiera con la clave puede leer o modificar los datos de todos los usuarios, incluidas las claves API cifradas. `pages/dashboard.tsx` borra la clave API llamando a `users` desde el cliente. | Alta | RLS activado en todas las tablas. Resuelto en la fase 2 (§3): todo pasa por rutas API con la clave secreta y `anon` no tiene acceso. |
 | 3 | El diagrama dibujaba claves foráneas a `users`, pero el código no las necesita y no está claro que existieran. Podían quedar filas huérfanas. | Media | FK `username → users` con `on delete cascade` en `mixtape`, `mixtape_urls`, `wantlist` y `chat_logs`. |
 | 4 | El mixtape y las URLs de playlists admitían **duplicados**. Solo se evitaban en `localStorage`. | Media | `unique (username, disco_id, artista, trackname)` y `unique (username, mixtape_url)`. |
 | 5 | `addMixtape` convertía `key`/`mode` vacíos en `0`, que significa **Do menor**. | Media | Corregido en el código. Columnas nulas con `check` (`key` 0–11, `mode` 0/1, `tempo > 0`). |
@@ -37,19 +37,16 @@ Otros puntos detectados fuera del esquema:
    - **Enable automatic RLS**: activado. `schema.sql` ya activa RLS, esto cubre las tablas que se creen después.
 2. **Crear las tablas.** *SQL Editor* → *New query* → pega `supabase/schema.sql` entero → *Run*. Debe terminar con "Success. No rows returned".
 3. **Comprobar.** *Table Editor* debe mostrar 8 tablas, todas con la etiqueta *RLS enabled*. *Storage* debe mostrar el bucket `generated_images` como *Public*.
-4. **Copiar las claves.** *Project Settings → API Keys*: copia la **Project URL** y la clave **publishable** (`sb_publishable_…`). La clave *secret* (`sb_secret_…`) **no** va todavía en `.env.local`, y nunca con el prefijo `NEXT_PUBLIC_`.
-5. **Rellenar `.env.local`:**
+4. **Copiar las claves.** *Project Settings → API Keys*: copia la **Project URL** y la clave **secret** (`sb_secret_…`). La clave *publishable* no hace falta: el navegador no habla con Supabase.
+5. **Rellenar `.env.local`** (nunca con el prefijo `NEXT_PUBLIC_`, que la mandaría al navegador):
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
    SUPABASE_URL=https://<ref>.supabase.co
-   SUPABASE_ANON_KEY=sb_publishable_...
+   SUPABASE_SECRET_KEY=sb_secret_...
    ```
-   Si al usar la app aparece `Invalid API key` o `JWT`, cambia a la pestaña *Legacy API keys* y usa la clave `anon`.
-6. **Reiniciar** `npm run dev`. Las variables `NEXT_PUBLIC_` se leen al arrancar.
-7. **Cerrar sesión y volver a entrar con Discogs.** El usuario se da de alta en `users` durante el login. Si usas una sesión anterior, el resto de tablas fallarán por la clave foránea.
+6. **Reiniciar** `npm run dev`.
+7. **Entrar con Discogs.** El usuario se da de alta en `users` en el login y, si falta (sesión anterior a configurar Supabase), al cargar la app (`/api/auth/identity`).
 8. **Probar:** añadir una pista al mixtape, añadir un disco a la wantlist, hablar con DiscBOT y guardar la clave API en el dashboard. Comprueba las filas en *Table Editor*.
-9. *(Opcional)* **Security Advisor** (*Advisors → Security*): avisará de las políticas `provisional_anon_all`. Es esperado hasta la fase 2.
+9. *(Opcional)* **Security Advisor** (*Advisors → Security*): no debería mostrar avisos.
 
 ### Opcional: MCP oficial de Supabase en Claude Code
 
@@ -65,15 +62,19 @@ Después, en una terminal normal: `claude /mcp` → *supabase* → *Authenticate
 
 ---
 
-## 3. Fase 2 (pendiente): cerrar el acceso público
+## 3. Fase 2 (hecha, octubre 2026): acceso solo desde el servidor
 
-1. Crear `lib/supabaseAdmin.ts` con la clave secreta (`SUPABASE_SECRET_KEY`, sin `NEXT_PUBLIC_`). Usarlo solo en el servidor.
-2. Mover las llamadas que hoy se hacen desde el navegador a rutas API que tomen el usuario de `requireSessionUser`:
-   - `pages/albums/[id].tsx`
-   - `pages/dashboard.tsx`
-   - `pages/mixtape.tsx`
-   - `pages/mixtapeplayer.tsx`
-   - `pages/wantlist.tsx`
-   - `pages/chat.tsx`
-   - `hooks/useGetMixtape.ts`
-3. Borrar el bloque `provisional_anon_*` de `schema.sql` y ejecutar en el SQL Editor los `drop policy` correspondientes y `revoke all on all tables in schema public from anon`. RLS sin políticas deja fuera al rol anon, y la clave secreta se salta RLS.
+- `lib/supabase.ts` usa la clave secreta (`SUPABASE_SECRET_KEY`), que se salta RLS. Sin `NEXT_PUBLIC_`, en el navegador `isSupabaseConfigured` es `false`.
+- Las páginas ya no importan `services/supabase/*`: llaman a rutas API que toman el usuario de `requireSessionUser`, a través de `services/client/mixtape.ts` y `services/client/userData.ts`.
+
+  | Ruta | Uso |
+  | :-- | :-- |
+  | `GET/POST/DELETE /api/mixtape` | Leer, añadir y quitar pistas del mixtape |
+  | `GET /api/albums/wantlist[?disco_id=]` | Wantlist, o si un disco está en ella |
+  | `GET /api/albums/artistImage?artista=` | Portada generada por IA |
+  | `GET /api/chatLogs[?artista=&album=]` | Discos con chat, o la conversación de uno |
+  | `GET /api/mixtapeUrls` | Playlists de Spotify exportadas |
+  | `POST /api/deleteApiKey` | Borrar la clave API guardada |
+
+- En la base de datos no hay políticas y `anon`/`authenticated` no tienen permisos (`revoke all`). Con la clave publishable cualquier consulta devuelve `42501`.
+- El bucket `generated_images` sigue siendo público para leer las portadas por URL; solo el servidor sube ficheros.

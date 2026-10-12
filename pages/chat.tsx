@@ -3,7 +3,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useRouter } from "next/router";
 import React, { useEffect, useState, useRef } from "react";
-import { getChatByAlbumAndArtist } from "../services/supabase/getUserChats";
+import { getChatHistory } from "@/services/client/userData";
 import Link from "next/link";
 
 function messageText(message: UIMessage): string {
@@ -61,11 +61,7 @@ export default function Chat() {
   // Cargar conversaciones previas de este disco
   useEffect(() => {
     if (artista && album && username) {
-      getChatByAlbumAndArtist(
-        username as string,
-        artista as string,
-        album as string
-      ).then((data) => {
+      getChatHistory(artista as string, album as string).then((data) => {
         const formattedChats: UIMessage[] = [];
         data.forEach((chat) => {
           formattedChats.push({

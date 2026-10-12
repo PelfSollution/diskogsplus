@@ -6,14 +6,16 @@ import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetUserData from "@/hooks/useGetUserData";
-import { getChatLogsUser } from "@/services/supabase/getChatLogsUser";
-import { getMixtapeURLs } from "@/services/supabase/getMixtapeURLs";
-import { getWantlistItemsUser } from "@/services/supabase/getWantlistItemsUser";
+import {
+  deleteApiKey,
+  getChatAlbums,
+  getMixtapeURLs,
+  getWantlist,
+} from "@/services/client/userData";
 import format from "date-fns/format";
 import styles from "./dashboard.module.css";
 import { ChatLog, WantlistEntry } from "@/types/types";
 import { truncateString } from "@/lib/stringUtils";
-import { deleteApiKey } from "@/services/supabase/deleteApiKey";
 import {
   Key,
   PlusCircle,
@@ -42,11 +44,11 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
     const initializeData = async () => {
       try {
         if (username) {
-          const items = await getWantlistItemsUser(username);
+          const items = await getWantlist();
           setWantlistItems(items);
-          const logs = await getChatLogsUser(username);
+          const logs = await getChatAlbums();
           setChatLogs(logs);
-          const mixtapeUrls = await getMixtapeURLs(username);
+          const mixtapeUrls = await getMixtapeURLs();
           if (Array.isArray(mixtapeUrls)) {
             setLoadedMixtapeUrls(mixtapeUrls.map((u) => u.mixtape_url));
           }
@@ -105,7 +107,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const handleDeleteApiKey = async () => {
     try {
       if (username) {
-        await deleteApiKey(username);
+        await deleteApiKey();
         setHasApiKey(false);
         setApiKey("");
         handleDialogClose();

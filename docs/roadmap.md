@@ -80,7 +80,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 - [ ] "¿Qué me falta?": discos de un artista o sello que no tienes, a partir de las sesiones.
 
 ### Fase 5: infraestructura y seguridad
-- [ ] Supabase, fase 2: todo el acceso a datos desde rutas API con la clave secreta y sin políticas para anon ([`supabase.md` §3](./supabase.md#3-fase-2-pendiente-cerrar-el-acceso-público)).
+- [x] Supabase, fase 2: todo el acceso a datos desde rutas API con la clave secreta y sin políticas para anon ([`supabase.md` §3](./supabase.md#3-fase-2-hecha-octubre-2026-acceso-solo-desde-el-servidor)).
 - [ ] Despliegue en Vercel + GitHub Actions (tsc + lint + build).
 - [ ] ESLint 10 y los 5 avisos de `set-state-in-effect`.
 - [ ] PWA para usarla en la cabina desde el móvil o el iPad, con la sesión disponible sin conexión.

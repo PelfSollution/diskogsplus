@@ -2,18 +2,13 @@ import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import VinylDisc from "@/components/VinylDisc";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetAlbumList from "@/hooks/useGetAlbumList";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
 import { Artist, Album } from "@/types/types";
-import {
-  Search,
-  ArrowUpDown,
-  Disc,
-  Filter,
-  Layers,
-} from "lucide-react";
+import { Search, ArrowUpDown, Disc } from "lucide-react";
 
 function Albums() {
   const {
@@ -23,6 +18,7 @@ function Albums() {
     size,
     setSize,
     totalPagesVinyl,
+    totalDiscos,
   } = useGetAlbumList();
 
   const allAlbums = useMemo(() => {
@@ -137,75 +133,62 @@ function Albums() {
       title="Catálogo de Discos de Vinilo | Diskogs +"
       description="Explora tu colección de vinilos con datos de Discogs, BPM y análisis musical"
     >
-      <div className="tw-container tw-mx-auto tw-max-w-7xl tw-p-4 md:tw-p-6">
+      <div className="tw-max-w-7xl tw-mx-auto tw-px-4 md:tw-px-10 tw-py-8 md:tw-py-10 tw-flex tw-flex-col tw-gap-8">
         {/* Cabecera */}
-        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
+        <header className="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4">
           <div>
-            <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-tracking-tight">
-              Catálogo de Vinilos
-            </h1>
-            <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-mt-1">
-              {filteredAlbums.length} álbumes disponibles en tu colección
+            <span className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-brand-700">Colección</span>
+            <h1 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-tracking-tight tw-text-gray-900 tw-mt-1">Tus vinilos</h1>
+            <p className="tw-text-sm tw-text-gray-500 tw-mt-1">
+              {totalDiscos
+                ? `${filteredAlbums.length} de ${totalDiscos} discos cargados`
+                : `${filteredAlbums.length} discos`}
             </p>
           </div>
-        </div>
 
-        {/* Barra de Búsqueda y Filtros con diseño moderno en Tailwind */}
-        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-mb-8 tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-items-stretch sm:tw-items-center">
-          {/* Selector de campo de filtrado */}
-          <div className="tw-flex tw-items-center tw-gap-2 tw-bg-gray-50 dark:tw-bg-gray-900 tw-px-3 tw-py-2 tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 sm:tw-w-48">
-            <Filter className="tw-w-4 tw-h-4 tw-text-gray-400 tw-shrink-0" />
+          {/* Búsqueda, campo y orden */}
+          <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2 tw-w-full sm:tw-w-auto">
+            <div className="tw-relative tw-flex-1 sm:tw-w-72">
+              <Search className="tw-w-4 tw-h-4 tw-text-gray-400 tw-absolute tw-left-3 tw-top-1/2 tw--translate-y-1/2" />
+              <input
+                type="search"
+                aria-label={filter === "name" ? "Buscar por artista" : "Buscar por disco"}
+                placeholder={filter === "name" ? "Buscar artista" : "Buscar disco"}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="tw-w-full tw-h-10 tw-pl-9 tw-pr-3 tw-text-sm tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-text-gray-900 placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-brand-600 focus:tw-ring-2 focus:tw-ring-brand-600/20"
+              />
+            </div>
             <select
+              aria-label="Buscar y ordenar por"
               value={filter}
               onChange={(e) => setFilter(e.target.value as "name" | "album")}
-              className="tw-w-full tw-bg-transparent tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white tw-outline-none"
+              className="tw-h-10 tw-px-3 tw-text-sm tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-text-gray-900 tw-outline-none focus:tw-border-brand-600"
             >
-              <option value="name">Por Artista</option>
-              <option value="album">Por Disco</option>
+              <option value="name">Artista</option>
+              <option value="album">Disco</option>
             </select>
+            <button
+              type="button"
+              onClick={() => setOrderAsc(!orderAsc)}
+              className="tw-flex tw-items-center tw-gap-1.5 tw-h-10 tw-px-3 tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-bg-gray-50"
+              title="Invertir el orden"
+            >
+              <ArrowUpDown className="tw-w-4 tw-h-4" />
+              {orderAsc ? "A → Z" : "Z → A"}
+            </button>
           </div>
+        </header>
 
-          {/* Campo de búsqueda */}
-          <div className="tw-relative tw-flex-1">
-            <Search className="tw-w-4 tw-h-4 tw-text-gray-400 tw-absolute tw-left-3.5 tw-top-1/2 tw--translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={filter === "name" ? "Buscar por artista..." : "Buscar por título de disco..."}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-brand-500 focus:tw-ring-2 focus:tw-ring-brand-500/20"
-            />
-          </div>
-
-          {/* Botón de ordenación A-Z / Z-A */}
-          <button
-            type="button"
-            onClick={() => setOrderAsc(!orderAsc)}
-            className={`tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
-              orderAsc
-                ? "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-800"
-                : "tw-bg-brand-500 tw-text-white tw-border-brand-600"
-            }`}
-            title={orderAsc ? "Orden alfabético A-Z (clic para invertir)" : "Orden alfabético Z-A"}
-          >
-            <ArrowUpDown className="tw-w-4 tw-h-4" />
-            <span>{orderAsc ? "A → Z" : "Z → A"}</span>
-          </button>
-        </div>
-
-        {/* Cuadrícula de Vinilos */}
+        {/* Cuadrícula de portadas */}
         {filteredAlbums.length === 0 ? (
-          <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-md tw-mx-auto tw-my-12">
-            <Disc className="tw-w-12 tw-h-12 tw-text-gray-400 tw-mx-auto tw-mb-3" />
-            <h3 className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-1">
-              No se encontraron vinilos
-            </h3>
-            <p className="tw-text-sm tw-text-gray-500">
-              Prueba a cambiar el término de búsqueda o el tipo de filtro.
-            </p>
+          <div className="tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-3 tw-py-16 tw-border tw-border-dashed tw-border-gray-300 tw-rounded-2xl">
+            <Disc className="tw-w-10 tw-h-10 tw-text-gray-400" />
+            <h2 className="tw-text-lg tw-font-semibold tw-text-gray-900">No hay discos con esa búsqueda</h2>
+            <p className="tw-text-sm tw-text-gray-500">Prueba con otro nombre o cambia entre artista y disco.</p>
           </div>
         ) : (
-          <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 tw-gap-6">
+          <div className="tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 lg:tw-grid-cols-4 xl:tw-grid-cols-5 tw-gap-x-6 tw-gap-y-8">
             {filteredAlbums.map((album: Album) => {
               if (!album || !album.id || !album.basic_information) {
                 return null;
@@ -214,44 +197,31 @@ function Albums() {
               const artistName =
                 album.basic_information.artists && album.basic_information.artists.length > 0
                   ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
-                  : "Artista Desconocido";
+                  : "Artista desconocido";
+              const cover = album.basic_information.cover_image || "/no-portada.gif";
 
               return (
-                <Link
-                  key={album.id}
-                  href={`/albums/${album.id}`}
-                  className="tw-group tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-xs hover:tw-shadow-xl tw-transition-all tw-duration-300 tw-flex tw-flex-col"
-                >
-                  <div className="tw-relative tw-w-full tw-h-56 tw-bg-gray-100 dark:tw-bg-gray-900 tw-overflow-hidden">
-                    <Image
-                      src={album.basic_information.cover_image || "/no-portada.gif"}
-                      alt={album.basic_information.title}
-                      fill
-                      className="tw-object-cover group-hover:tw-scale-105 tw-transition-transform tw-duration-500"
-                    />
+                <Link key={album.id} href={`/albums/${album.id}`} className="tw-group tw-flex tw-flex-col tw-gap-2.5">
+                  {/* Portada; al pasar el ratón asoma el vinilo por detrás */}
+                  <div className="tw-relative tw-aspect-square">
+                    <div className="tw-absolute tw-inset-[4%] tw-transition-transform tw-duration-500 tw-ease-out group-hover:tw-translate-x-[22%]">
+                      <VinylDisc size="fill" cover={cover} flat />
+                    </div>
+                    <div className="tw-relative tw-w-full tw-h-full tw-rounded-md tw-overflow-hidden tw-bg-gray-100 tw-shadow-sm group-hover:tw-shadow-lg tw-transition-shadow">
+                      <Image
+                        src={cover}
+                        alt=""
+                        fill
+                        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        className="tw-object-cover"
+                      />
+                    </div>
                   </div>
-
-                  <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
-                    <div>
-                      <span className="tw-text-xs tw-font-bold tw-text-brand-600 dark:tw-text-brand-400 tw-block tw-truncate">
-                        {artistName}
-                      </span>
-                      <h3
-                        className="tw-text-sm tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-truncate tw-mt-1"
-                        title={album.basic_information.title}
-                      >
-                        {album.basic_information.title}
-                      </h3>
-                    </div>
-
-                    <div className="tw-flex tw-items-center tw-justify-between tw-mt-4 tw-pt-3 tw-border-t tw-border-gray-100 dark:tw-border-gray-750">
-                      <span className="tw-text-[11px] tw-text-gray-400">
-                        Edición LP
-                      </span>
-                      <span className="tw-text-xs tw-font-semibold tw-text-brand-500 group-hover:tw-translate-x-0.5 tw-transition-transform">
-                        Ver detalles →
-                      </span>
-                    </div>
+                  <div className="tw-min-w-0">
+                    <h2 className="tw-text-sm tw-font-semibold tw-text-gray-900 tw-truncate" title={album.basic_information.title}>
+                      {album.basic_information.title}
+                    </h2>
+                    <p className="tw-text-[13px] tw-text-gray-500 tw-truncate">{artistName}</p>
                   </div>
                 </Link>
               );
@@ -259,15 +229,15 @@ function Albums() {
           </div>
         )}
 
-        {/* Botón Cargar Más */}
+        {/* Cargar más */}
         {searchTerm === "" && allAlbumsAreValid && size < totalPagesVinyl && (
-          <div className="tw-flex tw-justify-center tw-mt-10">
+          <div className="tw-flex tw-justify-center">
             <button
               type="button"
               onClick={loadMoreAlbums}
-              className="tw-px-6 tw-py-2.5 tw-rounded-xl tw-bg-gray-900 dark:tw-bg-white hover:tw-bg-gray-800 dark:hover:tw-bg-gray-100 tw-text-white dark:tw-text-gray-900 tw-font-semibold tw-text-sm tw-transition-colors tw-shadow-sm"
+              className="tw-h-11 tw-px-6 tw-rounded-full tw-border tw-border-gray-200 tw-bg-white tw-text-sm tw-font-semibold tw-text-gray-900 hover:tw-bg-gray-50"
             >
-              Cargar más Discos
+              Cargar más discos
             </button>
           </div>
         )}

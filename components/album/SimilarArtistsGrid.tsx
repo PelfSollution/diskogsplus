@@ -20,7 +20,7 @@ export const SimilarArtistsGrid: React.FC<SimilarArtistsGridProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden tw-shadow-sm tw-mt-3">
+    <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden tw-mt-3">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -29,7 +29,7 @@ export const SimilarArtistsGrid: React.FC<SimilarArtistsGridProps> = ({
         <div className="tw-flex tw-items-center tw-gap-2.5">
           <Users className="tw-w-5 tw-h-5 tw-text-brand-500" />
           <span className="tw-font-bold tw-text-gray-900 dark:tw-text-white tw-text-base">
-            Artistas Similares
+            Artistas similares
           </span>
           <span className="tw-text-xs tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 tw-px-2 tw-py-0.5 tw-rounded-md">
             Last.fm

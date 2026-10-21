@@ -73,7 +73,7 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
   return (
     <div className="tw-space-y-4">
       {/* Reproductor del disco (con pestaña opcional Spotify) */}
-      <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm">
+      <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700">
         <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-3">
           <div className="tw-flex tw-items-center tw-gap-2">
             <Disc3 className="tw-w-5 tw-h-5 tw-text-brand-600" />
@@ -150,7 +150,7 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
                 type="button"
                 onClick={toggle}
                 disabled={!mode}
-                className="tw-p-2.5 tw-rounded-full tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-shadow-sm disabled:tw-opacity-40 tw-transition-colors"
+                className="tw-p-2.5 tw-rounded-full tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white disabled:tw-opacity-40 tw-transition-colors"
                 title={isPlaying ? "Pausar" : "Reproducir"}
               >
                 {isPlaying ? <Pause className="tw-w-5 tw-h-5" /> : <Play className="tw-w-5 tw-h-5" />}
@@ -255,7 +255,7 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
       </div>
 
       {/* Canciones Similares (Last.fm) */}
-      <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden tw-shadow-sm">
+      <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden">
         <button
           type="button"
           onClick={() => setIsTracksOpen(!isTracksOpen)}
@@ -264,7 +264,7 @@ export const AlbumMediaSidebar: React.FC<AlbumMediaSidebarProps> = ({
           <div className="tw-flex tw-items-center tw-gap-2.5">
             <Radio className="tw-w-5 tw-h-5 tw-text-brand-500" />
             <span className="tw-font-bold tw-text-gray-900 dark:tw-text-white tw-text-base">
-              Canciones Similares
+              Canciones similares
             </span>
             <span className="tw-text-xs tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 tw-px-2 tw-py-0.5 tw-rounded-md">
               Last.fm

@@ -21,7 +21,7 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
   const sanitizedBio = artistBio ? DOMPurify.sanitize(artistBio) : "";
 
   return (
-    <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden tw-shadow-sm tw-mt-4">
+    <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden tw-mt-4">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -30,7 +30,7 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
         <div className="tw-flex tw-items-center tw-gap-2.5">
           <BookOpen className="tw-w-5 tw-h-5 tw-text-brand-500" />
           <span className="tw-font-bold tw-text-gray-900 dark:tw-text-white tw-text-base">
-            Biografía & Contexto
+            Biografía y contexto
           </span>
           <span className="tw-text-xs tw-bg-gray-100 dark:tw-bg-gray-700 tw-text-gray-600 dark:tw-text-gray-300 tw-px-2 tw-py-0.5 tw-rounded-md">
             Last.fm + IA
@@ -49,7 +49,7 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
           {sanitizedBio && (
             <div className="tw-mt-3">
               <div className="tw-text-xs tw-font-semibold tw-text-gray-500 dark:tw-text-gray-400 tw-uppercase tw-tracking-wider tw-mb-1.5">
-                Biografía del Artista
+                Biografía del artista
               </div>
               <div
                 className="tw-text-sm tw-text-gray-700 dark:tw-text-gray-300 tw-leading-relaxed bio-content"
@@ -78,7 +78,7 @@ export const AlbumBioAccordion: React.FC<AlbumBioAccordionProps> = ({
                   type="button"
                   disabled={isGenerating}
                   onClick={onEnrichArtistInfo}
-                  className="tw-self-start tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-shadow-sm tw-transition-colors disabled:tw-opacity-50"
+                  className="tw-self-start tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-transition-colors disabled:tw-opacity-50"
                 >
                   {isGenerating ? "Generando texto..." : "Generar Información Enriquecida"}
                 </button>

@@ -3,7 +3,12 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import useGetUserData from "@/hooks/useGetUserData";
-import { deleteFromMixtape, reorderMixtape, mixtapeChatHref } from "@/services/client/mixtape";
+import {
+  deleteFromMixtape,
+  reorderMixtape,
+  mixtapeChatHref,
+  fillMixtapeAudioFeatures,
+} from "@/services/client/mixtape";
 import useMixtapes from "@/hooks/useMixtapes";
 import useGetMixtape from "@/hooks/useGetMixtape";
 import MixtapeManager from "@/components/MixtapeManager";
@@ -21,6 +26,8 @@ import {
   ChevronDown,
   Wand2,
   Undo2,
+  Gauge,
+  Loader2,
 } from "lucide-react";
 import { getPitchClassNotation } from "@/lib/musicNotation";
 import { sortByHarmonyAndBpm } from "@/lib/mixtapeOrder";
@@ -30,6 +37,7 @@ export default function Mixtape() {
   const [searchBPM, setSearchBPM] = useState<number | null>(null);
   const [searchKey, setSearchKey] = useState<number | null>(null);
   const [searchMode, setSearchMode] = useState<number | null>(null);
+  const [isFillingData, setIsFillingData] = useState(false);
   // Arrastre: pista que se mueve y fila sobre la que está
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -127,6 +135,25 @@ export default function Mixtape() {
     saveOrder(previous);
   }
 
+  async function handleFillAudioFeatures() {
+    if (mixtapes.activeId == null) return;
+    setIsFillingData(true);
+    try {
+      const { revisadas, actualizadas } = await fillMixtapeAudioFeatures(mixtapes.activeId);
+      await reloadTracks();
+      handleOpenSnackbar(
+        actualizadas > 0
+          ? `Datos encontrados para ${actualizadas} de ${revisadas} pistas.`
+          : "No se han encontrado datos nuevos en ReccoBeats ni Deezer."
+      );
+    } catch (error: any) {
+      console.error("Error buscando BPM y tonalidad:", error);
+      handleOpenSnackbar(error?.message || "No se pudieron buscar los datos.");
+    } finally {
+      setIsFillingData(false);
+    }
+  }
+
   function endDrag() {
     setDragIndex(null);
     setOverIndex(null);
@@ -147,6 +174,11 @@ export default function Mixtape() {
 
       return matchesSearch && matchesKey && matchesBpm;
   });
+  // Pistas sin BPM o sin tonalidad: no se pueden encadenar bien en el orden automático
+  const missingDataCount = mixtape.filter(
+    (t) => t.tempo == null || t.key == null || t.mode == null
+  ).length;
+
   // Con filtros la lista está incompleta: reordenar solo tiene sentido sobre la sesión entera
   const isFiltered = filteredMixtape.length !== mixtape.length;
 
@@ -321,6 +353,31 @@ export default function Mixtape() {
                 )}
               </div>
             </div>
+
+            {/* Aviso de pistas sin BPM o tonalidad (solo con Supabase) */}
+            {missingDataCount > 0 && mixtapes.activeId != null && (
+              <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-mb-4 tw-px-4 tw-py-3 tw-rounded-2xl tw-bg-vinyl-50 dark:tw-bg-vinyl-950/30 tw-border tw-border-vinyl-200 dark:tw-border-vinyl-800">
+                <p className="tw-text-sm tw-text-vinyl-900 dark:tw-text-vinyl-200">
+                  {missingDataCount === 1
+                    ? "1 pista no tiene BPM o tonalidad"
+                    : `${missingDataCount} pistas no tienen BPM o tonalidad`}
+                  : el orden automático no puede encadenarlas bien.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleFillAudioFeatures}
+                  disabled={isFillingData}
+                  className="tw-flex tw-items-center tw-gap-1.5 tw-px-3.5 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-bg-white dark:tw-bg-gray-900 tw-text-vinyl-700 dark:tw-text-vinyl-300 tw-border tw-border-vinyl-300 dark:tw-border-vinyl-700 hover:tw-bg-vinyl-100 dark:hover:tw-bg-vinyl-900/40 tw-transition-colors disabled:tw-opacity-60 disabled:tw-cursor-wait"
+                >
+                  {isFillingData ? (
+                    <Loader2 className="tw-w-4 tw-h-4 tw-animate-spin" />
+                  ) : (
+                    <Gauge className="tw-w-4 tw-h-4" />
+                  )}
+                  <span>{isFillingData ? "Buscando…" : "Buscar BPM y tonalidad"}</span>
+                </button>
+              </div>
+            )}
 
             {/* Lista de Filas de Mixtape */}
             <div className="tw-space-y-3">

@@ -65,7 +65,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 - [x] Reordenar arrastrando (o con flechas, en el móvil) y **ordenar automáticamente por armonía y BPM** (oct. 2026): columna `position` en `mixtape`, `PATCH /api/mixtape` y `lib/mixtapeOrder.ts` (empieza por la pista más lenta y encadena tonalidades vecinas en la rueda Camelot). Las pistas nuevas van al final de la sesión.
 - [x] DiscBOT trabaja con la mixtape abierta (oct. 2026): «Analizar armonía» y las preguntas de la página del disco leen solo esa mixtape, en el orden de la sesión, con sugerencias propias (transiciones, curva de energía).
 - [ ] Datos de vinilo en cada pista: **cara y posición** (A1, B2), duración por cara y aviso de "dar la vuelta".
-- [ ] Rellenar BPM y tonalidad de las pistas antiguas (script pendiente).
+- [x] Rellenar BPM y tonalidad de las pistas antiguas (oct. 2026): en vez de un script, aviso en `/mixtape` con el botón «Buscar BPM y tonalidad» (`POST /api/mixtape/audioFeatures`, hasta 50 pistas por vez). Solo rellena campos vacíos; lo que no esté en ReccoBeats ni en Deezer se queda sin datos (p. ej. casetes y EP de tirada mínima).
 - [ ] DiscBOT como asistente de sesión: "hazme un set de 1 h, 95–110 BPM, solo con mis discos de soul".
 
 ### Fase 3: llevarse la sesión

@@ -146,6 +146,15 @@ export async function reorderMixtape(
   if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo guardar el orden."));
 }
 
+/** Busca BPM y tonalidad de las pistas que no los tienen. Solo con Supabase. */
+export async function fillMixtapeAudioFeatures(
+  mixtapeId: number
+): Promise<{ revisadas: number; actualizadas: number }> {
+  const res = await send("/api/mixtape/audioFeatures", "POST", { mixtape_id: mixtapeId });
+  if (!res?.ok) throw new Error(await errorMessage(res, "No se pudieron buscar los datos."));
+  return res.json();
+}
+
 /** Enlace a DiscBOT para analizar una mixtape (el historial se guarda por nombre). */
 export function mixtapeChatHref(
   username: string,

@@ -224,7 +224,12 @@ export default function Mixtape() {
           <VinylDisc size={176} covers={covers} spinning={mixtape.length > 0} className="tw-hidden sm:tw-flex" />
 
           <div className="tw-flex-1 tw-basis-80 tw-min-w-0 tw-flex tw-flex-col tw-gap-3">
-            <span className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-brand-700">Mixtape</span>
+            <Link
+              href="/mixtapes"
+              className="tw-self-start tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-brand-700 hover:tw-underline"
+            >
+              Mixtapes
+            </Link>
             <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-x-3 tw-gap-y-2">
               <h1 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-tracking-tight tw-text-gray-900">{mixtapeName}</h1>
               {mixtapes.mixtapes && (

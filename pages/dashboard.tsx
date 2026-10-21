@@ -119,7 +119,7 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
   const stats = [
     { href: "/albums", label: "discos en tu colección", value: data?.userProfile?.num_collection ?? 0, icon: Disc3 },
     { href: "/wantlist", label: "en tu wantlist", value: wantlistItems ? wantlistItems.length : "–", icon: Heart },
-    { href: "/mixtape", label: "mixtapes", value: mixtapes.mixtapes ? mixtapes.mixtapes.length : "–", icon: ListMusic },
+    { href: "/mixtapes", label: "mixtapes", value: mixtapes.mixtapes ? mixtapes.mixtapes.length : "–", icon: ListMusic },
   ];
 
   return (
@@ -160,8 +160,10 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
         {/* Mixtapes */}
         <section className="tw-flex tw-flex-col tw-gap-3">
           <div className="tw-flex tw-items-center tw-justify-between tw-px-1">
-            <h2 className="tw-text-lg tw-font-bold tw-text-gray-900">Tus mixtapes</h2>
-            <Link href="/mixtape?nueva=1" className="tw-flex tw-items-center tw-gap-1 tw-text-sm tw-font-medium tw-text-brand-700 hover:tw-text-brand-800">
+            <h2 className="tw-text-lg tw-font-bold tw-text-gray-900">
+              <Link href="/mixtapes" className="hover:tw-underline">Tus mixtapes</Link>
+            </h2>
+            <Link href="/mixtapes?nueva=1" className="tw-flex tw-items-center tw-gap-1 tw-text-sm tw-font-medium tw-text-brand-700 hover:tw-text-brand-800">
               <Plus className="tw-w-4 tw-h-4" />
               Nueva
             </Link>

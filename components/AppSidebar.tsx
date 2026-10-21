@@ -7,11 +7,12 @@ import useGetUserData from "@/hooks/useGetUserData";
 import useMixtapes from "@/hooks/useMixtapes";
 import VinylDisc from "@/components/VinylDisc";
 
-const NAV_LINKS = [
+const NAV_LINKS: { href: string; label: string; icon: typeof Home; also?: string[] }[] = [
   { href: "/dashboard", label: "Inicio", icon: Home },
   { href: "/albums", label: "Colección", icon: Disc3 },
   { href: "/wantlist", label: "Wantlist", icon: Heart },
-  { href: "/mixtape", label: "Mixtapes", icon: ListMusic },
+  // También marcado dentro de una mixtape y en el reproductor
+  { href: "/mixtapes", label: "Mixtapes", icon: ListMusic, also: ["/mixtape", "/mixtapeplayer"] },
   { href: "/chat", label: "DiscBOT", icon: Bot },
   { href: "/matching", label: "Comparar colecciones", icon: Users2 },
 ];
@@ -70,8 +71,11 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
       <AppLogo />
 
       <ul className="tw-flex tw-flex-col tw-gap-0.5">
-        {NAV_LINKS.map(({ href, label, icon: Icon }) => {
-          const isActive = router.pathname === href || router.pathname.startsWith(`${href}/`);
+        {NAV_LINKS.map(({ href, label, icon: Icon, also }) => {
+          const isActive =
+            router.pathname === href ||
+            router.pathname.startsWith(`${href}/`) ||
+            Boolean(also?.includes(router.pathname));
           return (
             <li key={href}>
               <Link
@@ -99,7 +103,7 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
               Mis mixtapes
             </span>
             <Link
-              href="/mixtape?nueva=1"
+              href="/mixtapes?nueva=1"
               onClick={onNavigate}
               aria-label="Nueva mixtape"
               title="Nueva mixtape"
@@ -123,6 +127,7 @@ export default function AppSidebar({ onNavigate }: AppSidebarProps) {
                     <VinylDisc
                       size={32}
                       flat
+                      covers={m.portadas}
                       labelColor={m.id === mixtapes.activeId ? undefined : "#a8a29e"}
                     />
                     <span className="tw-flex tw-flex-col tw-min-w-0">

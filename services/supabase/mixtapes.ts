@@ -1,15 +1,23 @@
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { durationToSeconds } from "../../lib/vinyl";
 
 export type MixtapeInfo = {
   id: number;
   nombre: string;
   created_at: string;
   pistas: number;
+  /** Hasta 4 portadas distintas, en el orden de la sesión (mosaico del vinilo) */
+  portadas: string[];
+  /** Duración de las pistas que la tienen, en segundos */
+  segundos: number;
 };
 
 export const DEFAULT_MIXTAPE_NAME = "Mi mixtape";
 
-/** Mixtapes del usuario con su número de pistas. Si no tiene ninguna, crea «Mi mixtape». Solo servidor. */
+/**
+ * Mixtapes del usuario con su número de pistas, portadas y duración. Si no
+ * tiene ninguna, crea «Mi mixtape». Solo servidor.
+ */
 export async function listMixtapes(username: string): Promise<MixtapeInfo[]> {
   if (!isSupabaseConfigured) return [];
 
@@ -25,11 +33,31 @@ export async function listMixtapes(username: string): Promise<MixtapeInfo[]> {
     return [created];
   }
 
+  // Portadas y duración de todas las pistas del usuario en una sola consulta
+  const { data: tracks, error: tracksError } = await supabase
+    .from("mixtape")
+    .select("mixtape_id, cover_url, duration")
+    .eq("username", username)
+    .order("position", { ascending: true, nullsFirst: false });
+  if (tracksError) throw tracksError;
+
+  const extras = new Map<number, { portadas: string[]; segundos: number }>();
+  for (const t of tracks || []) {
+    const entry = extras.get(t.mixtape_id) ?? { portadas: [], segundos: 0 };
+    if (t.cover_url && entry.portadas.length < 4 && !entry.portadas.includes(t.cover_url)) {
+      entry.portadas.push(t.cover_url);
+    }
+    entry.segundos += durationToSeconds(t.duration) ?? 0;
+    extras.set(t.mixtape_id, entry);
+  }
+
   return data.map((m: any) => ({
     id: m.id,
     nombre: m.nombre,
     created_at: m.created_at,
     pistas: m.mixtape?.[0]?.count ?? 0,
+    portadas: extras.get(m.id)?.portadas ?? [],
+    segundos: extras.get(m.id)?.segundos ?? 0,
   }));
 }
 
@@ -41,7 +69,7 @@ export async function createMixtape(username: string, nombre: string): Promise<M
     .select("id, nombre, created_at")
     .single();
   if (error) throw error;
-  return { ...data, pistas: 0 };
+  return { ...data, pistas: 0, portadas: [], segundos: 0 };
 }
 
 export async function renameMixtape(username: string, id: number, nombre: string) {

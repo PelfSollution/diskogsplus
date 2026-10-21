@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getChatHistory } from "@/services/client/userData";
+import { MIXTAPES_CHANGED_EVENT } from "@/services/client/mixtape";
 import VinylDisc from "@/components/VinylDisc";
 import ChatMarkdown from "@/components/chat/ChatMarkdown";
 
@@ -207,6 +208,22 @@ export default function Chat() {
     );
     setInput("");
   };
+
+  // DiscBOT guarda mixtapes en el servidor: la barra lateral recarga la lista
+  // en cuanto termina save_session_as_mixtape (una vez por llamada)
+  const notifiedSaves = useRef(new Set<string>());
+  useEffect(() => {
+    for (const message of messages) {
+      for (const part of message.parts) {
+        if (!isToolUIPart(part) || getToolName(part) !== "save_session_as_mixtape") continue;
+        if (part.state !== "output-available" || notifiedSaves.current.has(part.toolCallId)) continue;
+        notifiedSaves.current.add(part.toolCallId);
+        if (!(part.output as { error?: unknown } | undefined)?.error) {
+          window.dispatchEvent(new Event(MIXTAPES_CHANGED_EVENT));
+        }
+      }
+    }
+  }, [messages]);
 
   // Auto-scroll al final del chat
   useEffect(() => {

@@ -74,3 +74,17 @@ export async function userOwnsMixtape(username: string, id: number): Promise<boo
   if (error) throw error;
   return data !== null;
 }
+
+/** Nombre de la mixtape si es del usuario, o null (no existe o es de otro). */
+export async function getOwnedMixtapeName(username: string, id: number): Promise<string | null> {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from("mixtapes")
+    .select("nombre")
+    .eq("id", id)
+    .eq("username", username)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.nombre ?? null;
+}

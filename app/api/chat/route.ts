@@ -10,6 +10,7 @@ import {
 import { addChatLog } from "../../../services/supabase/addChatLogs";
 import { updateChatLog } from "../../../services/supabase/updateChatLogs";
 import { getLastChatLogForUser } from "../../../services/supabase/getLastChatLogForUser";
+import { getOwnedMixtapeName } from "../../../services/supabase/mixtapes";
 import { getAIClient } from "../../../lib/aiClient";
 import { getSessionUserFromCookie } from "../../../lib/session";
 import { rateLimit } from "../../../lib/rateLimit";
@@ -93,7 +94,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const context = { username, discoId: disco_id, artist: artista, album };
+    // Mixtape del chat: solo si es del usuario; si no, las tools leen todas
+    let mixtapeId: number | undefined;
+    let mixtapeName: string | undefined;
+    const requestedMixtapeId = Number(body?.mixtape_id);
+    if (Number.isInteger(requestedMixtapeId)) {
+      try {
+        const nombre = await getOwnedMixtapeName(username, requestedMixtapeId);
+        if (nombre) {
+          mixtapeId = requestedMixtapeId;
+          mixtapeName = nombre;
+        }
+      } catch (e: any) {
+        console.warn("[Chat] No se pudo comprobar la mixtape:", e?.message);
+      }
+    }
+
+    const context = { username, discoId: disco_id, artist: artista, album, mixtapeId, mixtapeName };
     const prompt = lastUserText(messages);
 
     // Registro del chat (si Supabase no está configurado, se omite)

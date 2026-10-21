@@ -3,6 +3,7 @@ import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { requireSessionUser } from "@/lib/session";
 import { saveMixtapeURL } from "../../../../services/supabase/saveMixtapeURL";
 import { generateMixtape } from "../../../../services/spotify/getSpotifyMixtape";
+import { getOwnedMixtapeName } from "../../../../services/supabase/mixtapes";
 
 async function getSpotifyProfile(accessToken: string): Promise<string> {
   const response = await fetch("https://api.spotify.com/v1/me", {
@@ -29,6 +30,8 @@ export default async function callbackSpotify(
     const state = req.query.state as string;
     const expectedState = getCookie("spotifyOAuthState", { req, res });
     deleteCookie("spotifyOAuthState", { req, res });
+    const mixtapeIdCookie = Number(getCookie("spotifyMixtapeId", { req, res }));
+    deleteCookie("spotifyMixtapeId", { req, res });
 
     if (!state || !expectedState || state !== expectedState) {
       res.status(400).json({ error: "Estado OAuth inválido" });
@@ -105,11 +108,14 @@ export default async function callbackSpotify(
       // Obtiene el nombre de usuario de Spotify
       const spotifyUsername = await getSpotifyProfile(spotifyAccessToken);
 
+      // Mixtape elegida al autorizar (si sigue siendo del usuario); si no, todas las pistas
+      const mixtapeName = Number.isInteger(mixtapeIdCookie)
+        ? await getOwnedMixtapeName(username, mixtapeIdCookie)
+        : null;
+      const mixtape = mixtapeName ? { id: mixtapeIdCookie, nombre: mixtapeName } : undefined;
+
       // Generar mixtape con el token de acceso
-      const embedUrl = await generateMixtape(
-        spotifyAccessToken,
-        username
-    );
+      const embedUrl = await generateMixtape(spotifyAccessToken, username, mixtape);
 
  
     await saveMixtapeURL(username, embedUrl, spotifyUsername);

@@ -2,13 +2,17 @@ import { getSongsFromSupabase } from '../supabase/getSongsFromSupabase';
 
 const SPOTIFY_BASE_URL = "https://api.spotify.com";
 
-export async function generateMixtape(spotifyToken: string, username: string): Promise<string> {
+export async function generateMixtape(
+  spotifyToken: string,
+  username: string,
+  mixtape?: { id: number; nombre: string }
+): Promise<string> {
   try {
-    // 1. Get the user's songs from Supabase
-    const songs = await getSongsFromSupabase(username);
+    // 1. Pistas de la mixtape (o de todas) en el orden de la sesión
+    const songs = await getSongsFromSupabase(username, mixtape?.id);
 
     // 2. Create a new playlist on Spotify
-    const playlist = await createSpotifyPlaylist('Mi Mixtape [Diskogs +]', spotifyToken);
+    const playlist = await createSpotifyPlaylist(`${mixtape?.nombre || 'Mi Mixtape'} [Diskogs +]`, spotifyToken);
 
     if (!playlist.id) {
       throw new Error('Failed to create Spotify playlist');

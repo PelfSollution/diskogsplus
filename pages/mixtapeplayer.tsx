@@ -7,7 +7,7 @@ import useGetUserData from "@/hooks/useGetUserData";
 import useGetMixtape from "@/hooks/useGetMixtape";
 import useMixtapes from "@/hooks/useMixtapes";
 import useTrackPlayer from "@/hooks/useTrackPlayer";
-import { deleteFromMixtape } from "@/services/client/mixtape";
+import { deleteFromMixtape, mixtapeChatHref } from "@/services/client/mixtape";
 import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
 import {
   Play,
@@ -153,13 +153,7 @@ export default function MixtapePlayer() {
 
   const redirectToDiscbot = () => {
     if (!mixtape || mixtape.length === 0) return;
-    const trackListSummary = mixtape
-      .slice(0, 5)
-      .map((t) => `${t.artista} - ${t.trackname}`)
-      .join(", ");
-    router.push(
-      `/chat?username=${encodeURIComponent(username)}&artista=Mixtape&album=Mixtape%20Personal`
-    );
+    router.push(mixtapeChatHref(username, mixtapeId, mixtapeName || "Mi mixtape"));
   };
 
   // Vídeo de la pista a partir de los vídeos que Discogs enlaza en el disco

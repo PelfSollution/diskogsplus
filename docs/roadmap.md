@@ -63,6 +63,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 ### Fase 2: preparar sesiones
 - [x] **Varias mixtapes con nombre** ("Sesión jazz-funk sábado") en lugar de una sola lista por usuario: tabla `mixtapes` y columna `mixtape_id` en `mixtape` (oct. 2026). La posición para reordenar queda para el punto siguiente.
 - [x] Reordenar arrastrando (o con flechas, en el móvil) y **ordenar automáticamente por armonía y BPM** (oct. 2026): columna `position` en `mixtape`, `PATCH /api/mixtape` y `lib/mixtapeOrder.ts` (empieza por la pista más lenta y encadena tonalidades vecinas en la rueda Camelot). Las pistas nuevas van al final de la sesión.
+- [x] DiscBOT trabaja con la mixtape abierta (oct. 2026): «Analizar armonía» y las preguntas de la página del disco leen solo esa mixtape, en el orden de la sesión, con sugerencias propias (transiciones, curva de energía).
 - [ ] Datos de vinilo en cada pista: **cara y posición** (A1, B2), duración por cara y aviso de "dar la vuelta".
 - [ ] Rellenar BPM y tonalidad de las pistas antiguas (script pendiente).
 - [ ] DiscBOT como asistente de sesión: "hazme un set de 1 h, 95–110 BPM, solo con mis discos de soul".
@@ -70,7 +71,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 ### Fase 3: llevarse la sesión
 - [ ] Exportar CSV (Soundiiz/TuneMyMusic) y M3U.
 - [ ] Hoja de cajón en PDF/impresión: qué discos sacar de la estantería.
-- [ ] Arreglar la exportación a playlist de Spotify (endpoints de 2026).
+- [ ] Arreglar la exportación a playlist de Spotify (endpoints de 2026). Ya exporta una sola mixtape (`/api/auth/authorizeSpotify?mixtape_id=`), pero ninguna página enlaza a ella.
 - [ ] Rekordbox XML con BPM/tono para quien pinche también en digital.
 - [ ] Enlace público para compartir una sesión (solo lectura).
 

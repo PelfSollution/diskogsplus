@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import useGetUserData from "@/hooks/useGetUserData";
-import { deleteFromMixtape, reorderMixtape } from "@/services/client/mixtape";
+import { deleteFromMixtape, reorderMixtape, mixtapeChatHref } from "@/services/client/mixtape";
 import useMixtapes from "@/hooks/useMixtapes";
 import useGetMixtape from "@/hooks/useGetMixtape";
 import MixtapeManager from "@/components/MixtapeManager";
@@ -194,7 +194,7 @@ export default function Mixtape() {
                 </Link>
 
                 <Link
-                  href={`/chat?username=${encodeURIComponent(username)}&artista=Mixtape&album=Mixtape%20Personal`}
+                  href={mixtapeChatHref(username, mixtapes.activeId, mixtapeName)}
                   className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-200 dark:hover:tw-bg-brand-900/60 tw-font-semibold tw-text-sm tw-border tw-border-brand-200 dark:tw-border-brand-800 tw-transition-colors"
                 >
                   <Bot className="tw-w-4 tw-h-4" />

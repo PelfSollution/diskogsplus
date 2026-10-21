@@ -12,6 +12,9 @@ export interface MusicAgentContext {
   discoId?: number | string;
   artist?: string;
   album?: string;
+  /** Mixtape con la que se trabaja (ya comprobada); sin ella, todas las del usuario */
+  mixtapeId?: number;
+  mixtapeName?: string;
 }
 
 /**
@@ -48,6 +51,7 @@ export function buildMusicAgentTools(context: MusicAgentContext) {
           camelotCode: args.camelotCode,
           bpm: args.bpm,
           username: context.username,
+          mixtapeId: context.mixtapeId,
         }),
     }),
 
@@ -67,11 +71,13 @@ export function buildMusicAgentTools(context: MusicAgentContext) {
 
     get_user_mixtape: tool({
       description:
-        "Lista los temas que el usuario tiene agregados a su Mixtape en Diskogs Plus con su información de BPM y clave musical.",
+        "Lista los temas de la mixtape actual del usuario en Diskogs Plus, en el orden de la sesión, con su BPM y su código Camelot. Sin mixtape actual, lista los de todas sus mixtapes.",
       inputSchema: z.object({}),
       execute: async () =>
         getUserMixtapeTracks({
           username: context.username || "",
+          mixtapeId: context.mixtapeId,
+          mixtapeName: context.mixtapeName,
         }),
     }),
   };
@@ -92,5 +98,6 @@ Contexto actual de la conversación:
 - Artista actual: ${context.artist || "No especificado"}
 - Álbum actual: ${context.album || "No especificado"}
 - Discogs Release ID: ${context.discoId || "No especificado"}
-- Usuario conectado: ${context.username || "Usuario anónimo"}`;
+- Usuario conectado: ${context.username || "Usuario anónimo"}
+- Mixtape actual: ${context.mixtapeName ? `«${context.mixtapeName}» (las herramientas de mixtape solo leen esta)` : "ninguna (las herramientas leen todas las mixtapes del usuario)"}`;
 }

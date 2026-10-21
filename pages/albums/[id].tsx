@@ -259,6 +259,10 @@ function AlbumDetails() {
     let url = `/chat?artista=${encodeURIComponent(albumInfo.artist)}&album=${encodeURIComponent(
       albumInfo.title
     )}&disco_id=${idNumber}&username=${encodeURIComponent(username)}`;
+    // «¿Tengo algún tema que mezcle con este disco?» busca en la mixtape activa
+    if (mixtapes.activeId != null) {
+      url += `&mixtape_id=${mixtapes.activeId}`;
+    }
     if (fromCompare) {
       url += "&from=compare";
     }

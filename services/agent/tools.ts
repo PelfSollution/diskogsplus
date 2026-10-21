@@ -163,6 +163,7 @@ export async function analyzeHarmonicMix(params: {
   mode?: number;
   bpm?: number;
   username?: string;
+  mixtapeId?: number;
 }) {
   let code = params.camelotCode;
 
@@ -188,7 +189,7 @@ export async function analyzeHarmonicMix(params: {
   // Si tenemos el usuario, buscamos canciones en su Mixtape de Supabase
   if (params.username) {
     try {
-      const userMixtape = await getMixtape(params.username);
+      const userMixtape = await getMixtape(params.username, params.mixtapeId);
       if (Array.isArray(userMixtape)) {
         compatibleMixtapeTracks = userMixtape
           .map((track) => {
@@ -309,20 +310,30 @@ export async function getLastFmContext(params: { artist: string; album?: string 
 }
 
 /**
- * Tool 4: Obtiene las pistas guardadas en el mixtape del usuario.
+ * Tool 4: Obtiene las pistas de una mixtape del usuario (en el orden de la
+ * sesión) o, sin mixtapeId, las de todas sus mixtapes.
  */
-export async function getUserMixtapeTracks(params: { username: string }) {
+export async function getUserMixtapeTracks(params: {
+  username: string;
+  mixtapeId?: number;
+  mixtapeName?: string;
+}) {
   try {
     if (!params.username) {
       return { error: "Se requiere nombre de usuario para consultar el mixtape." };
     }
-    const tracks = await getMixtape(params.username);
+    const tracks = await getMixtape(params.username, params.mixtapeId);
     if (!tracks || tracks.length === 0) {
-      return { message: "El usuario no tiene pistas en su mixtape actualmente." };
+      return {
+        message: params.mixtapeName
+          ? `La mixtape «${params.mixtapeName}» está vacía.`
+          : "El usuario no tiene pistas en su mixtape actualmente.",
+      };
     }
     return {
+      mixtape: params.mixtapeName || "Todas las mixtapes del usuario",
       total: tracks.length,
-      tracks: tracks.map((t: any) => {
+      tracks: tracks.map((t: any, index: number) => {
         let camelot = "N/A";
         if (t.key !== undefined && t.mode !== undefined) {
           const n = getKeyNotation(t.key, t.mode);
@@ -330,6 +341,7 @@ export async function getUserMixtapeTracks(params: { username: string }) {
           if (m && m[1]) camelot = m[1];
         }
         return {
+          orden: params.mixtapeId !== undefined ? index + 1 : undefined,
           id: t.id,
           artista: t.artista,
           trackname: t.trackname,

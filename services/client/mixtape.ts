@@ -146,4 +146,15 @@ export async function reorderMixtape(
   if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo guardar el orden."));
 }
 
+/** Enlace a DiscBOT para analizar una mixtape (el historial se guarda por nombre). */
+export function mixtapeChatHref(
+  username: string,
+  mixtapeId: number | null | undefined,
+  nombre: string
+): string {
+  const params = new URLSearchParams({ username, artista: "Mixtape", album: nombre });
+  if (mixtapeId != null) params.set("mixtape_id", String(mixtapeId));
+  return `/chat?${params.toString()}`;
+}
+
 export default getMixtape;

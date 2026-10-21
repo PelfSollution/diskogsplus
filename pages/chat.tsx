@@ -35,9 +35,29 @@ const SUGGESTED_PROMPTS = [
   },
 ];
 
+const MIXTAPE_PROMPTS = [
+  {
+    icon: "🎚️",
+    title: "Revisar transiciones",
+    prompt: "Repasa mi mixtape en orden y dime qué transiciones de tonalidad (Camelot) o de BPM chocan y cómo las arreglarías.",
+  },
+  {
+    icon: "📈",
+    title: "Curva de energía",
+    prompt: "¿Cómo es la curva de energía de mi mixtape? ¿Dónde está el pico y qué pistas movería para que suba mejor?",
+  },
+  {
+    icon: "🧩",
+    title: "Qué le falta",
+    prompt: "¿Qué tipo de tema le falta a mi mixtape para enlazar mejor las partes que no mezclan bien?",
+  },
+];
+
 export default function Chat() {
   const router = useRouter();
-  const { artista, album, username, disco_id } = router.query;
+  const { artista, album, username, disco_id, mixtape_id } = router.query;
+  // El enlace desde /mixtape usa artista «Mixtape» y el nombre de la mixtape como álbum
+  const isMixtapeChat = artista === "Mixtape";
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [chatErrorMessage, setChatErrorMessage] = useState<string | null>(null);
@@ -83,7 +103,9 @@ export default function Chat() {
   }, [artista, album, username, setMessages]);
 
   const welcomeMessage =
-    artista && album
+    isMixtapeChat && album
+      ? `¡Hola! Soy tu DiscBOT Agent musical. Tengo delante tu mixtape «${album}» con su BPM y sus tonalidades Camelot. ¿Repasamos las transiciones o buscamos qué falta en la sesión?`
+      : artista && album
       ? `¡Hola! Soy tu DiscBOT Agent musical. Estoy conectado a Discogs, Last.fm y al analizador armónico Camelot para el disco "${album}" de ${artista}. ¿En qué te puedo asesorar?`
       : "Por favor, selecciona un álbum desde tu catálogo para conversar con el agente especializado.";
 
@@ -94,7 +116,7 @@ export default function Chat() {
     setChatErrorMessage(null);
     sendMessage(
       { text },
-      { body: { artista, album, disco_id } }
+      { body: { artista, album, disco_id, mixtape_id } }
     );
     setInput("");
   };
@@ -139,7 +161,11 @@ export default function Chat() {
                 </span>
               </div>
               <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400">
-                {album && artista ? (
+                {isMixtapeChat && album ? (
+                  <>
+                    Analizando la mixtape <strong className="tw-text-gray-800 dark:tw-text-gray-200">«{album}»</strong>
+                  </>
+                ) : album && artista ? (
                   <>
                     Analizando: <strong className="tw-text-gray-800 dark:tw-text-gray-200">{album}</strong> de {artista}
                   </>
@@ -257,7 +283,7 @@ export default function Chat() {
 
         {/* Sugerencias Rápidas */}
         <div className="tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-2 tw-mt-3 tw-mb-3">
-          {SUGGESTED_PROMPTS.map((item, idx) => (
+          {(isMixtapeChat ? MIXTAPE_PROMPTS : SUGGESTED_PROMPTS).map((item, idx) => (
             <button
               key={idx}
               type="button"

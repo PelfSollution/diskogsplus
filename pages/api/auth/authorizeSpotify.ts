@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { randomBytes } from "crypto";
-import { setCookie } from "cookies-next";
+import { deleteCookie, setCookie } from "cookies-next";
 import { requireSessionUser } from "@/lib/session";
+import { getOwnedMixtapeName } from "@/services/supabase/mixtapes";
 
 export default async function authorizeSpotify(
   req: NextApiRequest,
@@ -20,6 +21,24 @@ export default async function authorizeSpotify(
       httpOnly: true,
       sameSite: "lax",
     });
+
+    // Mixtape que se exporta (?mixtape_id=); el callback la vuelve a comprobar
+    const mixtapeId = Number(req.query.mixtape_id);
+    if (Number.isInteger(mixtapeId)) {
+      if (!(await getOwnedMixtapeName(username, mixtapeId))) {
+        res.status(404).json({ error: "Mixtape no encontrada" });
+        return;
+      }
+      setCookie("spotifyMixtapeId", String(mixtapeId), {
+        req,
+        res,
+        maxAge: 60 * 10,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    } else {
+      deleteCookie("spotifyMixtapeId", { req, res });
+    }
 
     const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
     const params = new URLSearchParams({

@@ -62,7 +62,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 
 ### Fase 2: preparar sesiones
 - [x] **Varias mixtapes con nombre** ("Sesión jazz-funk sábado") en lugar de una sola lista por usuario: tabla `mixtapes` y columna `mixtape_id` en `mixtape` (oct. 2026). La posición para reordenar queda para el punto siguiente.
-- [ ] Reordenar arrastrando y **ordenar automáticamente por armonía y BPM** (Camelot, que ya existe en `lib/musicNotation.ts`).
+- [x] Reordenar arrastrando (o con flechas, en el móvil) y **ordenar automáticamente por armonía y BPM** (oct. 2026): columna `position` en `mixtape`, `PATCH /api/mixtape` y `lib/mixtapeOrder.ts` (empieza por la pista más lenta y encadena tonalidades vecinas en la rueda Camelot). Las pistas nuevas van al final de la sesión.
 - [ ] Datos de vinilo en cada pista: **cara y posición** (A1, B2), duración por cara y aviso de "dar la vuelta".
 - [ ] Rellenar BPM y tonalidad de las pistas antiguas (script pendiente).
 - [ ] DiscBOT como asistente de sesión: "hazme un set de 1 h, 95–110 BPM, solo con mis discos de soul".

@@ -45,7 +45,8 @@ export function saveLocalMixtape(track: LocalMixtapeTrack): LocalMixtapeTrack[] 
         ...track,
         id: track.id || Date.now(),
       };
-      const updated = [newTrack, ...current];
+      // Al final, como en Supabase: la lista sigue el orden de la sesión
+      const updated = [...current, newTrack];
       localStorage.setItem(`${STORAGE_PREFIX}${track.username}`, JSON.stringify(updated));
       return updated;
     }
@@ -78,6 +79,22 @@ export function removeLocalMixtape(
     return updated;
   } catch (err) {
     console.warn("[MixtapeStorage] Error eliminando de localStorage:", err);
+    return [];
+  }
+}
+
+/** Guarda la lista local en el orden indicado (reordenar la sesión). */
+export function reorderLocalMixtape(
+  username: string,
+  tracks: LocalMixtapeTrack[]
+): LocalMixtapeTrack[] {
+  if (typeof window === "undefined" || !username) return [];
+
+  try {
+    localStorage.setItem(`${STORAGE_PREFIX}${username}`, JSON.stringify(tracks));
+    return tracks;
+  } catch (err) {
+    console.warn("[MixtapeStorage] Error reordenando en localStorage:", err);
     return [];
   }
 }

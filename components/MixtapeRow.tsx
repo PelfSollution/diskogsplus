@@ -22,6 +22,8 @@ type MixtapeRowProps = {
   onDelete: (track: MixtapeTrack) => void;
   onPlay?: (track: MixtapeTrack) => void;
   isPlaying?: boolean;
+  /** Controles a la izquierda de la fila (asa de arrastre y flechas para reordenar) */
+  leading?: React.ReactNode;
 };
 
 const jsonFetcher = async (url: string) => {
@@ -35,6 +37,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
   onDelete,
   onPlay,
   isPlaying = false,
+  leading,
 }) => {
   const [showPreview, setShowPreview] = useState(false);
 
@@ -68,7 +71,9 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
           : "tw-bg-white dark:tw-bg-gray-800 tw-border-gray-200 dark:tw-border-gray-700"
       }`}
     >
-      <div className="tw-flex tw-flex-col lg:tw-flex-row tw-gap-4 tw-items-start lg:tw-items-center tw-justify-between">
+      <div className="tw-flex tw-gap-3 tw-items-start lg:tw-items-center">
+      {leading && <div className="tw-flex tw-flex-col tw-items-center tw-gap-0.5 tw-shrink-0">{leading}</div>}
+      <div className="tw-flex-1 tw-min-w-0 tw-flex tw-flex-col lg:tw-flex-row tw-gap-4 tw-items-start lg:tw-items-center tw-justify-between">
         {/* Columna Izquierda: Información del tema y artista */}
         <div className="tw-flex-1 tw-min-w-0">
           <div className="tw-flex tw-items-center tw-gap-2 tw-mb-1">
@@ -180,6 +185,7 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
             <span>Eliminar</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

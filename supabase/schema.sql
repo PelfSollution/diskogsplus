@@ -40,6 +40,7 @@ create table if not exists public.mixtape (
   key            smallint check (key between 0 and 11),  -- clase de tono: 0 = Do
   mode           smallint check (mode in (0, 1)),        -- 0 = menor, 1 = mayor
   duration       text,
+  position       integer,                       -- orden dentro de la mixtape (0, 1, 2…)
   created_at     timestamptz not null default now(),
   constraint mixtape_unique_track unique (mixtape_id, disco_id, artista, trackname)
 );
@@ -70,6 +71,20 @@ begin
 end $$;
 
 create index if not exists mixtape_username_idx on public.mixtape (username);
+
+-- Orden de las pistas (oct. 2026). Las que no tienen posición la reciben
+-- conservando el orden en que se veían (la más reciente primero).
+alter table public.mixtape add column if not exists position integer;
+
+update public.mixtape t set position = o.pos
+from (
+  select id, row_number() over (partition by mixtape_id order by created_at desc, id desc) - 1 as pos
+  from public.mixtape
+  where position is null
+) o
+where t.id = o.id;
+
+create index if not exists mixtape_position_idx on public.mixtape (mixtape_id, position);
 
 -- Playlists de Spotify exportadas desde el mixtape
 create table if not exists public.mixtape_urls (

@@ -69,7 +69,7 @@ Después, en una terminal normal: `claude /mcp` → *supabase* → *Authenticate
 
   | Ruta | Uso |
   | :-- | :-- |
-  | `GET/POST/DELETE /api/mixtape` | Leer, añadir y quitar pistas del mixtape |
+  | `GET/POST/PATCH/DELETE /api/mixtape` | Leer, añadir, reordenar y quitar pistas del mixtape |
   | `GET /api/albums/wantlist[?disco_id=]` | Wantlist, o si un disco está en ella |
   | `GET /api/albums/artistImage?artista=` | Portada generada por IA |
   | `GET /api/chatLogs[?artista=&album=]` | Discos con chat, o la conversación de uno |

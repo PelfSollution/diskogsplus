@@ -5,6 +5,7 @@ import {
   getLocalMixtape,
   saveLocalMixtape,
   removeLocalMixtape,
+  reorderLocalMixtape,
   LocalMixtapeTrack,
 } from "../local/mixtapeStorage";
 import type { MixtapeInfo } from "../supabase/mixtapes";
@@ -121,6 +122,28 @@ export async function deleteFromMixtape(
     return;
   }
   if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo quitar la pista."));
+}
+
+/** Guarda el orden nuevo de las pistas (lista completa, ya ordenada). */
+export async function reorderMixtape(
+  username: string,
+  mixtapeId: number | null,
+  tracks: LocalMixtapeTrack[]
+): Promise<void> {
+  if (mixtapeId === null) {
+    reorderLocalMixtape(username, tracks);
+    return;
+  }
+
+  const res = await send("/api/mixtape", "PATCH", {
+    mixtape_id: mixtapeId,
+    track_ids: tracks.map((t) => Number(t.id)),
+  });
+  if (isOffline(res)) {
+    reorderLocalMixtape(username, tracks);
+    return;
+  }
+  if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo guardar el orden."));
 }
 
 export default getMixtape;

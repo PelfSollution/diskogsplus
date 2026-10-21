@@ -26,7 +26,8 @@ function useGetMixtape(username: string, mixtapeId: number | null | undefined) {
     reload();
   }, [reload]);
 
-  return { data, isLoading, error, reload };
+  // setData permite reordenar al instante mientras se guarda en el servidor
+  return { data, isLoading, error, reload, setData };
 }
 
 export default useGetMixtape;

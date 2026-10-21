@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import useGetUserData from "@/hooks/useGetUserData";
-import { deleteFromMixtape } from "@/services/client/mixtape";
+import { deleteFromMixtape, reorderMixtape } from "@/services/client/mixtape";
 import useMixtapes from "@/hooks/useMixtapes";
 import useGetMixtape from "@/hooks/useGetMixtape";
 import MixtapeManager from "@/components/MixtapeManager";
@@ -15,19 +15,29 @@ import {
   Bot,
   Disc,
   Search,
-  ArrowUpDown,
   Music2,
-  Trash2,
-  Filter,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Wand2,
+  Undo2,
 } from "lucide-react";
-import { CAMELOT_CODES, getPitchClassNotation } from "@/lib/musicNotation";
+import { getPitchClassNotation } from "@/lib/musicNotation";
+import { sortByHarmonyAndBpm } from "@/lib/mixtapeOrder";
 
 export default function Mixtape() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBPM, setSearchBPM] = useState<number | null>(null);
   const [searchKey, setSearchKey] = useState<number | null>(null);
   const [searchMode, setSearchMode] = useState<number | null>(null);
-  const [bpmOrder, setBpmOrder] = useState<"ASC" | "DESC" | null>(null);
+  // Arrastre: pista que se mueve y fila sobre la que está
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  // Orden anterior al automático, para poder deshacerlo
+  const [autoUndo, setAutoUndo] = useState<{
+    mixtapeId: number | null;
+    tracks: MixtapeTrack[];
+  } | null>(null);
   const [snackbar, setSnackbar] = useState<{
     isOpen: boolean;
     message: string;
@@ -42,10 +52,14 @@ export default function Mixtape() {
     data: tracks,
     isLoading: tracksLoading,
     reload: reloadTracks,
+    setData: setTracks,
   } = useGetMixtape(username, mixtapes.activeId);
   const mixtape = tracks as MixtapeTrack[];
   const loading = Boolean(username) && (mixtapes.isLoading || tracksLoading);
   const mixtapeName = mixtapes.active?.nombre || "Mi Mixtape";
+  // Solo se puede deshacer en la mixtape que se ordenó
+  const orderBeforeAuto =
+    autoUndo && autoUndo.mixtapeId === (mixtapes.activeId ?? null) ? autoUndo.tracks : null;
   const playerHref = mixtapes.activeId ? `/mixtapeplayer?id=${mixtapes.activeId}` : "/mixtapeplayer";
 
   const handleOpenSnackbar = (message: string) => {
@@ -73,16 +87,52 @@ export default function Mixtape() {
     }
   }
 
-  const toggleBpmOrder = () => {
-    if (bpmOrder === null || bpmOrder === "DESC") {
-      setBpmOrder("ASC");
-    } else {
-      setBpmOrder("DESC");
+  /** Muestra el orden nuevo al instante y lo guarda; si falla, recarga el guardado. */
+  async function saveOrder(ordered: MixtapeTrack[]) {
+    setTracks(ordered);
+    try {
+      await reorderMixtape(username, mixtapes.activeId ?? null, ordered);
+    } catch (error: any) {
+      console.error("Error guardando el orden de la Mixtape:", error);
+      handleOpenSnackbar(error?.message || "No se pudo guardar el orden.");
+      setAutoUndo(null);
+      await reloadTracks();
     }
-  };
+  }
 
-  const filteredAndSortedMixtape = [...mixtape]
-    .filter((track) => {
+  function moveTrack(from: number, to: number) {
+    if (from === to || to < 0 || to >= mixtape.length) return;
+    const ordered = [...mixtape];
+    const [track] = ordered.splice(from, 1);
+    ordered.splice(to, 0, track);
+    setAutoUndo(null);
+    saveOrder(ordered);
+  }
+
+  function handleAutoOrder() {
+    const ordered = sortByHarmonyAndBpm(mixtape);
+    if (ordered.every((t, i) => t === mixtape[i])) {
+      handleOpenSnackbar("La sesión ya está ordenada por armonía y BPM.");
+      return;
+    }
+    setAutoUndo({ mixtapeId: mixtapes.activeId ?? null, tracks: mixtape });
+    saveOrder(ordered);
+    handleOpenSnackbar("Sesión ordenada por armonía y BPM.");
+  }
+
+  function handleUndoAutoOrder() {
+    if (!orderBeforeAuto) return;
+    const previous = orderBeforeAuto;
+    setAutoUndo(null);
+    saveOrder(previous);
+  }
+
+  function endDrag() {
+    setDragIndex(null);
+    setOverIndex(null);
+  }
+
+  const filteredMixtape = mixtape.filter((track) => {
       const lower = searchTerm.toLowerCase();
       const matchesSearch =
         !searchTerm ||
@@ -96,13 +146,9 @@ export default function Mixtape() {
       const matchesBpm = !searchBPM || track.tempo === searchBPM;
 
       return matchesSearch && matchesKey && matchesBpm;
-    })
-    .sort((a, b) => {
-      if (!bpmOrder) return 0;
-      return bpmOrder === "DESC"
-        ? (a.tempo ?? 0) - (b.tempo ?? 0)
-        : (b.tempo ?? 0) - (a.tempo ?? 0);
-    });
+  });
+  // Con filtros la lista está incompleta: reordenar solo tiene sentido sobre la sesión entera
+  const isFiltered = filteredMixtape.length !== mixtape.length;
 
   if (loading) {
     return (
@@ -250,42 +296,115 @@ export default function Mixtape() {
                 </select>
               </div>
 
-              {/* Ordenar por BPM */}
-              <button
-                type="button"
-                onClick={toggleBpmOrder}
-                className={`tw-flex tw-items-center tw-justify-center tw-gap-1.5 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
-                  bpmOrder
-                    ? "tw-bg-vinyl-500 tw-text-white tw-border-vinyl-600"
-                    : "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100"
-                }`}
-                title="Ordenar por BPM"
-              >
-                <ArrowUpDown className="tw-w-4 tw-h-4" />
-                <span>
-                  {bpmOrder === "ASC"
-                    ? "BPM: Menor a Mayor"
-                    : bpmOrder === "DESC"
-                    ? "BPM: Mayor a Menor"
-                    : "Ordenar BPM"}
-                </span>
-              </button>
+              {/* Orden automático por armonía y BPM (se guarda) */}
+              <div className="tw-flex tw-items-center tw-gap-2">
+                <button
+                  type="button"
+                  onClick={handleAutoOrder}
+                  disabled={mixtape.length < 2}
+                  className="tw-flex tw-flex-1 md:tw-flex-none tw-items-center tw-justify-center tw-gap-1.5 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-bg-vinyl-500 hover:tw-bg-vinyl-600 tw-text-white tw-border tw-border-vinyl-600 tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+                  title="Encadena las pistas por la rueda Camelot y de menos a más BPM"
+                >
+                  <Wand2 className="tw-w-4 tw-h-4" />
+                  <span>Ordenar por armonía y BPM</span>
+                </button>
+                {orderBeforeAuto && (
+                  <button
+                    type="button"
+                    onClick={handleUndoAutoOrder}
+                    className="tw-flex tw-items-center tw-gap-1.5 tw-px-3 tw-py-2 tw-rounded-xl tw-text-sm tw-font-medium tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-text-gray-700 dark:tw-text-gray-200 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-transition-colors"
+                    title="Volver al orden anterior"
+                  >
+                    <Undo2 className="tw-w-4 tw-h-4" />
+                    <span>Deshacer</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Lista de Filas de Mixtape */}
             <div className="tw-space-y-3">
-              {filteredAndSortedMixtape.length === 0 ? (
+              {isFiltered && (
+                <p className="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400 tw-px-1">
+                  Quita los filtros para reordenar la sesión.
+                </p>
+              )}
+              {filteredMixtape.length === 0 ? (
                 <div className="tw-text-center tw-p-8 tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-text-gray-500">
                   No se encontraron canciones que coincidan con los filtros aplicados.
                 </div>
               ) : (
-                filteredAndSortedMixtape.map((track) => (
-                  <MixtapeRow
+                filteredMixtape.map((track, index) => (
+                  <div
                     key={`${track.artista}-${track.trackname}-${track.disco_id}`}
-                    data={track}
-                    onDelete={handleDelete}
-                    onPlay={() => router.push(playerHref)}
-                  />
+                    data-mixtape-row
+                    onDragOver={(e) => {
+                      if (dragIndex === null) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (overIndex !== index) setOverIndex(index);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragIndex !== null) moveTrack(dragIndex, index);
+                      endDrag();
+                    }}
+                    className={`tw-rounded-2xl tw-transition-opacity ${
+                      dragIndex === index ? "tw-opacity-40" : ""
+                    } ${
+                      overIndex === index && dragIndex !== null && dragIndex !== index
+                        ? "tw-ring-2 tw-ring-vinyl-400"
+                        : ""
+                    }`}
+                  >
+                    <MixtapeRow
+                      data={track}
+                      onDelete={handleDelete}
+                      onPlay={() => router.push(playerHref)}
+                      leading={
+                        isFiltered ? undefined : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => moveTrack(index, index - 1)}
+                              disabled={index === 0}
+                              className="tw-p-0.5 tw-rounded tw-text-gray-400 hover:tw-text-gray-700 dark:hover:tw-text-gray-200 disabled:tw-invisible"
+                              title="Subir"
+                              aria-label={`Subir «${track.trackname}»`}
+                            >
+                              <ChevronUp className="tw-w-4 tw-h-4" />
+                            </button>
+                            <span
+                              draggable
+                              onDragStart={(e) => {
+                                setDragIndex(index);
+                                e.dataTransfer.effectAllowed = "move";
+                                e.dataTransfer.setData("text/plain", String(index));
+                                const row = e.currentTarget.closest("[data-mixtape-row]");
+                                if (row) e.dataTransfer.setDragImage(row, 24, 24);
+                              }}
+                              onDragEnd={endDrag}
+                              className="tw-flex tw-flex-col tw-items-center tw-cursor-grab active:tw-cursor-grabbing tw-text-gray-400 hover:tw-text-gray-700 dark:hover:tw-text-gray-200"
+                              title="Arrastra para mover"
+                            >
+                              <span className="tw-text-xs tw-font-bold tw-tabular-nums">{index + 1}</span>
+                              <GripVertical className="tw-w-4 tw-h-4" />
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => moveTrack(index, index + 1)}
+                              disabled={index === filteredMixtape.length - 1}
+                              className="tw-p-0.5 tw-rounded tw-text-gray-400 hover:tw-text-gray-700 dark:hover:tw-text-gray-200 disabled:tw-invisible"
+                              title="Bajar"
+                              aria-label={`Bajar «${track.trackname}»`}
+                            >
+                              <ChevronDown className="tw-w-4 tw-h-4" />
+                            </button>
+                          </>
+                        )
+                      }
+                    />
+                  </div>
                 ))
               )}
             </div>

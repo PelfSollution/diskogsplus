@@ -4,6 +4,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import getMixtape from "@/services/supabase/getMixtape";
 import addMixtape from "@/services/supabase/addMixtape";
 import deleteFromMixtape from "@/services/supabase/deleteFromMixtape";
+import reorderMixtape from "@/services/supabase/reorderMixtape";
 import { userOwnsMixtape } from "@/services/supabase/mixtapes";
 
 /** Número finito o null (evita que "" o undefined se guarden como 0 = Do menor). */
@@ -18,7 +19,7 @@ function requiredString(value: unknown): string | null {
 }
 
 // Pistas de una mixtape (mixtape_id en la query para GET, en el body para el resto).
-// GET: listar · POST: añadir pista · DELETE: quitar pista.
+// GET: listar · POST: añadir pista · PATCH: reordenar (track_ids) · DELETE: quitar pista.
 // El usuario sale siempre de la sesión, nunca del body.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const username = requireSessionUser(req, res);
@@ -40,6 +41,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === "GET") {
       return res.status(200).json(await getMixtape(username, mixtapeId));
+    }
+
+    if (req.method === "PATCH") {
+      const trackIds = req.body?.track_ids;
+      if (!Array.isArray(trackIds) || !trackIds.every((id) => Number.isInteger(id))) {
+        return res.status(400).json({ error: "track_ids no válido" });
+      }
+      if (!(await reorderMixtape(username, mixtapeId, trackIds))) {
+        return res.status(409).json({ error: "La mixtape ha cambiado. Recarga la página." });
+      }
+      return res.status(200).json({ success: true });
     }
 
     const artista = requiredString(req.body?.artista);

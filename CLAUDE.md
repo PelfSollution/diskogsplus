@@ -29,7 +29,7 @@ Architecture overview and roadmap (Spanish): @docs/README.md
 - AI calls use the OpenAI SDK pointed at either Gemini or OpenAI. `lib/aiClient.ts` (`getAIClient`) picks the key: env `GEMINI_API_KEY` → user's stored key (`services/supabase/getUserApiKey.ts`, encrypted in `users.openai_api_key`) → `OPENAI_API_KEY`. Keys starting with `AIza` are routed to Gemini's OpenAI-compatible endpoint. `app/api/chat/route.ts` duplicates this logic inline — keep both in sync (or migrate it to `getAIClient`).
 - Supabase is **server-only**: `lib/supabase.ts` uses the secret key (`SUPABASE_SECRET_KEY`, bypasses RLS) and the `anon` role has no grants or policies. The browser never talks to Supabase — pages call API routes (via `services/client/*`) that take the user from `requireSessionUser`. Never import `services/supabase/*` or `lib/supabase` from pages/components/hooks, and never add `NEXT_PUBLIC_` Supabase vars.
 - Supabase degrades gracefully: if env vars are missing/placeholder, `isSupabaseConfigured` is false and services must check it. The client mixtape (`services/client/mixtape.ts`) keeps a localStorage copy (`services/local/mixtapeStorage.ts`) and falls back to it when `/api/mixtape` fails or returns 503. Preserve this fallback.
-- Named mixtapes: table `mixtapes` (one row per mixtape) + track table `mixtape` (historic singular name) with `mixtape_id`. The active mixtape (target of «+» on the album page) lives in `hooks/useMixtapes.ts`, remembered in localStorage. `/api/mixtape` always needs a `mixtape_id` and checks ownership. Without Supabase there is a single local list (`mixtapeId` null). DiscBOT tools and the Spotify export still read all of the user's tracks.
+- Named mixtapes: table `mixtapes` (one row per mixtape) + track table `mixtape` (historic singular name) with `mixtape_id`. The active mixtape (target of «+» on the album page) lives in `hooks/useMixtapes.ts`, remembered in localStorage. `/api/mixtape` always needs a `mixtape_id` and checks ownership. Track order is the `position` column (new tracks append at the end; `PATCH` with the full `track_ids` list reorders, 409 if it doesn't match); auto-sort by Camelot + BPM lives in `lib/mixtapeOrder.ts`. Without Supabase there is a single local list (`mixtapeId` null). DiscBOT tools and the Spotify export still read all of the user's tracks.
 - BPM/key/mode come from `services/audioFeatures/getTrackAudioFeatures.ts` (ReccoBeats by album → by track → Deezer BPM-only; free, no API key). Spotify `/v1/audio-features` is dead (403 since Nov 2024) — don't reintroduce it. Spotify is only used for the album embed.
 - Album/mixtape playback: `services/youtube/getAlbumPlaylist.ts` builds a per-release playlist (Discogs videos → YouTube «Artist - Topic» tracks via `YOUTUBE_API_KEY`, 100 quota units per search → «full album» video → Deezer 30 s previews). Cached in memory and in the Supabase table `album_playlists`; Deezer preview URLs expire, so they are never cached. Client playback goes through `hooks/useTrackPlayer.ts` (YouTube IFrame API + `<audio>`).
 - New remote image hosts must be added to `next.config.js` (`images.domains` / `remotePatterns`).
@@ -37,3 +37,13 @@ Architecture overview and roadmap (Spanish): @docs/README.md
 ## Environment
 
 Template: `.env.local.sample`. Discogs vars are `CONSUMER_KEY` / `CONSUMER_SECRET` (docs/README.md wrongly says `DISCOGS_*`). Others read in code: `BASE_URL`, `NEXT_PUBLIC_BASE_URL`, `CRYPT_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `LASTFM_API_KEY`, `YOUTUBE_API_KEY`, `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

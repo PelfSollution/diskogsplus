@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getCookie } from "cookies-next";
-import Image from "next/image";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
+import VinylDisc from "@/components/VinylDisc";
+import { Disc3, ListMusic, Bot } from "lucide-react";
+
+const FEATURES = [
+  { icon: Disc3, text: "BPM, tonalidad Camelot y cara de cada pista de tus discos" },
+  { icon: ListMusic, text: "Mixtapes ordenadas por armonía, con avisos de mismo disco" },
+  { icon: Bot, text: "DiscBOT: pídele una sesión de 1 h con tus vinilos de soul" },
+];
 
 export default function Home() {
   const router = useRouter();
   const [devUser, setDevUser] = useState("");
   const [isDevLoading, setIsDevLoading] = useState(false);
+  const [devError, setDevError] = useState<string | null>(null);
 
   useEffect(() => {
     if (getCookie("username")) {
@@ -20,6 +27,7 @@ export default function Home() {
     e.preventDefault();
     if (!devUser.trim()) return;
     setIsDevLoading(true);
+    setDevError(null);
     try {
       const res = await fetch("/api/auth/devLogin", {
         method: "POST",
@@ -29,84 +37,80 @@ export default function Home() {
       if (res.ok) {
         router.push("/dashboard");
       } else {
-        alert("Error al iniciar sesión en modo dev.");
+        setDevError("No se pudo entrar en modo desarrollo.");
       }
     } catch (err) {
       console.error(err);
-      alert("Error al conectar con devLogin");
+      setDevError("No se pudo conectar con el servidor.");
     } finally {
       setIsDevLoading(false);
     }
   };
 
   return (
-    <Layout
-      title="Inicio - Diskogs +"
-      description="Inicia sesión en Diskogs +"
-      allowPublicAccess={true}
-    >
-      <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-full tw-py-8">
-        <header className="tw-text-center tw-max-w-xl tw-mx-auto">
-          <div className="tw-flex tw-flex-col tw-items-center tw-justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/diskogs-logo.gif"
-              alt="Diskogs plus"
-              className="tw-w-auto tw-max-w-md tw-mx-auto tw-block"
-              width={500}
-              height={149}
-            />
-            <p className="tw-text-lg md:tw-text-xl tw-mt-3 tw-text-gray-700 dark:tw-text-gray-300">
-              Conecta tu cuenta de{" "}
-              <a
-                href="https://discogs.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="tw-text-brand-500 hover:tw-underline tw-font-semibold"
-              >
-                Discogs
-              </a>{" "}
-              y sumérgete en tu colección de vinilos con asistencia de IA y mezcla DJ armónica.
-            </p>
+    <Layout title="Diskogs+ · Tu colección de vinilos, lista para pinchar" description="Inicia sesión en Diskogs+ con tu cuenta de Discogs" allowPublicAccess={true}>
+      <div className="tw-max-w-6xl tw-mx-auto tw-px-6 md:tw-px-10 tw-py-12 tw-flex tw-flex-wrap-reverse tw-items-center tw-justify-between tw-gap-12">
+        <div className="tw-flex-1 tw-basis-96 tw-flex tw-flex-col tw-gap-6">
+          <div className="tw-flex tw-items-center tw-gap-2.5">
+            <VinylDisc size={32} flat />
+            <span className="tw-text-xl tw-font-bold tw-tracking-tight">
+              Diskogs<span className="tw-text-brand-600">+</span>
+            </span>
           </div>
-        </header>
+          <h1 className="tw-text-4xl md:tw-text-5xl tw-font-bold tw-tracking-tight tw-leading-[1.05] tw-text-gray-900">
+            Tu colección de vinilos, lista para pinchar.
+          </h1>
+          <p className="tw-text-lg tw-text-gray-600 tw-max-w-lg">
+            Conecta tu cuenta de Discogs y prepara sesiones con tus propios discos: armonía, BPM y caras, todo en un sitio.
+          </p>
+          <ul className="tw-flex tw-flex-col tw-gap-2.5">
+            {FEATURES.map(({ icon: Icon, text }) => (
+              <li key={text} className="tw-flex tw-items-center tw-gap-3 tw-text-[15px] tw-text-gray-700">
+                <Icon className="tw-w-5 tw-h-5 tw-text-brand-600 tw-shrink-0" />
+                {text}
+              </li>
+            ))}
+          </ul>
+          <div>
+            <button
+              type="button"
+              onClick={() => router.push("/api/auth/authorize")}
+              className="tw-h-12 tw-px-6 tw-rounded-full tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-text-base tw-font-semibold tw-transition-colors"
+            >
+              Entrar con Discogs
+            </button>
+          </div>
 
-        {/* Acceso Principal con Discogs OAuth */}
-        <div className="tw-flex tw-flex-col tw-items-center tw-mt-6 tw-w-full tw-max-w-sm">
-          <Button
-            variant="outline"
-            size={"lg"}
-            onClick={() => router.push("/api/auth/authorize")}
-            className="tw-w-full tw-font-bold tw-text-base tw-py-3 tw-border-brand-400 tw-text-brand-600 hover:tw-bg-brand-50 dark:hover:tw-bg-brand-950/40 tw-shadow-sm"
-          >
-            Hacer Login con Discogs (OAuth)
-          </Button>
-
-          {/* Modo de Acceso Rápido / Desarrollo */}
-          <div className="tw-w-full tw-mt-8 tw-p-4 tw-rounded-2xl tw-border tw-border-dashed tw-border-gray-300 dark:tw-border-gray-700 tw-bg-gray-50/60 dark:tw-bg-gray-800/40">
-            <div className="tw-text-xs tw-font-bold tw-text-gray-500 dark:tw-text-gray-400 tw-uppercase tw-tracking-wider tw-mb-2">
-              🛠️ Modo Desarrollo / Acceso Directo
-            </div>
-            <p className="tw-text-xs tw-text-gray-600 dark:tw-text-gray-300 tw-mb-3">
-              ¿No tienes aún tus claves de Discogs API? Introduce tu usuario de Discogs para entrar directamente:
-            </p>
-            <form onSubmit={handleDevLogin} className="tw-flex tw-gap-2">
-              <input
-                type="text"
-                value={devUser}
-                onChange={(e) => setDevUser(e.target.value)}
-                placeholder="Tu usuario de Discogs..."
-                className="tw-flex-1 tw-text-xs tw-px-3 tw-py-2 tw-rounded-lg tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white tw-outline-none"
-              />
-              <button
-                type="submit"
-                disabled={isDevLoading || !devUser.trim()}
-                className="tw-text-xs tw-font-medium tw-px-3 tw-py-2 tw-rounded-lg tw-bg-gray-800 dark:tw-bg-gray-600 hover:tw-bg-black tw-text-white tw-transition-colors disabled:tw-opacity-50"
-              >
-                {isDevLoading ? "Entrando..." : "Entrar"}
-              </button>
+          {/* Acceso de desarrollo (devLogin): solo en local, en producción da 403 */}
+          {process.env.NODE_ENV !== "production" && (
+            <form onSubmit={handleDevLogin} className="tw-flex tw-flex-col tw-gap-2 tw-max-w-md tw-p-4 tw-rounded-xl tw-border tw-border-dashed tw-border-gray-300 tw-bg-gray-50">
+              <label htmlFor="dev-user" className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-gray-500">
+                Desarrollo · entrar sin OAuth
+              </label>
+              <div className="tw-flex tw-gap-2">
+                <input
+                  id="dev-user"
+                  type="text"
+                  value={devUser}
+                  onChange={(e) => setDevUser(e.target.value)}
+                  placeholder="Usuario de Discogs"
+                  className="tw-flex-1 tw-h-10 tw-px-3 tw-text-sm tw-rounded-lg tw-border tw-border-gray-300 tw-bg-white tw-outline-none focus:tw-border-brand-600"
+                />
+                <button
+                  type="submit"
+                  disabled={isDevLoading || !devUser.trim()}
+                  className="tw-h-10 tw-px-4 tw-rounded-lg tw-bg-gray-900 hover:tw-bg-gray-800 tw-text-white tw-text-sm tw-font-medium disabled:tw-opacity-50"
+                >
+                  {isDevLoading ? "Entrando…" : "Entrar"}
+                </button>
+              </div>
+              {devError && <p className="tw-text-xs tw-text-red-600">{devError}</p>}
             </form>
-          </div>
+          )}
+        </div>
+
+        <div className="tw-flex-1 tw-basis-72 tw-max-w-[440px] tw-mx-auto">
+          <VinylDisc size="fill" spinning />
         </div>
       </div>
     </Layout>

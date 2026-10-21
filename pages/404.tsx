@@ -1,30 +1,11 @@
-import Layout from "@/components/Layout";
-import Image from "next/image";
+import ErrorScreen from "@/components/ErrorScreen";
 
 const Custom404 = () => (
-  <Layout
-    centeredContent={true}
-    title="404 - Diskogs +"
-    description="404 - Page Not Found"
-  >
-    <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-full">
-      <header className="tw-text-center tw-max-w-xl mx-auto">
-        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center">
-          <h1 className="tw-text-4xl tw-text-red-400">404 - Page Not Found</h1>{" "}
-          {/* Aquí aumenté el tamaño del texto */}
-          <Image
-            src="/img-404.png"
-            alt="404"
-            className="tw-w-auto tw-max-w-md mx-auto block"
-            width={300}
-            height={300}
-          />
-     <p>¡Vaya! Parece que este vinilo est&aacute; roto. No pudimos encontrar lo que estabas buscando.</p>
-
-        </div>
-      </header>
-    </div>
-  </Layout>
+  <ErrorScreen
+    code={404}
+    title="Este surco no existe"
+    message="La página que buscas no está en la colección. Puede que el enlace esté mal o que se haya movido."
+  />
 );
 
 export default Custom404;

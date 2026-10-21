@@ -16,7 +16,7 @@ import MixtapeRow, { MixtapeTrack, MIXTAPE_GRID } from "@/components/MixtapeRow"
 import VinylDisc from "@/components/VinylDisc";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-import { Play, Bot, Disc3, Search, Wand2, Undo2, Gauge, TriangleAlert, Loader2 } from "lucide-react";
+import { Play, Bot, Disc3, Search, Wand2, Undo2, Gauge, TriangleAlert, Loader2, ExternalLink, X } from "lucide-react";
 import { getPitchClassNotation } from "@/lib/musicNotation";
 import { sortByHarmonyAndBpm } from "@/lib/mixtapeOrder";
 import { durationToSeconds, formatSessionDuration, sameRecordWarning } from "@/lib/vinyl";
@@ -209,6 +209,20 @@ export default function Mixtape() {
     );
   }
 
+  // Vuelta de la exportación a Spotify (pages/api/auth/callback/spotify.ts)
+  const spotifyPlaylist = typeof router.query.spotify === "string" ? router.query.spotify : null;
+  const spotifyError = typeof router.query.spotify_error === "string" ? router.query.spotify_error : null;
+  const SPOTIFY_ERRORS: Record<string, string> = {
+    cancelado: "Has cancelado la exportación a Spotify.",
+    permiso:
+      "Spotify no ha dejado crear la playlist. Con la app en modo desarrollo, tu cuenta tiene que estar en la lista de usuarios de la app y su propietario necesita Premium.",
+    estado:
+      "La vuelta de Spotify llegó a otra dirección. Abre la app en la misma dirección que la URL de retorno registrada en Spotify (por ejemplo, http://127.0.0.1:3000).",
+    error: "No se pudo exportar a Spotify. Inténtalo de nuevo en un momento.",
+  };
+  const closeSpotifyNotice = () =>
+    router.replace(mixtapes.activeId ? `/mixtape?id=${mixtapes.activeId}` : "/mixtape", undefined, { shallow: true });
+
   const outlineButton =
     "tw-flex tw-items-center tw-gap-2 tw-h-11 tw-px-4 tw-rounded-full tw-border tw-border-gray-200 tw-bg-white tw-text-sm tw-font-medium tw-text-gray-900 hover:tw-bg-gray-50 tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed";
 
@@ -287,6 +301,13 @@ export default function Mixtape() {
                   <Bot className="tw-w-4 tw-h-4" />
                   Analizar con DiscBOT
                 </Link>
+                {mixtapes.activeId != null && (
+                  // Ruta de API (OAuth de Spotify): enlace normal, no Link
+                  <a href={`/api/auth/authorizeSpotify?mixtape_id=${mixtapes.activeId}`} className={outlineButton}>
+                    <ExternalLink className="tw-w-4 tw-h-4" />
+                    Exportar a Spotify
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -316,6 +337,37 @@ export default function Mixtape() {
             </figure>
           )}
         </header>
+
+        {(spotifyPlaylist || spotifyError) && (
+          <div
+            role="status"
+            className={`tw-flex tw-items-start tw-justify-between tw-gap-3 tw-px-4 tw-py-3 tw-rounded-xl tw-border ${
+              spotifyPlaylist ? "tw-bg-brand-50 tw-border-brand-100 tw-text-brand-900" : "tw-bg-gray-50 tw-border-gray-200 tw-text-gray-800"
+            }`}
+          >
+            <p className="tw-text-sm">
+              {spotifyPlaylist ? (
+                <>
+                  Playlist creada en Spotify con {router.query.exportadas} de {router.query.total} pistas
+                  {Number(router.query.exportadas) < Number(router.query.total) && " (las demás no están en Spotify)"}.{" "}
+                  <a
+                    href={`https://open.spotify.com/playlist/${encodeURIComponent(spotifyPlaylist)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tw-font-semibold tw-underline"
+                  >
+                    Abrir en Spotify
+                  </a>
+                </>
+              ) : (
+                SPOTIFY_ERRORS[spotifyError as string] || SPOTIFY_ERRORS.error
+              )}
+            </p>
+            <button type="button" onClick={closeSpotifyNotice} aria-label="Cerrar aviso" className="tw-shrink-0 tw-text-gray-500 hover:tw-text-gray-900">
+              <X className="tw-w-4 tw-h-4" />
+            </button>
+          </div>
+        )}
 
         {mixtape.length === 0 ? (
           <div className="tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-4 tw-py-16 tw-border tw-border-dashed tw-border-gray-300 tw-rounded-2xl">

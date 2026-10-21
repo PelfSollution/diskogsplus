@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { requireSessionUser } from "@/lib/session";
 import { saveMixtapeURL } from "../../../../services/supabase/saveMixtapeURL";
-import { generateMixtape } from "../../../../services/spotify/getSpotifyMixtape";
+import { generateMixtape, SpotifyApiError } from "../../../../services/spotify/getSpotifyMixtape";
 import { getOwnedMixtapeName } from "../../../../services/supabase/mixtapes";
 
 async function getSpotifyProfile(accessToken: string): Promise<string> {
@@ -32,10 +32,21 @@ export default async function callbackSpotify(
     deleteCookie("spotifyOAuthState", { req, res });
     const mixtapeIdCookie = Number(getCookie("spotifyMixtapeId", { req, res }));
     deleteCookie("spotifyMixtapeId", { req, res });
+    // Se vuelve a la mixtape (o a la lista) con el resultado en la query
+    const backTo = (params: Record<string, string | number>) => {
+      const base = Number.isInteger(mixtapeIdCookie) ? `/mixtape?id=${mixtapeIdCookie}&` : "/mixtapes?";
+      res.redirect(`${base}${new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]))}`);
+    };
 
+    // El usuario canceló en Spotify
+    if (req.query.error) {
+      return backTo({ spotify_error: "cancelado" });
+    }
+
+    // Sin la cookie de estado: casi siempre, la app se abrió en otra dirección
+    // (localhost) que la URL de retorno registrada en Spotify (127.0.0.1)
     if (!state || !expectedState || state !== expectedState) {
-      res.status(400).json({ error: "Estado OAuth inválido" });
-      return;
+      return backTo({ spotify_error: "estado" });
     }
 
     // El usuario sale de la sesión, no del parámetro `state`
@@ -114,21 +125,16 @@ export default async function callbackSpotify(
         : null;
       const mixtape = mixtapeName ? { id: mixtapeIdCookie, nombre: mixtapeName } : undefined;
 
-      // Generar mixtape con el token de acceso
-      const embedUrl = await generateMixtape(spotifyAccessToken, username, mixtape);
+      const result = await generateMixtape(spotifyAccessToken, username, mixtape);
+      await saveMixtapeURL(username, result.url, spotifyUsername);
 
- 
-    await saveMixtapeURL(username, embedUrl, spotifyUsername);
-    
-
-      // Redirigir al usuario a la página que muestra la mixtape
-      res.redirect(`/mixtapeplayer?embedUrl=${encodeURIComponent(embedUrl)}`);
+      return backTo({ spotify: result.playlistId, exportadas: result.added, total: result.total });
     } catch (err: unknown) {
       console.error("Error en el callback de Spotify:", err);
       if (!res.writableEnded) {
-        res.status(500).json({
-          error: "Error interno del servidor",
-        });
+        // 403: app en modo desarrollo sin el usuario en la lista o sin Premium
+        const reason = err instanceof SpotifyApiError && err.status === 403 ? "permiso" : "error";
+        backTo({ spotify_error: reason });
       }
     }
   } else {

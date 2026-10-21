@@ -45,7 +45,8 @@ export default async function authorizeSpotify(
       client_id: process.env.SPOTIFY_CLIENT_ID || "",
       response_type: "code",
       redirect_uri: `${process.env.BASE_URL}/api/auth/callback/spotify`,
-      scope: "playlist-modify-public",
+      // La playlist se crea privada (POST /me/playlists con public: false)
+      scope: "playlist-modify-private playlist-modify-public",
       state,
     });
 

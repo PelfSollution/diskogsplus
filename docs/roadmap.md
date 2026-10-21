@@ -37,7 +37,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 
 ### Llevarse la sesión fuera
 
-- **Spotify**: arreglar `services/spotify/getSpotifyMixtape.ts`, que usa `/v1/users/{id}/playlists` y `/v1/playlists/{id}/tracks` (ambos cambiaron en febrero de 2026). Vale para ti y hasta 4 personas más.
+- **Spotify**: hecho (oct. 2026), con los endpoints de febrero de 2026. Vale para ti y hasta 4 personas más.
 - **Exportación universal**: un CSV con artista, pista y álbum que se importa en Soundiiz o TuneMyMusic hacia cualquier servicio. Es lo más robusto porque no depende de ninguna API.
 - **Para DJ**: M3U o Rekordbox XML con BPM y Camelot, y una **hoja de cajón en PDF** (qué discos llevar, cara, pista, BPM y tono).
 
@@ -71,7 +71,7 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 ### Fase 3: llevarse la sesión
 - [ ] Exportar CSV (Soundiiz/TuneMyMusic) y M3U.
 - [ ] Hoja de cajón en PDF/impresión: qué discos sacar de la estantería.
-- [ ] Arreglar la exportación a playlist de Spotify (endpoints de 2026). Ya exporta una sola mixtape (`/api/auth/authorizeSpotify?mixtape_id=`), pero ninguna página enlaza a ella.
+- [x] Exportación a playlist de Spotify (oct. 2026): botón «Exportar a Spotify» en la mixtape. Endpoints de 2026 (`POST /me/playlists`, `POST /playlists/{id}/items`), playlist privada en el orden de la sesión, busca en Spotify las pistas sin ID (mismo título y versión) y guarda el ID encontrado. Vuelve a la mixtape con el resultado o el motivo del fallo. Requisitos: URL de retorno `http://127.0.0.1:3000/api/auth/callback/spotify` en el panel de Spotify (ya no admite `localhost`) y abrir la app en esa misma dirección; cuenta en la lista de usuarios de la app (modo desarrollo, máx. 5) y propietario con Premium.
 - [ ] Rekordbox XML con BPM/tono para quien pinche también en digital.
 - [ ] Enlace público para compartir una sesión (solo lectura).
 

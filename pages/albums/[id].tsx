@@ -5,6 +5,7 @@ import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetAlbumInfo, { AlbumInfoInterface } from "@/hooks/useGetAlbumInfo";
 import useGetMixtape from "@/hooks/useGetMixtape";
+import useCoverTint from "@/hooks/useCoverTint";
 import useMixtapes from "@/hooks/useMixtapes";
 import MixtapeSelect from "@/components/MixtapeSelect";
 import useAlbumPlayer from "@/hooks/useAlbumPlayer";
@@ -54,6 +55,7 @@ function AlbumDetails() {
   const { data: mixtape } = useGetMixtape(username, mixtapes.activeId);
   // Reproductor compartido por el tracklist y la tarjeta de escucha
   const albumPlayer = useAlbumPlayer(idNumber, albumInfo?.videos);
+  const coverTint = useCoverTint(coverImage || albumInfo?.coverImage);
 
   // Pistas de este disco que ya están en la mixtape activa
   useEffect(() => {
@@ -324,95 +326,101 @@ function AlbumDetails() {
       ? albumInfo.releaseDate
       : albumInfo.year;
 
+  // «Escuchar el disco»: pausa o sigue la pista actual, o empieza por la primera con audio
+  const firstPlayable = albumPlayer.tracks.findIndex((_, i) => albumPlayer.isPlayable(i));
+  const handlePlayAlbum =
+    firstPlayable >= 0
+      ? () => albumPlayer.toggleTrack(albumPlayer.currentIndex >= 0 ? albumPlayer.currentIndex : firstPlayable)
+      : undefined;
+
   return (
     <Layout
-      title={`${albumInfo.title} - ${albumInfo.artist} | Diskogs +`}
+      title={`${albumInfo.title} - ${albumInfo.artist} | Diskogs+`}
       description={`Detalles, armonía Camelot y coleccionismo para ${albumInfo.title}`}
       centeredTopContent={true}
     >
-      <div className="tw-container tw-mx-auto tw-max-w-6xl tw-p-4 md:tw-p-6">
-        <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
-          {/* Columna Izquierda: Portada, Datos, Tracklist, Bio y Similares (7 cols) */}
-          <div className="lg:tw-col-span-7 tw-space-y-4">
-            {/* Header del Álbum con portada interactiva */}
-            <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-5 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-flex tw-flex-col sm:tw-flex-row tw-gap-5 tw-items-start">
-              <AlbumCoverFlip
-                coverImage={coverImage || albumInfo.coverImage}
-                backCoverImage={backCoverImage || albumInfo.backCoverImage}
-                artist={albumInfo.artist}
-                title={albumInfo.title}
-                isFlipped={isFlipped}
-                onFlip={handleFlip}
-                isGenerating={isGenerating}
-                onGenerateImage={handleGenerateImage}
-              />
+      {/* Cabecera con el tinte de la portada */}
+      <section
+        className="tw-border-b tw-border-black/5 tw-bg-gray-50 tw-transition-colors tw-duration-500"
+        style={coverTint ? { backgroundColor: coverTint } : undefined}
+      >
+        <div className="tw-max-w-6xl tw-mx-auto tw-px-4 md:tw-px-10 tw-py-8 md:tw-py-12 tw-flex tw-flex-wrap tw-items-center tw-gap-x-12 tw-gap-y-6">
+          <AlbumCoverFlip
+            coverImage={coverImage || albumInfo.coverImage}
+            backCoverImage={backCoverImage || albumInfo.backCoverImage}
+            artist={albumInfo.artist}
+            title={albumInfo.title}
+            isFlipped={isFlipped}
+            onFlip={handleFlip}
+            isGenerating={isGenerating}
+            onGenerateImage={handleGenerateImage}
+            isPlaying={albumPlayer.isPlaying}
+          />
+          <AlbumHeader
+            artist={albumInfo.artist}
+            title={albumInfo.title}
+            year={yearReleased}
+            format={albumInfo.format}
+            label={albumInfo.label}
+            genres={albumInfo.genres}
+            lastfmTags={albumInfo.lastfmTags}
+            discoId={idNumber}
+            onAskChat={redirectToChat}
+            fromCompare={fromCompare}
+            inWantlist={inWantlist}
+            onToggleWantlist={handleToggleWantlist}
+            wantlistLoading={wantlistLoading}
+            onPlay={handlePlayAlbum}
+            isPlaying={albumPlayer.isPlaying}
+          />
+        </div>
+      </section>
 
-              <AlbumHeader
-                artist={albumInfo.artist}
-                title={albumInfo.title}
-                year={yearReleased}
-                format={albumInfo.format}
-                label={albumInfo.label}
-                genres={albumInfo.genres}
-                lastfmTags={albumInfo.lastfmTags}
-                discoId={idNumber}
-                onAskChat={redirectToChat}
-                fromCompare={fromCompare}
-                inWantlist={inWantlist}
-                onToggleWantlist={handleToggleWantlist}
-                wantlistLoading={wantlistLoading}
-              />
-            </div>
-
-            {/* Tracklist con BPM y Camelot Wheel */}
-            {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
-              <AlbumTracklist
-                tracklist={albumInfo.tracklist}
-                player={albumPlayer}
-                isSongInMixtape={isSongInMixtape}
-                onAddToMixtape={handleAddToMixtape}
-                onDeleteFromMixtape={handleDeleteFromMixtape}
-                mixtapeSelector={
-                  mixtapes.mixtapes && mixtapes.mixtapes.length > 0 ? (
-                    <MixtapeSelect
-                      mixtapes={mixtapes.mixtapes}
-                      activeId={mixtapes.activeId}
-                      onChange={mixtapes.setActiveId}
-                    />
-                  ) : undefined
-                }
-              />
-            )}
-
-            {/* Biografía de Last.fm e Información enriquecida por IA */}
-            <AlbumBioAccordion
-              artistBio={albumInfo.artistBio}
-              enrichedInfo={enrichedInfo}
-              onEnrichArtistInfo={handleEnrichArtistInfo}
-              isGenerating={isEnriching}
+      <div className="tw-max-w-6xl tw-mx-auto tw-px-4 md:tw-px-10 tw-py-8 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-10">
+        {/* Tracklist, biografía y similares */}
+        <div className="lg:tw-col-span-7 tw-flex tw-flex-col tw-gap-8">
+          {albumInfo.tracklist && albumInfo.tracklist.length > 0 && (
+            <AlbumTracklist
+              tracklist={albumInfo.tracklist}
+              player={albumPlayer}
+              isSongInMixtape={isSongInMixtape}
+              onAddToMixtape={handleAddToMixtape}
+              onDeleteFromMixtape={handleDeleteFromMixtape}
+              mixtapeSelector={
+                mixtapes.mixtapes && mixtapes.mixtapes.length > 0 ? (
+                  <MixtapeSelect
+                    mixtapes={mixtapes.mixtapes}
+                    activeId={mixtapes.activeId}
+                    onChange={mixtapes.setActiveId}
+                  />
+                ) : undefined
+              }
             />
+          )}
 
-            {/* Artistas Similares (Last.fm) */}
-            {albumInfo.similarArtists && albumInfo.similarArtists.length > 0 && (
-              <SimilarArtistsGrid
-                artists={albumInfo.similarArtists}
-                artistName={albumInfo.artist}
-              />
-            )}
-          </div>
+          <AlbumBioAccordion
+            artistBio={albumInfo.artistBio}
+            enrichedInfo={enrichedInfo}
+            onEnrichArtistInfo={handleEnrichArtistInfo}
+            isGenerating={isEnriching}
+          />
 
-          {/* Columna Derecha: Spotify Embed, Canciones Similares y Vídeos (5 cols) */}
-          <div className="lg:tw-col-span-5">
-            <div className="tw-sticky tw-top-4">
-              <AlbumMediaSidebar
-                player={albumPlayer}
-                title={albumInfo.title}
-                spotifyAlbumId={albumInfo.spotifyAlbumId}
-                isPopularAlbum={albumInfo.isPopularAlbum}
-                artist={albumInfo.artist}
-                similarTracks={albumInfo.similarTracks}
-              />
-            </div>
+          {albumInfo.similarArtists && albumInfo.similarArtists.length > 0 && (
+            <SimilarArtistsGrid artists={albumInfo.similarArtists} artistName={albumInfo.artist} />
+          )}
+        </div>
+
+        {/* Reproductor, vídeos y canciones similares */}
+        <div className="lg:tw-col-span-5">
+          <div className="tw-sticky tw-top-6">
+            <AlbumMediaSidebar
+              player={albumPlayer}
+              title={albumInfo.title}
+              spotifyAlbumId={albumInfo.spotifyAlbumId}
+              isPopularAlbum={albumInfo.isPopularAlbum}
+              artist={albumInfo.artist}
+              similarTracks={albumInfo.similarTracks}
+            />
           </div>
         </div>
       </div>

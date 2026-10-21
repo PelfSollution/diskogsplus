@@ -1,8 +1,8 @@
 import React from "react";
 
 type VinylDiscProps = {
-  /** Diámetro en px */
-  size: number;
+  /** Diámetro en px, o "fill" para ocupar el ancho del contenedor */
+  size: number | "fill";
   /** Portada que hace de galleta central; sin ella, labelColor o el acento */
   cover?: string | null;
   /** Varias portadas: la galleta se divide en un mosaico de 2×2 (mixtapes) */
@@ -43,7 +43,11 @@ export default function VinylDisc({
   return (
     <div
       className={classes}
-      style={{ width: size, height: size, flex: `0 0 ${size}px` }}
+      style={
+        size === "fill"
+          ? { width: "100%", aspectRatio: "1 / 1" }
+          : { width: size, height: size, flex: `0 0 ${size}px` }
+      }
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -64,7 +68,7 @@ export default function VinylDisc({
           <img src={(cover || mosaic[0]) as string} alt="" className="tw-w-full tw-h-full tw-object-cover" />
         ) : null}
       </div>
-      {size >= 40 && (
+      {(size === "fill" || size >= 40) && (
         <span
           className="tw-absolute tw-z-[2] tw-rounded-full tw-bg-gray-100"
           style={{ width: "4.5%", height: "4.5%" }}

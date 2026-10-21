@@ -1,5 +1,6 @@
 import React from "react";
-import Image from "next/image";
+import { Sparkles, RefreshCw } from "lucide-react";
+import VinylDisc from "@/components/VinylDisc";
 
 interface AlbumCoverFlipProps {
   coverImage: string | null;
@@ -10,6 +11,8 @@ interface AlbumCoverFlipProps {
   onFlip: () => void;
   isGenerating: boolean;
   onGenerateImage: () => void;
+  /** El vinilo gira mientras suena el disco */
+  isPlaying?: boolean;
 }
 
 export const AlbumCoverFlip: React.FC<AlbumCoverFlipProps> = ({
@@ -21,69 +24,56 @@ export const AlbumCoverFlip: React.FC<AlbumCoverFlipProps> = ({
   onFlip,
   isGenerating,
   onGenerateImage,
+  isPlaying = false,
 }) => {
   const currentImage = isFlipped ? backCoverImage || "/no-portada.gif" : coverImage || "/no-portada.gif";
   const altText = `${artist} - ${title} ${isFlipped ? "contraportada" : "portada"}`;
   const isGenerated = currentImage.includes("generated_images");
 
   return (
-    <div className="tw-flex tw-flex-col tw-items-center">
-      <div
-        className={`tw-relative tw-w-40 tw-h-40 md:tw-w-64 md:tw-h-64 tw-cursor-pointer tw-select-none tw-perspective-[1000px] tw-group ${
-          isGenerating ? "tw-pointer-events-none tw-opacity-80" : ""
-        }`}
-        onClick={onFlip}
-        title="Haz clic para voltear la portada"
-      >
-        <div
-          className={`tw-w-full tw-h-full tw-rounded-2xl tw-overflow-hidden tw-shadow-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-transition-transform tw-duration-700 tw-relative tw-bg-gray-100 dark:tw-bg-gray-800 ${
-            isFlipped ? "tw-rotate-y-180" : ""
-          }`}
-          style={{
-            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            transformStyle: "preserve-3d",
-          }}
+    <div className="tw-flex tw-flex-col tw-items-start tw-gap-3">
+      {/* Funda delante y vinilo asomando por la derecha, con la portada en la galleta */}
+      <div className="tw-relative tw-w-[300px] sm:tw-w-[400px] tw-max-w-full">
+        <div className="tw-absolute tw-top-[2%] tw-right-0 tw-w-[66%]" aria-hidden="true">
+          <VinylDisc size="fill" cover={coverImage} spinning={isPlaying} />
+        </div>
+        <button
+          type="button"
+          onClick={onFlip}
+          disabled={isGenerating}
+          title={isFlipped ? "Ver la portada" : "Ver la contraportada"}
+          aria-label={isFlipped ? "Ver la portada" : "Ver la contraportada"}
+          className="tw-group tw-relative tw-block tw-w-[70%] tw-aspect-square tw-rounded-md tw-overflow-hidden tw-bg-gray-100 tw-shadow-[0_2px_4px_rgb(0_0_0/0.08),0_18px_40px_rgb(28_25_23/0.22)] disabled:tw-opacity-80"
+          style={{ perspective: "1000px" }}
         >
-          {/* Imagen de Portada */}
-          <div className="tw-w-full tw-h-full tw-relative">
+          <span
+            className="tw-block tw-w-full tw-h-full tw-transition-transform tw-duration-700"
+            style={{ transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)", transformStyle: "preserve-3d" }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentImage}
               alt={altText}
               className="tw-w-full tw-h-full tw-object-cover"
+              style={{ transform: isFlipped ? "rotateY(180deg)" : undefined }}
             />
-          </div>
-
-          {/* Overlay sutil al pasar el cursor */}
-          <div className="tw-absolute tw-inset-0 tw-bg-black/20 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-flex tw-items-end tw-justify-center tw-p-2">
-            <span className="tw-text-white tw-text-xs tw-bg-black/60 tw-backdrop-blur-sm tw-px-2 tw-py-1 tw-rounded-md">
-              🔄 Clic para girar
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Botón de Generar Imagen IA */}
-      <div className="tw-mt-2.5">
-        <button
-          type="button"
-          disabled={isGenerating}
-          onClick={(e) => {
-            e.stopPropagation();
-            onGenerateImage();
-          }}
-          className="tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg tw-border tw-border-brand-300 dark:tw-border-brand-800 tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-100 dark:hover:tw-bg-brand-900/50 tw-transition-all tw-flex tw-items-center tw-gap-1.5"
-        >
-          <span>✨</span>
-          <span>
-            {isGenerating
-              ? "Generando arte..."
-              : isGenerated
-              ? "Regenerar Imagen IA"
-              : "Generar Arte IA"}
+          </span>
+          <span className="tw-absolute tw-bottom-2 tw-left-2 tw-flex tw-items-center tw-gap-1 tw-text-[11px] tw-font-medium tw-text-white tw-bg-black/55 tw-backdrop-blur-sm tw-px-2 tw-py-1 tw-rounded-md tw-opacity-0 group-hover:tw-opacity-100 group-focus-visible:tw-opacity-100 tw-transition-opacity">
+            <RefreshCw className="tw-w-3 tw-h-3" />
+            {isFlipped ? "Portada" : "Contraportada"}
           </span>
         </button>
       </div>
+
+      <button
+        type="button"
+        disabled={isGenerating}
+        onClick={onGenerateImage}
+        className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-text-gray-600 hover:tw-text-gray-900 tw-px-2 tw-py-1 tw-rounded-md hover:tw-bg-white/70 tw-transition-colors disabled:tw-opacity-60"
+      >
+        <Sparkles className="tw-w-3.5 tw-h-3.5" />
+        {isGenerating ? "Generando arte…" : isGenerated ? "Regenerar arte con IA" : "Generar arte con IA"}
+      </button>
     </div>
   );
 };

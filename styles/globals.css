@@ -76,7 +76,41 @@
     @apply tw-overflow-hidden tw-pr-0;
 }
 .bio-content a {
-  @apply tw-text-blue-500 tw-underline;
+  @apply tw-text-brand-700 tw-underline;
 }
 
+}
+
+/* Vinilo con la portada como galleta (components/VinylDisc.tsx, docs/design.md §5) */
+@layer components {
+  .vinyl-disc {
+    position: relative;
+    border-radius: 9999px;
+    background: repeating-radial-gradient(circle at center, #141416 0 1.4px, #26262a 1.4px 2.8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 12px 32px rgb(28 25 23 / 0.16);
+  }
+  .vinyl-disc::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    pointer-events: none;
+    background: conic-gradient(from 20deg, rgb(255 255 255 / 0) 0deg, rgb(255 255 255 / 0.1) 40deg,
+      rgb(255 255 255 / 0) 80deg, rgb(255 255 255 / 0) 200deg, rgb(255 255 255 / 0.07) 230deg,
+      rgb(255 255 255 / 0) 260deg);
+  }
+  .vinyl-disc--flat { box-shadow: none; }
+  .vinyl-disc--spin { animation: vinyl-spin 7s linear infinite; }
+  .vinyl-disc--paused { animation-play-state: paused; }
+}
+
+@keyframes vinyl-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-disc--spin { animation: none; }
 }

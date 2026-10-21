@@ -1,8 +1,9 @@
-import { useState, useEffect, ReactNode, useCallback } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/router";
 import { getCookie } from "cookies-next";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
-import TopNavBar from "@/components/TopNavBar";
+import { Menu, X } from "lucide-react";
+import AppSidebar, { AppLogo } from "@/components/AppSidebar";
 import CustomHead from "./CustomHead";
 
 interface LayoutProps {
@@ -27,13 +28,9 @@ const Layout: React.FC<LayoutProps> = ({
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(
     initialLoggedInState || null
   );
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
 
-  const handleLogout = useCallback(() => {
-    // Usa useCallback aquí
-    setIsLoggedIn(false);
-    router.push("/"); // Si solo estás redirigiendo al inicio, este push está bien. Si no, considera usar "replace"
-  }, [router]);
 
   useEffect(() => {
     if (typeof window === "undefined") return; // Evitamos que se ejecute en SSR
@@ -54,25 +51,63 @@ const Layout: React.FC<LayoutProps> = ({
     );
   }
 
-  let containerClass = "";
-  if (centeredTopContent) {
-    containerClass = "tw-flex tw-items-center tw-justify-start";
-  } else if (centeredContent) {
-    containerClass = "tw-flex tw-items-center tw-justify-center";
-  } else {
-    containerClass = "tw-flex tw-justify-start";
-  }
+  // centeredTopContent: contenido arriba · centeredContent: centrado en la pantalla (cargas, errores)
+  const centered = centeredContent && !centeredTopContent;
 
   return (
     <>
       <CustomHead title={title} description={description} />
-      <div
-        className={`tw-min-h-screen tw-flex tw-flex-col ${containerClass} tw-bg-gray-100`}
-      >
-        <TopNavBar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-        <div className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-mt-10 tw-w-full">
-          <div className="tw-max-w-screen-xl tw-w-full">{children}</div>
-        </div>
+      <div className="tw-min-h-screen tw-bg-white tw-text-gray-900">
+        {isLoggedIn && (
+          <>
+            {/* Escritorio: barra lateral fija */}
+            <div className="tw-hidden lg:tw-block tw-fixed tw-inset-y-0 tw-left-0 tw-w-64 tw-z-30">
+              <AppSidebar />
+            </div>
+
+            {/* Móvil: barra superior y panel lateral */}
+            <header className="lg:tw-hidden tw-sticky tw-top-0 tw-z-30 tw-flex tw-items-center tw-justify-between tw-h-14 tw-px-3 tw-bg-white/95 tw-backdrop-blur tw-border-b tw-border-gray-200">
+              <AppLogo />
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(true)}
+                aria-label="Abrir menú"
+                className="tw-w-11 tw-h-11 tw-rounded-xl tw-text-gray-700 hover:tw-bg-gray-100 tw-flex tw-items-center tw-justify-center"
+              >
+                <Menu className="tw-w-5 tw-h-5" />
+              </button>
+            </header>
+            {isMenuOpen && (
+              <div className="lg:tw-hidden tw-fixed tw-inset-0 tw-z-50" role="dialog" aria-modal="true" aria-label="Menú">
+                <button
+                  type="button"
+                  aria-label="Cerrar menú"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="tw-absolute tw-inset-0 tw-bg-gray-900/30"
+                />
+                <div className="tw-absolute tw-inset-y-0 tw-left-0 tw-w-72 tw-max-w-[85vw] tw-shadow-xl">
+                  <AppSidebar onNavigate={() => setIsMenuOpen(false)} />
+                  <button
+                    type="button"
+                    onClick={() => setIsMenuOpen(false)}
+                    aria-label="Cerrar menú"
+                    className="tw-absolute tw-top-4 tw-right-3 tw-w-9 tw-h-9 tw-rounded-lg tw-text-gray-600 hover:tw-bg-gray-100 tw-flex tw-items-center tw-justify-center"
+                  >
+                    <X className="tw-w-5 tw-h-5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        <main
+          className={`${isLoggedIn ? "lg:tw-pl-64" : ""} ${
+            centered ? "tw-flex tw-items-center tw-justify-center tw-min-h-[80vh]" : ""
+          }`}
+        >
+          <div className="tw-w-full">{children}</div>
+        </main>
       </div>
     </>
   );

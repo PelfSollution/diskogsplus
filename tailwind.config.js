@@ -1,6 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 const colors = require('tailwindcss/colors');
 
+// Verde del acento (docs/design.md §2)
+const green = {
+  50: '#F3F8EC',
+  100: '#E4F0D6',
+  200: '#C9E2AE',
+  300: '#A6CF7E',
+  400: '#7DB24B',
+  500: '#5A9625',
+  600: '#3E7F0A',
+  700: '#336A08',
+  800: '#2A5507',
+  900: '#224507',
+  950: '#122704',
+};
+
 module.exports = {
   mode: 'jit',
   prefix: 'tw-',
@@ -23,6 +38,10 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
       boxShadow: {
         'dark': 'rgba(0, 0, 0, 0.16) 0px 19px 38px, rgba(0, 0, 0, 0.16) 0px 15px 12px',
         'inner-red': 'inset 0 0 0 2px #FF0000',
@@ -59,10 +78,16 @@ module.exports = {
         '40': '40px',
       },
       colors: {
-        // Paleta de la app (docs/design.md): brand = acción principal, vinyl = mixtape/vinilo
-        // (no usar «accent»: es un color de shadcn definido más abajo)
-        brand: colors.purple,
-        vinyl: colors.amber,
+        // Paleta de la app (docs/design.md): grises piedra cálidos y un solo acento verde.
+        // brand-600 (#3E7F0A) es el acento: admite texto blanco (contraste 4,95:1).
+        // vinyl es la misma escala desplazada un paso (vinyl-500 = brand-600) para el código
+        // que aún usa vinyl-500 como botón. No usar «accent»: es un color de shadcn.
+        gray: colors.stone,
+        brand: green,
+        vinyl: {
+          50: green[50], 100: green[100], 200: green[200], 300: green[300], 400: green[500],
+          500: green[600], 600: green[700], 700: green[800], 800: green[900], 900: green[900], 950: green[950],
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

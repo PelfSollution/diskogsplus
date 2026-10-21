@@ -2,15 +2,18 @@
 
 > Reglas visuales para que todas las pantallas se vean como una sola app.
 > Si algo no encaja en estas reglas, se cambia este documento antes que el código.
+> Rediseño de octubre de 2026: claro, sobrio y con el vinilo como detalle propio.
+> Boceto de referencia: lienzo «Diskogs+ rediseño claro» (mixtape, ficha del disco y reproductor móvil).
 
 ---
 
 ## 1. Principios
 
-1. **Un color para la acción, otro para el vinilo.** El morado (`brand`) marca lo que se puede hacer: botones, enlaces, pista activa. El ámbar (`vinyl`) es solo de la mixtape y del tocadiscos. Todo lo demás va en grises.
-2. **El color también informa.** Los colores de la rueda Camelot se usan solo para la tonalidad, nunca como decoración.
-3. **Una sola lista por cosa.** Cada dato aparece en un sitio. Por ejemplo, el tracklist de la ficha es a la vez lista de reproducción, ficha DJ (BPM y Camelot) y botón de mixtape.
-4. **Menos botones con texto.** Las acciones que se repiten en cada fila son iconos redondos con `title` y `aria-label`.
+1. **Claro y sobrio.** Fondo blanco, grises piedra cálidos y un solo acento verde. Nada de tarjetas con sombra por todas partes: listas y tablas limpias separadas por líneas finas.
+2. **El color lo ponen las portadas.** Las carátulas (miniaturas, galletas del vinilo, tinte de la cabecera de la ficha) son la fuente principal de color. La interfaz no compite con ellas.
+3. **El color también informa.** Los colores de la rueda Camelot se usan solo en la etiqueta de tonalidad, nunca en avatares ni como decoración.
+4. **El vinilo es la firma.** La portada dentro de la galleta del vinilo (`VinylDisc`) aparece en el logo, la mixtape, la ficha, el reproductor, la colección y las cargas.
+5. **Una sola lista por cosa** y **menos botones con texto**: las acciones que se repiten en cada fila son iconos con `title` y `aria-label`.
 
 ---
 
@@ -20,112 +23,111 @@ Definidos en `tailwind.config.js` (`theme.extend.colors`). Recuerda el prefijo `
 
 | Token | Escala | Uso |
 | :-- | :-- | :-- |
-| `brand` | `colors.purple` | Acción principal, enlaces, pista o pestaña activa, foco, etiquetas de género. |
-| `vinyl` | `colors.amber` | Mixtape: botón `+`/`✓` de la mixtape, Mixtape Player, cola y página de la mixtape. |
-| `gray` | Tailwind | Texto, bordes, fondos, botones secundarios. |
+| `gray` | `colors.stone` (cálidos) | Texto, fondos, bordes, botones secundarios. Todo `gray-*` es piedra. |
+| `brand` | Verde propio, `brand-600` = `#3E7F0A` | Acción principal (botón relleno con texto blanco, contraste 4,95:1), pista actual, progreso, foco, sobretítulos (`brand-700`). |
+| `vinyl` | La escala `brand` desplazada un paso | Solo por compatibilidad. **No usar en código nuevo.** |
 | `red` | Tailwind | **Solo** para borrar, cerrar sesión y errores. |
-| Camelot | `PITCH_CLASS_COLORS` en `lib/musicNotation.ts` | Etiquetas de tonalidad. Usa `getCamelotColor()`, que ya incluye el texto blanco. |
+| Camelot | `getCamelotHex()` / `PITCH_CLASS_COLORS` en `lib/musicNotation.ts` | Etiquetas de tonalidad, siempre con `CamelotChip`. |
 
-> No uses `accent` como nombre de color: es un token de shadcn (`hsl(var(--accent))`) y pisa cualquier escala con ese nombre.
-> No uses `blue`, `green`, `emerald` ni `orange` en componentes nuevos.
+> No uses `accent` como nombre de color: es un token de shadcn.
+> No uses `blue`, `orange`, `purple`, `amber` ni degradados en componentes nuevos.
 
 ### Tonos de referencia
 
-| Elemento | Claro | Oscuro (`dark:`) |
-| :-- | :-- | :-- |
-| Fondo de página | `gray-100` (en `components/Layout.tsx`) | sin definir todavía (pendiente: `gray-900`) |
-| Tarjeta | `bg-white` + `border-gray-200` | `bg-gray-800` + `border-gray-700` |
-| Texto principal | `text-gray-900` | `text-white` |
-| Texto secundario | `text-gray-500` | `text-gray-400` |
-| Botón principal | `bg-brand-600` → hover `bg-brand-700` | igual |
-| Fondo de elemento activo | `bg-brand-50` | `bg-brand-950/40` |
-| Texto de elemento activo | `text-brand-700` | `text-brand-300` |
-| Botón de mixtape activo | `bg-vinyl-500` → hover `bg-vinyl-600` | igual |
+| Elemento | Clases |
+| :-- | :-- |
+| Fondo de página | `bg-white` (el `Layout` ya lo pone) |
+| Barra lateral | `bg-gray-50` + `border-r border-gray-200` |
+| Línea entre filas | `border-b border-gray-100` (cabeceras de tabla: `border-gray-200`) |
+| Texto principal / secundario | `text-gray-900` / `text-gray-500` (mínimo `gray-500` en texto pequeño) |
+| Fila actual | `bg-brand-50`, título `text-brand-800` |
+| Aviso informativo | `bg-brand-50 border-brand-100 text-brand-900` |
+| Cabecera de la ficha | Tinte de la portada: `useCoverTint()` (color medio mezclado al 80 % con blanco) sobre `bg-gray-50` |
 
 ---
 
 ## 3. Tipografía
 
-Fuente del sistema (la *sans* por defecto de Tailwind). No hay fuentes web.
+`next/font` en `pages/_app.tsx`: **Inter** (`font-sans`) para todo y **JetBrains Mono** (`font-mono`) para datos técnicos: posición en el vinilo (A1), BPM en etiquetas y códigos Camelot.
 
 | Rol | Clases |
 | :-- | :-- |
-| Título de página | `text-2xl font-bold` (`md:text-3xl font-extrabold tracking-tight` en la ficha del disco) |
-| Título de tarjeta | `text-base font-bold` |
-| Texto | `text-sm` |
-| Metadatos y etiquetas | `text-xs` |
-| Sobretítulo (formato, sección) | `text-xs font-semibold uppercase tracking-wider text-brand-600` o `text-[11px] … text-gray-400` |
+| Sobretítulo de página | `text-xs font-semibold uppercase tracking-wider text-brand-700` («MIXTAPE», «COLECCIÓN») |
+| Título de página | `text-3xl md:text-4xl font-bold tracking-tight` |
+| Título de sección | `text-lg font-bold` (cara del vinilo: `text-[15px] font-bold`) |
+| Texto | `text-sm` / `text-[15px]` en el chat |
+| Metadatos | `text-[13px] text-gray-500` o `text-xs` |
+| Números en columnas | `tabular-nums` |
 
-Textos en castellano. Títulos en minúscula salvo la primera letra ("Escuchar el disco", "Más vídeos"), excepto nombres propios.
+Textos en castellano. Títulos en minúscula salvo la primera letra («Artistas similares»), excepto nombres propios.
 
 ---
 
-## 4. Espaciado y forma
+## 4. Estructura y espaciado
 
-- Contenedor: `container mx-auto max-w-6xl p-4 md:p-6`.
-- Ficha del disco: rejilla de 12 columnas, 7 + 5 en `lg`. La columna derecha es `sticky top-4`.
-- Separación entre tarjetas: `space-y-4` o `mt-3`.
-- Radios: tarjeta `rounded-2xl`, botón y campo `rounded-xl`, chip `rounded-lg` o `rounded-full`, botón de icono `rounded-full`.
-- Sombras: `shadow-sm` en tarjetas y botones; nada más fuerte salvo el deck oscuro del Mixtape Player.
+- **Layout** (`components/Layout.tsx`): barra lateral fija de 256 px en `lg` (`AppSidebar`: navegación, «Mis mixtapes», sesión); en el móvil, barra superior con el logo y un panel lateral.
+- Contenido: `max-w-6xl mx-auto px-4 md:px-10 py-8 md:py-10` (colección y wantlist: `max-w-7xl`).
+- Cabecera de página: sobretítulo + título + resumen a la izquierda, filtros o acciones a la derecha (`flex flex-wrap items-end justify-between`).
+- Radios: botón `rounded-full`; campo y botón pequeño `rounded-lg`; panel `rounded-xl`/`rounded-2xl`; portada `rounded-md`; miniatura `rounded`.
+- Sombras: solo en portadas y vinilos. Paneles y tablas, sin sombra.
 
 ---
 
 ## 5. Componentes
 
-### Tarjeta
-```html
-<div class="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm">
-```
-Cabecera: icono Lucide `w-5 h-5 text-brand-600` + título `font-bold text-base` + dato secundario `text-xs text-gray-500` opcional. Si es plegable, `ChevronDown` gris a la derecha.
+### VinylDisc (`components/VinylDisc.tsx`)
+Vinilo con surcos y brillo. Props: `size` (px o `"fill"`), `cover` (portada en la galleta), `covers` (mosaico 2×2 en la mixtape), `labelColor`, `spinning`, `paused`, `flat` (sin sombra, para iconos). Crea su propia capa (`isolation: isolate`) para no pintarse sobre lo que lo tape. Respeta `prefers-reduced-motion`.
 
 ### Botones
 | Tipo | Clases |
 | :-- | :-- |
-| Principal | `bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm px-4 py-2 rounded-xl shadow-sm` |
-| Secundario | `border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50` |
-| Discreto | `bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-xs px-3 py-1.5 rounded-lg` (compartir, filtros) |
-| Peligro | `text-red-600 hover:bg-red-50` (solo borrar y salir) |
-| Icono | `w-8 h-8 rounded-full flex items-center justify-center`, siempre con `title` y `aria-label` |
-| Interruptor activo/inactivo | Activo relleno `bg-brand-600 text-white`; inactivo como secundario (p. ej. wantlist) |
+| Principal | `h-11 px-5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold` |
+| Secundario | `h-11 px-4 rounded-full border border-gray-200 bg-white text-sm font-medium hover:bg-gray-50` |
+| Pequeño / filtro | `h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm` |
+| Icono | `w-8 h-8 rounded-lg` (o `rounded-full`), con `title` y `aria-label` |
+| Peligro | `hover:text-red-600 hover:bg-red-50` (solo quitar y borrar) |
+| Añadir a la mixtape | `+` con borde gris → `✓` relleno `bg-brand-600` |
 
-### Chips
-- Género: `bg-brand-50 text-brand-700 border border-brand-200 rounded-full text-xs`.
-- Etiqueta de Last.fm: `bg-gray-100 text-gray-600 rounded-full text-xs`, con `#`.
-- Camelot: `${getCamelotColor(code)} font-bold px-1.5 rounded text-xs`.
-- BPM: texto `font-medium text-gray-700`, sin fondo.
-- Fuente del audio: `text-[10px] uppercase tracking-wide text-gray-400`.
+### Etiquetas
+- **Camelot** (`CamelotChip`): fondo del color de la tonalidad al 12 %, borde al 35 %, punto sólido y código en `font-mono`; texto `gray-800`.
+- **Cara del vinilo** (A1) y **BPM**: `font-mono text-xs font-semibold bg-gray-100 border border-gray-200 rounded-md px-1.5`.
+- **Género / sello**: `bg-white border border-gray-200 rounded-full text-xs`. Etiquetas de Last.fm: `bg-black/5`, con `#`.
 
-### Fila de pista (`AlbumTracklist`)
-`[ posición / ▶ ]  título + duración · BPM · Camelot · fuente  [ + / ✓ ]`
-- El círculo de la izquierda muestra la posición (A1…) y un ▶ al pasar el ratón; en la pista actual, fondo `brand-600` con ▶/⏸.
-- Fila actual: `bg-brand-50`. Pista sin audio: posición en `text-gray-300`, sin hover.
-- Botón de mixtape a la derecha: `+` con borde gris → `✓` relleno `vinyl-500`.
+### Tabla de la mixtape (`MixtapeRow`, `MIXTAPE_GRID`)
+`[# / ▶] [portada · pista · artista] [disco] [cara] [BPM] [tono] [duración] [arrastrar · quitar]`. En el móvil, cara, BPM y tono bajo el título, y flechas en lugar del asa. Aviso de mismo disco entre filas (`sameRecordWarning`).
 
-### Reproductor
-- Ficha del disco: el estado vive en `hooks/useAlbumPlayer.ts` y lo comparten `AlbumTracklist` (play por pista) y `AlbumMediaSidebar` (vídeo, controles, "Más vídeos").
-- Vídeo siempre en `aspect-video`, nunca en una tira de altura fija.
-- Controles: anterior y siguiente como iconos grises; play/pausa redondo relleno (`brand-600` en la ficha, `vinyl-500` en el Mixtape Player).
-- Si suena una preview de Deezer, capa oscura encima del vídeo con un disco girando y "Preview de 30 s · Deezer".
+### Tracklist de la ficha (`AlbumTracklist`)
+Agrupado por **Cara A / Cara B** con la duración de cada cara. Fila: posición/▶, título, BPM, `CamelotChip`, duración y `+`.
 
-### Mixtape Player
-Única pantalla con fondo oscuro (`from-gray-900 to-gray-950`). Vinilo girando con galleta en degradado `from-vinyl-600 to-brand-600` y el nombre del artista (`line-clamp-2`). Cola a la derecha con la pista actual en `vinyl`.
+### Cuadrícula de portadas (`AlbumCoverCard`, `COVER_GRID`)
+Portada cuadrada, título y artista debajo; al pasar el ratón, el vinilo asoma por la derecha.
+
+### Reproductores
+- **Ficha**: funda delante y vinilo asomando con la portada en la galleta; gira mientras suena (`AlbumCoverFlip`).
+- **Mixtape** (`/mixtapeplayer`): vinilo grande con la portada de la pista y brazo del tocadiscos, controles en verde, tarjeta «Siguiente» con `encaja`/`salto` (`camelotCompatible`) y cola con miniaturas.
+
+### DiscBOT (`/chat`)
+Cabecera con el contexto (disco, mixtape o colección), respuestas sin burbuja con `ChatMarkdown`, etiquetas de herramientas («Consultando Discogs…»), mensajes del usuario en burbuja `bg-gray-100`, campo de texto que crece.
+
+### Estados vacíos y errores
+Panel `border-dashed border-gray-300 rounded-2xl` con un vinilo o icono, título, una frase y un botón principal. Errores: `ErrorScreen`.
 
 ---
 
 ## 6. Iconos
 
-Lucide (`lucide-react`). Tamaños: `w-5 h-5` en cabeceras, `w-4 h-4` en botones, `w-3.5 h-3.5` en chips. Iconos de sección en `text-brand-600` (o `text-vinyl-500` en la mixtape).
+Lucide (`lucide-react`). `w-4 h-4` en botones, `w-[18px]` en la navegación, `w-5 h-5` en cabeceras. Sin emojis en la interfaz.
 
 ---
 
 ## 7. Modo oscuro
 
-Por clase (`darkMode: ["class"]`). Cada color de fondo, texto o borde lleva su pareja `dark:`; usa las equivalencias de la tabla del §2. Para fondos tintados en oscuro, la escala `950` con opacidad (`dark:tw-bg-brand-950/40`).
+No se usa: la app es clara. Las clases `dark:` antiguas no hacen nada (no se activa la clase `dark`); no hace falta añadirlas en código nuevo.
 
 ---
 
 ## 8. Pendiente
 
-- Nombre y logo propios: el logo actual imita el de Discogs.
-- Unificar Home, Matching, Dashboard y DiscBOT con el patrón de tarjeta y cabecera del §5.
-- Reproductor global flotante (roadmap, fase 1) con los mismos controles.
+- Reproductor global fijo abajo (roadmap): seguir escuchando al navegar.
+- 404 de rutas inexistentes: con `app/` presente, Next 16 sirve su 404 por defecto; `pages/404.tsx` solo se ve en `/404`. Solución: `app/global-not-found.tsx` (experimental).
+- Retirar del todo la escala `vinyl` y las clases `dark:` antiguas.

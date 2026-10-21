@@ -26,6 +26,7 @@ export type SessionTrack = {
   duration: string | null;
   vinyl_position: string | null;
   spotifytrackid: string | null;
+  cover_url: string | null;
 };
 
 export type SessionRequest = {
@@ -84,6 +85,8 @@ async function getReleaseSessionTracks(release: CollectionRelease): Promise<Sess
     data?.artists?.[0]?.name || release.basic_information.artists?.[0]?.name || ""
   );
   const album = data?.title || release.basic_information.title;
+  const images: any[] = Array.isArray(data?.images) ? data.images : [];
+  const cover = (images.find((i) => i.type === "primary") || images[0])?.uri || null;
   const tracklist: { position: string; title: string; duration: string; artist?: string }[] = (
     Array.isArray(data?.tracklist) ? data.tracklist : []
   )
@@ -107,6 +110,7 @@ async function getReleaseSessionTracks(release: CollectionRelease): Promise<Sess
     duration: t.duration || null,
     vinyl_position: t.position ? t.position.slice(0, 12) : null,
     spotifytrackid: t.spotifyTrackId ?? null,
+    cover_url: cover,
   }));
 }
 
@@ -216,8 +220,7 @@ export async function saveSessionAsMixtape(username: string, nombre: string) {
 
   // En serie: addMixtape coloca cada pista al final
   for (const track of proposal.tracks) {
-    const { album, ...fields } = track;
-    await addMixtape({ ...fields, username, mixtape_id: mixtape.id });
+    await addMixtape({ ...track, username, mixtape_id: mixtape.id });
   }
   proposals.delete(username);
 

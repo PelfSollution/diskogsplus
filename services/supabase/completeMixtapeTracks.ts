@@ -16,22 +16,35 @@ type PendingTrack = {
   spotifytrackid: string | null;
   duration: string | null;
   vinyl_position: string | null;
+  album: string | null;
+  cover_url: string | null;
 };
 
-/** Pistas de un release de Discogs (sin cabeceras «Side A»). Una petición por disco. */
-async function getReleaseTracks(discoId: string): Promise<{ position: string; title: string; duration: string }[]> {
+type ReleaseInfo = {
+  title: string | null;
+  cover: string | null;
+  tracks: { position: string; title: string; duration: string }[];
+};
+
+/** Título, portada y pistas de un release de Discogs (sin cabeceras «Side A»). Una petición por disco. */
+async function getReleaseInfo(discoId: string): Promise<ReleaseInfo> {
   try {
     const release = await fetchDiscogsRelease(discoId, null);
-    return (Array.isArray(release?.tracklist) ? release.tracklist : [])
-      .filter((t: any) => t.type_ !== "heading")
-      .map((t: any) => ({ position: t.position || "", title: t.title || "", duration: t.duration || "" }));
+    const images: any[] = Array.isArray(release?.images) ? release.images : [];
+    return {
+      title: release?.title || null,
+      cover: (images.find((i) => i.type === "primary") || images[0])?.uri || null,
+      tracks: (Array.isArray(release?.tracklist) ? release.tracklist : [])
+        .filter((t: any) => t.type_ !== "heading")
+        .map((t: any) => ({ position: t.position || "", title: t.title || "", duration: t.duration || "" })),
+    };
   } catch (err: any) {
     console.warn(`[Mixtape] No se pudo leer el disco ${discoId} de Discogs:`, err?.message);
-    return [];
+    return { title: null, cover: null, tracks: [] };
   }
 }
 
-type ReleaseTrack = Awaited<ReturnType<typeof getReleaseTracks>>[number];
+type ReleaseTrack = ReleaseInfo["tracks"][number];
 
 /**
  * Pista del release con el mismo título. Primero el título exacto; si no, sin
@@ -49,8 +62,9 @@ function findReleaseTrack(tracks: ReleaseTrack[], title: string): ReleaseTrack |
 }
 
 /**
- * Completa las pistas de una mixtape a las que les faltan datos: posición en
- * el vinilo y duración (Discogs), y BPM y tonalidad (ReccoBeats, Deezer).
+ * Completa las pistas de una mixtape a las que les faltan datos: disco,
+ * portada, posición en el vinilo y duración (Discogs), y BPM y tonalidad
+ * (ReccoBeats, Deezer).
  * Solo rellena campos vacíos y marca las pistas como revisadas aunque no
  * aparezcan en ningún servicio. Solo servidor.
  */
@@ -62,19 +76,19 @@ export async function completeMixtapeTracks(
 
   const { data, error } = await supabase
     .from("mixtape")
-    .select("id, artista, trackname, disco_id, tempo, key, mode, spotifytrackid, duration, vinyl_position")
+    .select("id, artista, trackname, disco_id, tempo, key, mode, spotifytrackid, duration, vinyl_position, album, cover_url")
     .eq("username", username)
     .eq("mixtape_id", mixtapeId)
-    .or("tempo.is.null,key.is.null,mode.is.null,vinyl_position.is.null")
+    .or("tempo.is.null,key.is.null,mode.is.null,vinyl_position.is.null,album.is.null,cover_url.is.null")
     .limit(MAX_TRACKS_PER_RUN);
 
   if (error) throw error;
   const pending = (data || []) as PendingTrack[];
 
   // Cada disco se pide una vez aunque tenga varias pistas en la mixtape
-  const releases = new Map<string, ReturnType<typeof getReleaseTracks>>();
-  const releaseTracks = (discoId: string) => {
-    if (!releases.has(discoId)) releases.set(discoId, getReleaseTracks(discoId));
+  const releases = new Map<string, Promise<ReleaseInfo>>();
+  const releaseInfo = (discoId: string) => {
+    if (!releases.has(discoId)) releases.set(discoId, getReleaseInfo(discoId));
     return releases.get(discoId)!;
   };
 
@@ -87,8 +101,11 @@ export async function completeMixtapeTracks(
       const track = pending[next++];
       const changes: Record<string, number | string> = {};
 
-      if (track.vinyl_position == null || !track.duration) {
-        const match = findReleaseTrack(await releaseTracks(track.disco_id), track.trackname);
+      if (track.vinyl_position == null || !track.duration || !track.album || !track.cover_url) {
+        const release = await releaseInfo(track.disco_id);
+        if (!track.album && release.title) changes.album = release.title;
+        if (!track.cover_url && release.cover) changes.cover_url = release.cover;
+        const match = findReleaseTrack(release.tracks, track.trackname);
         if (match?.position && track.vinyl_position == null) changes.vinyl_position = match.position.slice(0, 12);
         if (match?.duration && !track.duration) changes.duration = match.duration;
       }

@@ -1,8 +1,7 @@
-import React, { memo, useState } from "react";
-import useSWR from "swr";
+import React from "react";
 import Link from "next/link";
-import { Play, Trash2, SquarePlay, ExternalLink } from "lucide-react";
-import { getCamelotColor, getPitchClassNotation } from "@/lib/musicNotation";
+import { Play, Trash2, GripVertical, ChevronUp, ChevronDown, Disc3 } from "lucide-react";
+import CamelotChip from "@/components/CamelotChip";
 
 export type MixtapeTrack = {
   id?: number | string;
@@ -17,190 +16,157 @@ export type MixtapeTrack = {
   duration?: string | null;
   vinyl_position?: string | null;
   data_checked_at?: string | null;
+  album?: string | null;
+  cover_url?: string | null;
 };
+
+/** Columnas de la tabla de la mixtape: la cabecera de la página usa las mismas. */
+export const MIXTAPE_GRID =
+  "tw-grid tw-items-center tw-gap-x-3 tw-grid-cols-[32px_minmax(0,1fr)_auto] md:tw-grid-cols-[40px_minmax(0,2fr)_minmax(0,1.2fr)_48px_52px_76px_48px_76px]";
 
 type MixtapeRowProps = {
   data: MixtapeTrack;
+  index: number;
+  total: number;
+  /** Sin reordenar (lista filtrada): sin asa ni flechas */
+  canReorder: boolean;
+  onMove: (from: number, to: number) => void;
+  onDragStart: (index: number, e: React.DragEvent) => void;
+  onDragEnd: () => void;
   onDelete: (track: MixtapeTrack) => void;
-  onPlay?: (track: MixtapeTrack) => void;
-  isPlaying?: boolean;
-  /** Controles a la izquierda de la fila (asa de arrastre y flechas para reordenar) */
-  leading?: React.ReactNode;
+  onPlay: (track: MixtapeTrack) => void;
 };
 
-const jsonFetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Error ${res.status}`);
-  return res.json();
-};
+const iconButton =
+  "tw-w-8 tw-h-8 tw-rounded-lg tw-flex tw-items-center tw-justify-center tw-text-gray-500 hover:tw-text-gray-900 hover:tw-bg-gray-100 tw-transition-colors";
 
-const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
+/** Fila de pista de la mixtape (docs/design.md §5, «Tabla de la mixtape»). */
+export default function MixtapeRow({
   data,
+  index,
+  total,
+  canReorder,
+  onMove,
+  onDragStart,
+  onDragEnd,
   onDelete,
   onPlay,
-  isPlaying = false,
-  leading,
-}) => {
-  const [showPreview, setShowPreview] = useState(false);
-
-  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-    `${data.artista} ${data.trackname}`
-  )}`;
-
-  // Vídeo de la pista a partir de los vídeos de Discogs; solo se pide al abrir la preescucha
-  const { data: videoData, isLoading: isVideoLoading } = useSWR(
-    showPreview && data.disco_id
-      ? `/api/mixtape/video?disco_id=${encodeURIComponent(data.disco_id)}&track=${encodeURIComponent(data.trackname)}`
-      : null,
-    jsonFetcher,
-    { revalidateOnFocus: false }
-  );
-  const videoId: string | undefined = videoData?.video?.videoId;
-  const youtubeEmbedUrl = videoId
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`
-    : "";
-
-  const keyInfo =
-    typeof data.key === "number" && typeof data.mode === "number"
-      ? getPitchClassNotation(data.key, data.mode)
-      : null;
+}: MixtapeRowProps) {
+  const bpm = data.tempo ? Math.round(data.tempo) : null;
 
   return (
-    <div
-      className={`tw-border tw-rounded-2xl tw-p-4 tw-transition-all tw-duration-200 tw-shadow-sm hover:tw-shadow-md ${
-        isPlaying
-          ? "tw-bg-brand-50/60 dark:tw-bg-brand-950/30 tw-border-brand-300 dark:tw-border-brand-700 ring-2 ring-purple-400"
-          : "tw-bg-white dark:tw-bg-gray-800 tw-border-gray-200 dark:tw-border-gray-700"
-      }`}
-    >
-      <div className="tw-flex tw-gap-3 tw-items-start lg:tw-items-center">
-      {leading && <div className="tw-flex tw-flex-col tw-items-center tw-gap-0.5 tw-shrink-0">{leading}</div>}
-      <div className="tw-flex-1 tw-min-w-0 tw-flex tw-flex-col lg:tw-flex-row tw-gap-4 tw-items-start lg:tw-items-center tw-justify-between">
-        {/* Columna Izquierda: Información del tema y artista */}
-        <div className="tw-flex-1 tw-min-w-0">
-          <div className="tw-flex tw-items-center tw-gap-2 tw-mb-1">
-            <span className="tw-font-bold tw-text-base tw-text-gray-900 dark:tw-text-white tw-truncate">
-              {data.artista}
-            </span>
-          </div>
+    <div className={`${MIXTAPE_GRID} tw-group tw-px-2 tw-py-2 tw-rounded-lg hover:tw-bg-gray-50`}>
+      {/* Número · reproducir al pasar el ratón */}
+      <div className="tw-relative tw-flex tw-items-center tw-justify-center tw-h-10">
+        <span className="tw-font-mono tw-text-xs tw-text-gray-500 group-hover:tw-invisible">{index + 1}</span>
+        <button
+          type="button"
+          onClick={() => onPlay(data)}
+          aria-label={`Reproducir «${data.trackname}»`}
+          className="tw-absolute tw-inset-0 tw-m-auto tw-w-8 tw-h-8 tw-rounded-full tw-bg-brand-600 tw-text-white tw-items-center tw-justify-center tw-hidden group-hover:tw-flex focus-visible:tw-flex"
+        >
+          <Play className="tw-w-3.5 tw-h-3.5 tw-fill-current" />
+        </button>
+      </div>
 
+      {/* Portada, pista y artista (en el móvil, también cara, BPM y tono) */}
+      <div className="tw-flex tw-items-center tw-gap-3 tw-min-w-0">
+        {data.cover_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={data.cover_url}
+            alt=""
+            loading="lazy"
+            className="tw-w-10 tw-h-10 tw-rounded tw-object-cover tw-bg-gray-100 tw-shrink-0"
+          />
+        ) : (
+          <span className="tw-w-10 tw-h-10 tw-rounded tw-bg-gray-100 tw-text-gray-400 tw-flex tw-items-center tw-justify-center tw-shrink-0">
+            <Disc3 className="tw-w-5 tw-h-5" />
+          </span>
+        )}
+        <div className="tw-min-w-0">
           <Link
             href={`/albums/${data.disco_id}`}
-            className="tw-text-sm tw-font-medium tw-text-brand-600 dark:tw-text-brand-400 hover:tw-underline tw-block tw-truncate"
-            title="Ver vinilo en el catálogo"
+            className="tw-block tw-text-sm tw-font-semibold tw-text-gray-900 tw-truncate hover:tw-underline"
+            title="Ver el disco"
           >
             {data.trackname}
           </Link>
-
-          {/* Badges de BPM, Camelot Wheel y Duración */}
-          <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-2.5 tw-items-center">
+          <span className="tw-block tw-text-[13px] tw-text-gray-500 tw-truncate">{data.artista}</span>
+          <div className="md:tw-hidden tw-flex tw-flex-wrap tw-items-center tw-gap-1.5 tw-mt-1">
             {data.vinyl_position && (
-              <span
-                className="tw-text-xs tw-font-bold tw-font-mono tw-bg-vinyl-100 dark:tw-bg-vinyl-950/50 tw-text-vinyl-800 dark:tw-text-vinyl-300 tw-px-2 tw-py-1 tw-rounded-lg"
-                title="Cara y posición en el vinilo"
-              >
+              <span className="tw-font-mono tw-text-[11px] tw-font-semibold tw-text-gray-700 tw-bg-gray-100 tw-border tw-border-gray-200 tw-rounded tw-px-1">
                 {data.vinyl_position}
               </span>
             )}
-
-            {data.tempo && (
-              <span className="tw-text-xs tw-font-semibold tw-bg-gray-100 dark:tw-bg-gray-700 tw-text-gray-700 dark:tw-text-gray-300 tw-px-2.5 tw-py-1 tw-rounded-lg">
-                ⚡ {Math.round(data.tempo)} BPM
-              </span>
-            )}
-
-            {keyInfo && (
-              <span
-                className={`tw-text-xs tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-lg tw-text-white ${getCamelotColor(
-                  keyInfo.camelotCode
-                )}`}
-              >
-                {keyInfo.full}
-              </span>
-            )}
-
-            {data.duration && (
-              <span className="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">
-                ⏱ {data.duration}
-              </span>
-            )}
+            {bpm && <span className="tw-font-mono tw-text-[11px] tw-text-gray-700">{bpm} BPM</span>}
+            <CamelotChip keyIndex={data.key} mode={data.mode} />
           </div>
         </div>
-
-        {/* Columna Centro: Reproductor de YouTube / Preescucha rápida */}
-        <div className="tw-w-full lg:tw-w-auto tw-flex tw-flex-wrap tw-items-center tw-gap-2">
-          {showPreview ? (
-            <div className="tw-w-full sm:tw-w-[320px] tw-h-[85px] tw-rounded-xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-inner tw-bg-black">
-              {youtubeEmbedUrl ? (
-                <iframe
-                  src={youtubeEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  title={`Reproductor YouTube: ${data.trackname}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="tw-w-full tw-h-full"
-                />
-              ) : (
-                <div className="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-3 tw-text-xs tw-text-gray-400">
-                  {isVideoLoading ? (
-                    "Buscando vídeo…"
-                  ) : (
-                    <>
-                      Sin vídeo en Discogs ·
-                      <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="tw-text-brand-400 hover:tw-underline">
-                        Buscar en YouTube
-                      </a>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                if (onPlay) {
-                  onPlay(data);
-                } else {
-                  setShowPreview(true);
-                }
-              }}
-              className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3.5 tw-py-2 tw-rounded-xl tw-bg-brand-50 dark:tw-bg-brand-950/40 tw-text-brand-700 dark:tw-text-brand-300 hover:tw-bg-brand-100 dark:hover:tw-bg-brand-900/50 tw-border tw-border-brand-200 dark:tw-border-brand-800 tw-transition-colors"
-            >
-              <SquarePlay className="tw-w-4 tw-h-4" />
-              <span>{isPlaying ? "Reproduciendo" : "Escuchar audio"}</span>
-            </button>
-          )}
-
-          <a
-            href={youtubeSearchUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-gray-200 tw-p-2 tw-rounded-lg hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-transition-colors"
-            title="Abrir en YouTube"
-          >
-            <ExternalLink className="tw-w-4 tw-h-4" />
-          </a>
-        </div>
-
-        {/* Columna Derecha: Botón Eliminar */}
-        <div className="tw-w-full lg:tw-w-auto tw-flex tw-justify-end">
-          <button
-            type="button"
-            onClick={() => onDelete(data)}
-            className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-px-3 tw-py-2 tw-rounded-xl tw-text-red-500 hover:tw-text-red-700 hover:tw-bg-red-50 dark:hover:tw-bg-red-950/40 tw-border tw-border-transparent hover:tw-border-red-200 tw-transition-colors"
-            title="Eliminar de la Mixtape"
-          >
-            <Trash2 className="tw-w-4 tw-h-4" />
-            <span>Eliminar</span>
-          </button>
-        </div>
       </div>
+
+      {/* Columnas de escritorio */}
+      <span className="tw-hidden md:tw-block tw-text-[13px] tw-text-gray-600 tw-truncate">{data.album || ""}</span>
+      <span className="tw-hidden md:tw-block">
+        {data.vinyl_position && (
+          <span className="tw-font-mono tw-text-xs tw-font-semibold tw-text-gray-700 tw-bg-gray-100 tw-border tw-border-gray-200 tw-rounded-md tw-px-1.5 tw-py-0.5">
+            {data.vinyl_position}
+          </span>
+        )}
+      </span>
+      <span className="tw-hidden md:tw-block tw-text-right tw-text-sm tw-font-medium tw-tabular-nums">{bpm ?? ""}</span>
+      <span className="tw-hidden md:tw-block">
+        <CamelotChip keyIndex={data.key} mode={data.mode} />
+      </span>
+      <span className="tw-hidden md:tw-block tw-text-right tw-text-[13px] tw-text-gray-500 tw-tabular-nums">
+        {data.duration || ""}
+      </span>
+
+      {/* Reordenar y quitar */}
+      <div className="tw-flex tw-items-center tw-justify-end tw-gap-0.5">
+        {canReorder && (
+          <>
+            <span
+              draggable
+              onDragStart={(e) => onDragStart(index, e)}
+              onDragEnd={onDragEnd}
+              title="Arrastra para mover"
+              className="tw-hidden md:tw-flex tw-w-8 tw-h-8 tw-items-center tw-justify-center tw-rounded-lg tw-text-gray-400 hover:tw-text-gray-700 tw-cursor-grab active:tw-cursor-grabbing md:tw-opacity-0 group-hover:tw-opacity-100"
+            >
+              <GripVertical className="tw-w-4 tw-h-4" />
+            </span>
+            <span className="md:tw-hidden tw-flex tw-flex-col">
+              <button
+                type="button"
+                onClick={() => onMove(index, index - 1)}
+                disabled={index === 0}
+                aria-label={`Subir «${data.trackname}»`}
+                className="tw-w-8 tw-h-6 tw-flex tw-items-center tw-justify-center tw-text-gray-500 disabled:tw-invisible"
+              >
+                <ChevronUp className="tw-w-4 tw-h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onMove(index, index + 1)}
+                disabled={index === total - 1}
+                aria-label={`Bajar «${data.trackname}»`}
+                className="tw-w-8 tw-h-6 tw-flex tw-items-center tw-justify-center tw-text-gray-500 disabled:tw-invisible"
+              >
+                <ChevronDown className="tw-w-4 tw-h-4" />
+              </button>
+            </span>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => onDelete(data)}
+          aria-label={`Quitar «${data.trackname}» de la mixtape`}
+          title="Quitar de la mixtape"
+          className={`${iconButton} hover:tw-text-red-600 hover:tw-bg-red-50 md:tw-opacity-0 group-hover:tw-opacity-100 focus-visible:tw-opacity-100`}
+        >
+          <Trash2 className="tw-w-4 tw-h-4" />
+        </button>
       </div>
     </div>
   );
-};
-
-MixtapeRowComponent.displayName = "MixtapeRow";
-export default memo(MixtapeRowComponent);
+}

@@ -1,3 +1,5 @@
+// Rueda Camelot: las mayores (B) avanzan por quintas desde Do = 8B; cada menor
+// (A) comparte número con su relativa mayor
 export const CAMELOT_CODES: { [key: string]: string } = {
   "C major": "8B",
   "A minor": "8A",
@@ -15,14 +17,14 @@ export const CAMELOT_CODES: { [key: string]: string } = {
   "D♯/E♭ minor": "2A",
   "C♯/D♭ major": "3B",
   "A♯/B♭ minor": "3A",
-  "F major": "4B",
-  "D minor": "4A",
-  "A♯/B♭ major": "5B",
-  "G minor": "5A",
-  "G♯/A♭ major": "6B",
-  "F minor": "6A",
-  "D♯/E♭ major": "7B",
-  "C minor": "7A",
+  "F major": "7B",
+  "D minor": "7A",
+  "A♯/B♭ major": "6B",
+  "G minor": "6A",
+  "G♯/A♭ major": "4B",
+  "F minor": "4A",
+  "D♯/E♭ major": "5B",
+  "C minor": "5A",
 };
 
 export const PITCH_CLASS_COLORS: { [key: string]: string } = {
@@ -66,6 +68,22 @@ export const PITCH_CLASSES = [
   "A♯/B♭",
   "B",
 ];
+
+// Los mismos tonos que PITCH_CLASS_COLORS en hexadecimal, para las etiquetas
+// tintadas (fondo suave, borde y punto del color de la tonalidad)
+const CAMELOT_HEX: { [key: string]: string } = {
+  "1A": "#0D9488", "1B": "#14B8A6", "2A": "#059669", "2B": "#10B981",
+  "3A": "#16A34A", "3B": "#22C55E", "4A": "#65A30D", "4B": "#84CC16",
+  "5A": "#CA8A04", "5B": "#EAB308", "6A": "#D97706", "6B": "#F59E0B",
+  "7A": "#EA580C", "7B": "#F97316", "8A": "#DC2626", "8B": "#EF4444",
+  "9A": "#E11D48", "9B": "#F43F5E", "10A": "#DB2777", "10B": "#EC4899",
+  "11A": "#9333EA", "11B": "#A855F7", "12A": "#4F46E5", "12B": "#6366F1",
+};
+
+/** Color de la tonalidad en hexadecimal, o null si no hay código Camelot. */
+export function getCamelotHex(camelotCode?: string): string | null {
+  return (camelotCode && CAMELOT_HEX[camelotCode]) || null;
+}
 
 /** Fondo de la etiqueta Camelot (con texto blanco para que se lea en todos los tonos) */
 export function getCamelotColor(camelotCode?: string): string {

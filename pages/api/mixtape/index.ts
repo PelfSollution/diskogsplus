@@ -18,6 +18,12 @@ function requiredString(value: unknown): string | null {
   return typeof value === "string" && value ? value : null;
 }
 
+/** Texto opcional con longitud máxima; si no cumple, null. */
+function optionalText(value: unknown, max: number): string | null {
+  const text = requiredString(value);
+  return text && text.length <= max ? text : null;
+}
+
 // Pistas de una mixtape (mixtape_id en la query para GET, en el body para el resto).
 // GET: listar · POST: añadir pista · PATCH: reordenar (track_ids) · DELETE: quitar pista.
 // El usuario sale siempre de la sesión, nunca del body.
@@ -62,7 +68,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === "POST") {
-      const { spotifytrackid, tempo, key, mode, duration, vinyl_position } = req.body;
+      const { spotifytrackid, tempo, key, mode, duration, vinyl_position, album, cover_url } = req.body;
+      const cover = optionalText(cover_url, 500);
       const vinylPosition = requiredString(vinyl_position);
       await addMixtape({
         username,
@@ -76,6 +83,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         mode: toNumberOrNull(mode),
         duration: requiredString(duration),
         vinyl_position: vinylPosition && vinylPosition.length <= 12 ? vinylPosition : null,
+        album: optionalText(album, 300),
+        cover_url: cover && cover.startsWith("https://") ? cover : null,
       });
       return res.status(200).json({ success: true });
     }

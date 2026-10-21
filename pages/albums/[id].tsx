@@ -228,6 +228,9 @@ function AlbumDetails() {
         mode: track.mode ?? null,
         duration: track.duration ?? null,
         vinyl_position: track.position || null,
+        album: albumInfo?.title || null,
+        // Solo portadas de Discogs (no la generada ni la imagen por defecto)
+        cover_url: albumInfo?.coverImage?.startsWith("https://") ? albumInfo.coverImage : null,
       });
       setTracksInMixtape((prev) => [...prev, track.title]);
       showNotification(`"${track.title}" añadida a «${mixtapes.active?.nombre ?? "tu mixtape"}».`);

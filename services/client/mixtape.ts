@@ -11,6 +11,13 @@ import {
 import type { MixtapeInfo } from "../supabase/mixtapes";
 
 export type Mixtape = LocalMixtapeTrack;
+
+/** Evento para que la barra lateral recargue las mixtapes (nombres y número de pistas). */
+export const MIXTAPES_CHANGED_EVENT = "diskogs:mixtapes-changed";
+
+function notifyMixtapesChanged() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(MIXTAPES_CHANGED_EVENT));
+}
 export type { MixtapeInfo };
 
 /** Respuesta que obliga a usar localStorage: sin Supabase o sin servidor. */
@@ -54,17 +61,22 @@ export async function getMixtapes(): Promise<MixtapeInfo[] | null> {
 export async function createMixtape(nombre: string): Promise<MixtapeInfo | string> {
   const res = await send("/api/mixtapes", "POST", { nombre });
   if (!res?.ok) return errorMessage(res, "No se pudo crear la mixtape.");
-  return res.json();
+  const created = await res.json();
+  notifyMixtapesChanged();
+  return created;
 }
 
 /** Renombra una mixtape. Devuelve null si va bien o el mensaje de error. */
 export async function renameMixtape(id: number, nombre: string): Promise<string | null> {
   const res = await send("/api/mixtapes", "PATCH", { id, nombre });
-  return res?.ok ? null : errorMessage(res, "No se pudo renombrar la mixtape.");
+  if (!res?.ok) return errorMessage(res, "No se pudo renombrar la mixtape.");
+  notifyMixtapesChanged();
+  return null;
 }
 
 export async function deleteMixtape(id: number): Promise<boolean> {
   const res = await send("/api/mixtapes", "DELETE", { id });
+  if (res?.ok) notifyMixtapesChanged();
   return Boolean(res?.ok);
 }
 
@@ -97,6 +109,7 @@ export async function addMixtape(track: Mixtape): Promise<void> {
     return;
   }
   if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo añadir la pista."));
+  notifyMixtapesChanged();
 }
 
 export async function deleteFromMixtape(
@@ -122,6 +135,7 @@ export async function deleteFromMixtape(
     return;
   }
   if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo quitar la pista."));
+  notifyMixtapesChanged();
 }
 
 /** Guarda el orden nuevo de las pistas (lista completa, ya ordenada). */

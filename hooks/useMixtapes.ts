@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { getMixtapes, MixtapeInfo } from "@/services/client/mixtape";
+import { getMixtapes, MixtapeInfo, MIXTAPES_CHANGED_EVENT } from "@/services/client/mixtape";
 
 const ACTIVE_KEY = "diskogs_active_mixtape_";
+const ACTIVE_CHANGED_EVENT = "diskogs:active-mixtape-changed";
 
 function readActive(username: string): number | null {
   try {
@@ -48,10 +49,23 @@ function useMixtapes(username: string) {
     reload();
   }, [reload]);
 
+  // Otras instancias del hook (barra lateral, página) avisan al crear, renombrar o borrar
+  useEffect(() => {
+    const onChanged = () => reload();
+    const onActiveChanged = (e: Event) => setActiveIdState((e as CustomEvent<number>).detail);
+    window.addEventListener(MIXTAPES_CHANGED_EVENT, onChanged);
+    window.addEventListener(ACTIVE_CHANGED_EVENT, onActiveChanged);
+    return () => {
+      window.removeEventListener(MIXTAPES_CHANGED_EVENT, onChanged);
+      window.removeEventListener(ACTIVE_CHANGED_EVENT, onActiveChanged);
+    };
+  }, [reload]);
+
   const setActiveId = useCallback(
     (id: number) => {
-      setActiveIdState(id);
       writeActive(username, id);
+      // Todas las instancias del hook (esta incluida) cambian a la vez
+      window.dispatchEvent(new CustomEvent(ACTIVE_CHANGED_EVENT, { detail: id }));
     },
     [username]
   );

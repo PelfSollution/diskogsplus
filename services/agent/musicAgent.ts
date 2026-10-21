@@ -71,7 +71,7 @@ export function buildMusicAgentTools(context: MusicAgentContext) {
 
     get_user_mixtape: tool({
       description:
-        "Lista los temas de la mixtape actual del usuario en Diskogs Plus, en el orden de la sesión, con su BPM y su código Camelot. Sin mixtape actual, lista los de todas sus mixtapes.",
+        "Lista los temas de la mixtape actual del usuario en Diskogs Plus, en el orden de la sesión, con su BPM, su código Camelot, su duración y su posición en el vinilo (A1, B2). Pistas seguidas con el mismo disco_id no se pueden mezclar con una sola copia. Sin mixtape actual, lista los de todas sus mixtapes.",
       inputSchema: z.object({}),
       execute: async () =>
         getUserMixtapeTracks({

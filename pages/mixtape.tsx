@@ -7,7 +7,7 @@ import {
   deleteFromMixtape,
   reorderMixtape,
   mixtapeChatHref,
-  fillMixtapeAudioFeatures,
+  completeMixtapeTracks,
 } from "@/services/client/mixtape";
 import useMixtapes from "@/hooks/useMixtapes";
 import useGetMixtape from "@/hooks/useGetMixtape";
@@ -27,10 +27,12 @@ import {
   Wand2,
   Undo2,
   Gauge,
+  TriangleAlert,
   Loader2,
 } from "lucide-react";
 import { getPitchClassNotation } from "@/lib/musicNotation";
 import { sortByHarmonyAndBpm } from "@/lib/mixtapeOrder";
+import { durationToSeconds, formatSessionDuration, sameRecordWarning } from "@/lib/vinyl";
 
 export default function Mixtape() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -135,19 +137,19 @@ export default function Mixtape() {
     saveOrder(previous);
   }
 
-  async function handleFillAudioFeatures() {
+  async function handleCompleteTracks() {
     if (mixtapes.activeId == null) return;
     setIsFillingData(true);
     try {
-      const { revisadas, actualizadas } = await fillMixtapeAudioFeatures(mixtapes.activeId);
+      const { revisadas, actualizadas } = await completeMixtapeTracks(mixtapes.activeId);
       await reloadTracks();
       handleOpenSnackbar(
         actualizadas > 0
           ? `Datos encontrados para ${actualizadas} de ${revisadas} pistas.`
-          : "No se han encontrado datos nuevos en ReccoBeats ni Deezer."
+          : "No se han encontrado datos nuevos en Discogs, ReccoBeats ni Deezer."
       );
     } catch (error: any) {
-      console.error("Error buscando BPM y tonalidad:", error);
+      console.error("Error completando los datos de las pistas:", error);
       handleOpenSnackbar(error?.message || "No se pudieron buscar los datos.");
     } finally {
       setIsFillingData(false);
@@ -174,10 +176,18 @@ export default function Mixtape() {
 
       return matchesSearch && matchesKey && matchesBpm;
   });
-  // Pistas sin BPM o sin tonalidad: no se pueden encadenar bien en el orden automático
+  // Pistas sin cara, BPM o tonalidad que aún no se han buscado (las revisadas
+  // sin resultado no vuelven a avisar)
   const missingDataCount = mixtape.filter(
-    (t) => t.tempo == null || t.key == null || t.mode == null
+    (t) =>
+      !t.data_checked_at &&
+      (t.tempo == null || t.key == null || t.mode == null || t.vinyl_position == null)
   ).length;
+
+  // Duración de la sesión con las pistas que la tienen
+  const durations = mixtape.map((t) => durationToSeconds(t.duration));
+  const totalSeconds = durations.reduce<number>((sum, d) => sum + (d ?? 0), 0);
+  const tracksWithoutDuration = durations.filter((d) => d === null).length;
 
   // Con filtros la lista está incompleta: reordenar solo tiene sentido sobre la sesión entera
   const isFiltered = filteredMixtape.length !== mixtape.length;
@@ -209,7 +219,14 @@ export default function Mixtape() {
               {mixtapeName}
             </h1>
             <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-mt-1">
-              {mixtape.length} canciones seleccionadas para mezcla y escucha continua
+              {mixtape.length} canciones
+              {totalSeconds > 0 && (
+                <>
+                  {" · "}
+                  {formatSessionDuration(totalSeconds)}
+                  {tracksWithoutDuration > 0 && ` (${tracksWithoutDuration} sin duración)`}
+                </>
+              )}
             </p>
           </div>
 
@@ -359,13 +376,13 @@ export default function Mixtape() {
               <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-mb-4 tw-px-4 tw-py-3 tw-rounded-2xl tw-bg-vinyl-50 dark:tw-bg-vinyl-950/30 tw-border tw-border-vinyl-200 dark:tw-border-vinyl-800">
                 <p className="tw-text-sm tw-text-vinyl-900 dark:tw-text-vinyl-200">
                   {missingDataCount === 1
-                    ? "1 pista no tiene BPM o tonalidad"
-                    : `${missingDataCount} pistas no tienen BPM o tonalidad`}
-                  : el orden automático no puede encadenarlas bien.
+                    ? "A 1 pista le falta la cara, el BPM o la tonalidad"
+                    : `A ${missingDataCount} pistas les falta la cara, el BPM o la tonalidad`}
+                  . Sin ellos el orden automático no puede encadenarlas bien.
                 </p>
                 <button
                   type="button"
-                  onClick={handleFillAudioFeatures}
+                  onClick={handleCompleteTracks}
                   disabled={isFillingData}
                   className="tw-flex tw-items-center tw-gap-1.5 tw-px-3.5 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-bg-white dark:tw-bg-gray-900 tw-text-vinyl-700 dark:tw-text-vinyl-300 tw-border tw-border-vinyl-300 dark:tw-border-vinyl-700 hover:tw-bg-vinyl-100 dark:hover:tw-bg-vinyl-900/40 tw-transition-colors disabled:tw-opacity-60 disabled:tw-cursor-wait"
                 >
@@ -374,7 +391,7 @@ export default function Mixtape() {
                   ) : (
                     <Gauge className="tw-w-4 tw-h-4" />
                   )}
-                  <span>{isFillingData ? "Buscando…" : "Buscar BPM y tonalidad"}</span>
+                  <span>{isFillingData ? "Buscando…" : "Completar datos"}</span>
                 </button>
               </div>
             )}
@@ -414,6 +431,12 @@ export default function Mixtape() {
                         : ""
                     }`}
                   >
+                    {!isFiltered && sameRecordWarning(filteredMixtape[index - 1], track) && (
+                      <p className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-text-vinyl-700 dark:tw-text-vinyl-300 tw-px-2 tw-pb-1.5">
+                        <TriangleAlert className="tw-w-3.5 tw-h-3.5 tw-shrink-0" />
+                        {sameRecordWarning(filteredMixtape[index - 1], track)}
+                      </p>
+                    )}
                     <MixtapeRow
                       data={track}
                       onDelete={handleDelete}

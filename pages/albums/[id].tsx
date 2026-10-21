@@ -227,6 +227,7 @@ function AlbumDetails() {
         key: track.key ?? null,
         mode: track.mode ?? null,
         duration: track.duration ?? null,
+        vinyl_position: track.position || null,
       });
       setTracksInMixtape((prev) => [...prev, track.title]);
       showNotification(`"${track.title}" añadida a «${mixtapes.active?.nombre ?? "tu mixtape"}».`);

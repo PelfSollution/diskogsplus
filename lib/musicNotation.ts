@@ -17,11 +17,11 @@ export const CAMELOT_CODES: { [key: string]: string } = {
   "A♯/B♭ minor": "3A",
   "F major": "4B",
   "D minor": "4A",
-  "B♭ major": "5B",
+  "A♯/B♭ major": "5B",
   "G minor": "5A",
-  "A♭ major": "6B",
+  "G♯/A♭ major": "6B",
   "F minor": "6A",
-  "E♭ major": "7B",
+  "D♯/E♭ major": "7B",
   "C minor": "7A",
 };
 

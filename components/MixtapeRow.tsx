@@ -15,6 +15,8 @@ export type MixtapeTrack = {
   key?: number | null;
   mode?: number | null;
   duration?: string | null;
+  vinyl_position?: string | null;
+  data_checked_at?: string | null;
 };
 
 type MixtapeRowProps = {
@@ -92,6 +94,15 @@ const MixtapeRowComponent: React.FC<MixtapeRowProps> = ({
 
           {/* Badges de BPM, Camelot Wheel y Duración */}
           <div className="tw-flex tw-flex-wrap tw-gap-2 tw-mt-2.5 tw-items-center">
+            {data.vinyl_position && (
+              <span
+                className="tw-text-xs tw-font-bold tw-font-mono tw-bg-vinyl-100 dark:tw-bg-vinyl-950/50 tw-text-vinyl-800 dark:tw-text-vinyl-300 tw-px-2 tw-py-1 tw-rounded-lg"
+                title="Cara y posición en el vinilo"
+              >
+                {data.vinyl_position}
+              </span>
+            )}
+
             {data.tempo && (
               <span className="tw-text-xs tw-font-semibold tw-bg-gray-100 dark:tw-bg-gray-700 tw-text-gray-700 dark:tw-text-gray-300 tw-px-2.5 tw-py-1 tw-rounded-lg">
                 ⚡ {Math.round(data.tempo)} BPM

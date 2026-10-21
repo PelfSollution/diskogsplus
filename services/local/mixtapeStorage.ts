@@ -10,6 +10,8 @@ export type LocalMixtapeTrack = {
   key?: number | null;
   mode?: number | null;
   duration?: string | null;
+  vinyl_position?: string | null; // posición en Discogs: «A1», «B2»
+  data_checked_at?: string | null; // solo en Supabase: última búsqueda de datos
 };
 
 const STORAGE_PREFIX = "diskogs_mixtape_";

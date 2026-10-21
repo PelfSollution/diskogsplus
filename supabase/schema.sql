@@ -41,6 +41,8 @@ create table if not exists public.mixtape (
   mode           smallint check (mode in (0, 1)),        -- 0 = menor, 1 = mayor
   duration       text,
   position       integer,                       -- orden dentro de la mixtape (0, 1, 2…)
+  vinyl_position text check (length(vinyl_position) <= 12),  -- posición en Discogs: «A1», «B2»
+  data_checked_at timestamptz,                  -- última búsqueda de datos (Discogs, ReccoBeats, Deezer)
   created_at     timestamptz not null default now(),
   constraint mixtape_unique_track unique (mixtape_id, disco_id, artista, trackname)
 );
@@ -85,6 +87,10 @@ from (
 where t.id = o.id;
 
 create index if not exists mixtape_position_idx on public.mixtape (mixtape_id, position);
+
+-- Cara y posición del vinilo, y marca de pistas ya revisadas (oct. 2026)
+alter table public.mixtape add column if not exists vinyl_position text check (length(vinyl_position) <= 12);
+alter table public.mixtape add column if not exists data_checked_at timestamptz;
 
 -- Playlists de Spotify exportadas desde el mixtape
 create table if not exists public.mixtape_urls (

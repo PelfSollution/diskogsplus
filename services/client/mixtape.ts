@@ -146,11 +146,11 @@ export async function reorderMixtape(
   if (!res!.ok) throw new Error(await errorMessage(res, "No se pudo guardar el orden."));
 }
 
-/** Busca BPM y tonalidad de las pistas que no los tienen. Solo con Supabase. */
-export async function fillMixtapeAudioFeatures(
+/** Completa posición en el vinilo, BPM y tonalidad de las pistas que no los tienen. Solo con Supabase. */
+export async function completeMixtapeTracks(
   mixtapeId: number
 ): Promise<{ revisadas: number; actualizadas: number }> {
-  const res = await send("/api/mixtape/audioFeatures", "POST", { mixtape_id: mixtapeId });
+  const res = await send("/api/mixtape/completeTracks", "POST", { mixtape_id: mixtapeId });
   if (!res?.ok) throw new Error(await errorMessage(res, "No se pudieron buscar los datos."));
   return res.json();
 }

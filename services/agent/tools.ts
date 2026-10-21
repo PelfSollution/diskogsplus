@@ -347,6 +347,10 @@ export async function getUserMixtapeTracks(params: {
           trackname: t.trackname,
           bpm: t.tempo ? Math.round(t.tempo) : null,
           camelot,
+          // Dos pistas seguidas con el mismo disco_id no se mezclan con una sola copia
+          disco_id: t.disco_id,
+          posicion_vinilo: t.vinyl_position || null,
+          duracion: t.duration || null,
         };
       }),
     };

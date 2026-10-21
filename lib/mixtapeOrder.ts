@@ -1,6 +1,7 @@
 import { getPitchClassNotation } from "./musicNotation";
 
 type OrderableTrack = {
+  disco_id?: string;
   tempo?: number | null;
   key?: number | null;
   mode?: number | null;
@@ -35,18 +36,22 @@ function transitionCost(from: OrderableTrack, to: OrderableTrack): number {
   // Las transiciones compatibles (0–1 pasos) casi no penalizan; el resto, mucho
   const harmonic = steps <= 1 ? steps * 2 : steps * 8;
 
+  // Dos pistas seguidas del mismo disco no se pueden mezclar con una sola copia
+  const sameRecord = from.disco_id && from.disco_id === to.disco_id ? 30 : 0;
+
   const fromTempo = getTempo(from);
   const toTempo = getTempo(to);
-  if (fromTempo === null || toTempo === null) return harmonic + 8;
+  if (fromTempo === null || toTempo === null) return harmonic + sameRecord + 8;
 
   const delta = toTempo - fromTempo;
   // Se prefiere ir subiendo de BPM a lo largo de la sesión
-  return harmonic + (delta >= 0 ? delta : Math.abs(delta) * 1.5);
+  return harmonic + sameRecord + (delta >= 0 ? delta : Math.abs(delta) * 1.5);
 }
 
 /**
  * Ordena una sesión por armonía (rueda Camelot) y BPM: empieza por la pista
- * más lenta y elige cada vez la siguiente con la transición más suave.
+ * más lenta y elige cada vez la siguiente con la transición más suave,
+ * evitando poner seguidas dos pistas del mismo disco.
  * Las pistas sin BPM ni tonalidad van al final, en su orden actual.
  */
 export function sortByHarmonyAndBpm<T extends OrderableTrack>(tracks: T[]): T[] {

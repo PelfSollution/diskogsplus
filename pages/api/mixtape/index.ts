@@ -62,7 +62,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === "POST") {
-      const { spotifytrackid, tempo, key, mode, duration } = req.body;
+      const { spotifytrackid, tempo, key, mode, duration, vinyl_position } = req.body;
+      const vinylPosition = requiredString(vinyl_position);
       await addMixtape({
         username,
         mixtape_id: mixtapeId,
@@ -74,6 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         key: toNumberOrNull(key),
         mode: toNumberOrNull(mode),
         duration: requiredString(duration),
+        vinyl_position: vinylPosition && vinylPosition.length <= 12 ? vinylPosition : null,
       });
       return res.status(200).json({ success: true });
     }

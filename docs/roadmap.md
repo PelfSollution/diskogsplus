@@ -69,6 +69,17 @@ Fuentes: [guía de migración de Spotify (feb. 2026)](https://developer.spotify.
 - [x] DiscBOT como asistente de sesión (oct. 2026): "hazme un set de 1 h, 95–110 BPM, solo con mis discos de soul". Tool `build_session` (`services/agent/sessionBuilder.ts`): vinilos de la colección filtrados por género/estilo de Discogs, como mucho 8 discos al azar por propuesta, BPM y tonalidad de ReccoBeats/Deezer, mismo orden que el botón automático y corte por duración. `save_session_as_mixtape` la guarda como mixtape nueva solo si el usuario lo confirma. La propuesta vive en memoria del servidor (1 h).
 
 ### Fase 3: llevarse la sesión
+- [ ] **Compartir la mixtape en tu servicio favorito**: en los ajustes del usuario (Inicio), elegir servicio —Spotify, YouTube Music, Apple Music, TIDAL…— y que el botón de la mixtape exporte allí. Notas para empezar:
+  - **Spotify**: ya hecho (ver abajo); falta la configuración de la app.
+  - **YouTube Music**: playlists de YouTube con OAuth de Google (`playlists.insert` y `playlistItems.insert`, 50 unidades de cuota cada una: unas 190 pistas al día con la cuota gratuita de 10 000). Aparecen en YouTube Music. Ya tenemos el `videoId` de muchas pistas (`/api/mixtape/video`).
+  - **Apple Music**: MusicKit JS con un *developer token* (cuenta de desarrollador de Apple de pago).
+  - **TIDAL**: API oficial con OAuth.
+  - Para el resto, el CSV de Soundiiz/TuneMyMusic de la línea siguiente.
+- [ ] **Configurar Spotify para probar la exportación** (pendiente, oct. 2026). El código está listo; faltan estos pasos:
+  1. En el panel de la app de Spotify, añadir la URL de retorno `http://127.0.0.1:3000/api/auth/callback/spotify` (Spotify ya no admite `localhost`).
+  2. En `.env.local`, `BASE_URL` y `NEXT_PUBLIC_BASE_URL` = `http://127.0.0.1:3000`; reiniciar `npm run dev`, abrir la app en esa dirección y volver a entrar con Discogs (la sesión de `localhost` no vale allí).
+  3. La cuenta de Spotify tiene que estar en la lista de usuarios de la app (modo desarrollo, máx. 5) y la cuenta propietaria necesita Premium.
+  4. Probar «Exportar a Spotify» en una mixtape; si falla, el aviso de la página dice el motivo.
 - [ ] Exportar CSV (Soundiiz/TuneMyMusic) y M3U.
 - [ ] Hoja de cajón en PDF/impresión: qué discos sacar de la estantería.
 - [x] Exportación a playlist de Spotify (oct. 2026): botón «Exportar a Spotify» en la mixtape. Endpoints de 2026 (`POST /me/playlists`, `POST /playlists/{id}/items`), playlist privada en el orden de la sesión, busca en Spotify las pistas sin ID (mismo título y versión) y guarda el ID encontrado. Vuelve a la mixtape con el resultado o el motivo del fallo. Requisitos: URL de retorno `http://127.0.0.1:3000/api/auth/callback/spotify` en el panel de Spotify (ya no admite `localhost`) y abrir la app en esa misma dirección; cuenta en la lista de usuarios de la app (modo desarrollo, máx. 5) y propietario con Premium.

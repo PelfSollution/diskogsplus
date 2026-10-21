@@ -1,41 +1,25 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import Layout from "@/components/Layout";
+import VinylDisc from "@/components/VinylDisc";
+import useMixtapes from "@/hooks/useMixtapes";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetUserData from "@/hooks/useGetUserData";
-import {
-  deleteApiKey,
-  getChatAlbums,
-  getMixtapeURLs,
-  getWantlist,
-} from "@/services/client/userData";
+import { deleteApiKey, getChatAlbums, getWantlist } from "@/services/client/userData";
 import format from "date-fns/format";
-import styles from "./dashboard.module.css";
 import { ChatLog, WantlistEntry } from "@/types/types";
 import { truncateString } from "@/lib/stringUtils";
-import {
-  Key,
-  PlusCircle,
-  Disc,
-  MessageSquare,
-  ListMusic,
-  Calendar,
-  X,
-  Check,
-  Trash2,
-} from "lucide-react";
+import { Key, Disc3, Heart, ListMusic, Bot, ChevronRight, Plus, X, Check, Trash2 } from "lucide-react";
 
 const UserProfile: React.FC<{ data: any }> = ({ data }) => {
-  const [isImageLoaded, setImageLoaded] = useState(false);
   const [chatLogs, setChatLogs] = useState<ChatLog[]>([]);
   const [wantlistItems, setWantlistItems] = useState<WantlistEntry[] | null>(null);
-  const [loadedMixtapeUrls, setLoadedMixtapeUrls] = useState<string[]>([]);
   const { data: userData } = useGetUserData();
   const router = useRouter();
   const username = userData?.userProfile?.username;
+  const mixtapes = useMixtapes(username || "");
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [apiKey, setApiKey] = useState<string>("");
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
@@ -48,10 +32,6 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
           setWantlistItems(items);
           const logs = await getChatAlbums();
           setChatLogs(logs);
-          const mixtapeUrls = await getMixtapeURLs();
-          if (Array.isArray(mixtapeUrls)) {
-            setLoadedMixtapeUrls(mixtapeUrls.map((u) => u.mixtape_url));
-          }
           // Verificación de API Key
           const res = await fetch("/api/getApiKey", {
             method: "POST",
@@ -132,134 +112,142 @@ const UserProfile: React.FC<{ data: any }> = ({ data }) => {
     }
   };
 
+  const registered = Date.parse(data?.userProfile?.registered)
+    ? format(new Date(data?.userProfile?.registered), "dd/MM/yyyy")
+    : null;
+  const chats = chatLogs.filter((chat) => chat.artista !== null && chat.artista !== undefined);
+  const stats = [
+    { href: "/albums", label: "discos en tu colección", value: data?.userProfile?.num_collection ?? 0, icon: Disc3 },
+    { href: "/wantlist", label: "en tu wantlist", value: wantlistItems ? wantlistItems.length : "–", icon: Heart },
+    { href: "/mixtape", label: "mixtapes", value: mixtapes.mixtapes ? mixtapes.mixtapes.length : "–", icon: ListMusic },
+  ];
+
   return (
-    <div className="tw-bg-white dark:tw-bg-gray-800 tw-p-6 tw-rounded-2xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-max-w-md tw-w-full">
-      <div className="tw-flex tw-justify-between tw-items-center tw-mb-4">
-        <h2 className="tw-text-2xl tw-font-bold tw-text-gray-900 dark:tw-text-white">
-          {data?.userProfile?.username}
-        </h2>
-        <span className="tw-text-xs tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-800 dark:tw-text-brand-300 tw-font-semibold tw-px-2.5 tw-py-1 tw-rounded-full">
-          Coleccionista
-        </span>
-      </div>
-
-      {data?.userProfile?.avatar_url && (
-        <div className="tw-relative tw-w-44 tw-h-44 tw-mx-auto tw-my-4 tw-rounded-full tw-overflow-hidden tw-shadow-md tw-border-4 tw-border-gray-100 dark:tw-border-gray-750">
-          <Image
-            src={data?.userProfile?.avatar_url}
-            alt={data?.userProfile?.username}
-            fill
-            className={`tw-object-cover tw-transition-opacity tw-duration-300 ${
-              isImageLoaded ? "tw-opacity-100" : "tw-opacity-0"
-            }`}
-            onLoad={() => setImageLoaded(true)}
-          />
+    <div className="tw-max-w-6xl tw-mx-auto tw-px-4 md:tw-px-10 tw-py-8 md:tw-py-12 tw-flex tw-flex-col tw-gap-10">
+      {/* Saludo con el avatar en la galleta del vinilo */}
+      <header className="tw-flex tw-flex-wrap tw-items-center tw-gap-6">
+        <VinylDisc size={104} cover={data?.userProfile?.avatar_url || null} />
+        <div>
+          <span className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-brand-700">Inicio</span>
+          <h1 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-tracking-tight tw-text-gray-900 tw-mt-1">
+            Hola, {data?.userProfile?.username}
+          </h1>
+          {registered && <p className="tw-text-sm tw-text-gray-500 tw-mt-1">En Discogs desde el {registered}</p>}
         </div>
-      )}
+      </header>
 
-      {/* Tarjeta de Estadísticas */}
-      <div className="tw-bg-gray-50 dark:tw-bg-gray-750 tw-p-4 tw-rounded-xl tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-mt-4 tw-space-y-2">
-        <div className="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">
-          <Calendar className="tw-w-4 tw-h-4" />
-          <span>
-            {Date.parse(data?.userProfile?.registered)
-              ? `Registrado el ${format(new Date(data?.userProfile?.registered), "dd/MM/yyyy")}`
-              : "Fecha de registro desconocida"}
-          </span>
+      {/* Cifras */}
+      <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-3 tw-gap-3">
+        {stats.map(({ href, label, value, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="tw-group tw-flex tw-items-center tw-gap-4 tw-p-5 tw-rounded-2xl tw-border tw-border-gray-200 hover:tw-border-gray-300 hover:tw-bg-gray-50 tw-transition-colors"
+          >
+            <span className="tw-w-11 tw-h-11 tw-rounded-xl tw-bg-brand-50 tw-text-brand-700 tw-flex tw-items-center tw-justify-center">
+              <Icon className="tw-w-5 tw-h-5" />
+            </span>
+            <span className="tw-flex-1">
+              <span className="tw-block tw-text-2xl tw-font-bold tw-tabular-nums tw-text-gray-900">{value}</span>
+              <span className="tw-block tw-text-sm tw-text-gray-500">{label}</span>
+            </span>
+            <ChevronRight className="tw-w-4 tw-h-4 tw-text-gray-400 group-hover:tw-text-gray-700" />
+          </Link>
+        ))}
+      </div>
+
+      <div className="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-10">
+        {/* Mixtapes */}
+        <section className="tw-flex tw-flex-col tw-gap-3">
+          <div className="tw-flex tw-items-center tw-justify-between tw-px-1">
+            <h2 className="tw-text-lg tw-font-bold tw-text-gray-900">Tus mixtapes</h2>
+            <Link href="/mixtape?nueva=1" className="tw-flex tw-items-center tw-gap-1 tw-text-sm tw-font-medium tw-text-brand-700 hover:tw-text-brand-800">
+              <Plus className="tw-w-4 tw-h-4" />
+              Nueva
+            </Link>
+          </div>
+          {mixtapes.mixtapes && mixtapes.mixtapes.length > 0 ? (
+            <ul className="tw-flex tw-flex-col">
+              {mixtapes.mixtapes.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/mixtape?id=${m.id}`}
+                    className="tw-flex tw-items-center tw-gap-3 tw-px-2 tw-py-2.5 tw-rounded-lg hover:tw-bg-gray-50 tw-border-b tw-border-gray-100"
+                  >
+                    <VinylDisc size={40} flat />
+                    <span className="tw-flex-1 tw-min-w-0">
+                      <span className="tw-block tw-text-sm tw-font-semibold tw-text-gray-900 tw-truncate">{m.nombre}</span>
+                      <span className="tw-block tw-text-[13px] tw-text-gray-500">
+                        {m.pistas === 1 ? "1 pista" : `${m.pistas} pistas`}
+                      </span>
+                    </span>
+                    <ChevronRight className="tw-w-4 tw-h-4 tw-text-gray-400" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="tw-text-sm tw-text-gray-500 tw-px-1">
+              Aún no tienes mixtapes. Abre un disco y pulsa «+» en una pista para empezar.
+            </p>
+          )}
+        </section>
+
+        {/* Conversaciones con DiscBOT */}
+        <section className="tw-flex tw-flex-col tw-gap-3">
+          <div className="tw-flex tw-items-center tw-justify-between tw-px-1">
+            <h2 className="tw-text-lg tw-font-bold tw-text-gray-900">Conversaciones con DiscBOT</h2>
+          </div>
+          {chats.length > 0 ? (
+            <ul className="tw-flex tw-flex-col">
+              {chats.slice(0, 6).map((chat) => (
+                <li key={`${chat.artista}-${chat.album}`}>
+                  <button
+                    type="button"
+                    onClick={() => handleChatSelection(chatLogs.indexOf(chat))}
+                    className="tw-w-full tw-flex tw-items-center tw-gap-3 tw-px-2 tw-py-2.5 tw-rounded-lg hover:tw-bg-gray-50 tw-border-b tw-border-gray-100 tw-text-left"
+                  >
+                    <span className="tw-w-10 tw-h-10 tw-rounded-lg tw-bg-gray-100 tw-text-gray-600 tw-flex tw-items-center tw-justify-center tw-shrink-0">
+                      <Bot className="tw-w-5 tw-h-5" />
+                    </span>
+                    <span className="tw-flex-1 tw-min-w-0">
+                      <span className="tw-block tw-text-sm tw-font-semibold tw-text-gray-900 tw-truncate">
+                        {truncateString(chat.album, 48)}
+                      </span>
+                      <span className="tw-block tw-text-[13px] tw-text-gray-500 tw-truncate">{chat.artista}</span>
+                    </span>
+                    <ChevronRight className="tw-w-4 tw-h-4 tw-text-gray-400" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="tw-text-sm tw-text-gray-500 tw-px-1">
+              Todavía no has hablado con DiscBOT. Pregúntale desde la ficha de un disco o desde una mixtape.
+            </p>
+          )}
+        </section>
+      </div>
+
+      {/* Ajustes: clave de IA */}
+      <section className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-p-4 tw-rounded-2xl tw-bg-gray-50 tw-border tw-border-gray-200">
+        <div className="tw-flex tw-items-center tw-gap-3">
+          <Key className="tw-w-5 tw-h-5 tw-text-gray-500" />
+          <div>
+            <p className="tw-text-sm tw-font-semibold tw-text-gray-900">Clave de IA para DiscBOT</p>
+            <p className="tw-text-[13px] tw-text-gray-500">
+              {hasApiKey === null ? "Comprobando…" : hasApiKey ? "Usas tu propia clave." : "Usas la clave del sistema."}
+            </p>
+          </div>
         </div>
-        <p className="tw-text-sm tw-text-gray-700 dark:tw-text-gray-200">
-          Tienes{" "}
-          <strong className="tw-text-brand-600 dark:tw-text-brand-400">
-            {data?.userProfile?.num_collection}
-          </strong>{" "}
-          discos en tu colección.
-        </p>
-        <p className="tw-text-sm tw-text-gray-700 dark:tw-text-gray-200">
-          Tienes{" "}
-          <strong className="tw-text-brand-600 dark:tw-text-brand-400">
-            {wantlistItems ? wantlistItems.length : 0}
-          </strong>{" "}
-          discos en tu Wantlist.
-        </p>
-      </div>
-
-      {/* Selector de Chats */}
-      <div className="tw-mt-4">
-        <label className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-semibold tw-text-gray-600 dark:tw-text-gray-300 tw-mb-1.5">
-          <MessageSquare className="tw-w-3.5 tw-h-3.5 tw-text-brand-500" />
-          <span>Historial de Chats con DiscBOT:</span>
-        </label>
-        <select
-          onChange={(e) => {
-            if (e.target.value !== "") {
-              handleChatSelection(Number(e.target.value));
-            }
-          }}
-          defaultValue=""
-          className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-brand-500"
-        >
-          <option value="" disabled>
-            {chatLogs.length > 0 ? "Seleccionar un chat previo..." : "No hay chats disponibles"}
-          </option>
-          {chatLogs
-            .filter((chat) => chat.artista !== null && chat.artista !== undefined)
-            .map((chat, index) => (
-              <option key={index} value={index}>
-                {chat.artista} - {truncateString(chat.album, 20)}
-              </option>
-            ))}
-        </select>
-      </div>
-
-      {/* Selector de Mixtapes */}
-      <div className="tw-mt-4">
-        <label className="tw-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-semibold tw-text-gray-600 dark:tw-text-gray-300 tw-mb-1.5">
-          <ListMusic className="tw-w-3.5 tw-h-3.5 tw-text-vinyl-500" />
-          <span>Tus Mixtapes:</span>
-        </label>
-        <select
-          onChange={(e) => {
-            if (e.target.value) {
-              router.push(e.target.value);
-            }
-          }}
-          defaultValue=""
-          className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white tw-outline-none focus:tw-border-vinyl-500"
-        >
-          <option value="" disabled>
-            Seleccionar reproductor...
-          </option>
-          <option value="/mixtapeplayer">Tocadiscos Mixtape (YouTube)</option>
-          <option value="/mixtape">Gestionar lista de Mixtape</option>
-        </select>
-      </div>
-
-      {/* Botón Ver Colección */}
-      <div className="tw-mt-5">
-        <button
-          type="button"
-          onClick={() => router.push("/albums")}
-          className="tw-w-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-2.5 tw-px-4 tw-rounded-xl tw-bg-gray-900 dark:tw-bg-white hover:tw-bg-gray-800 dark:hover:tw-bg-gray-100 tw-text-white dark:tw-text-gray-900 tw-font-semibold tw-text-sm tw-transition-colors tw-shadow-sm"
-        >
-          <Disc className="tw-w-4 tw-h-4" />
-          <span>Ver Colección de Vinilos</span>
-        </button>
-      </div>
-
-      {/* Barra de Gestión de Clave API */}
-      <div className="tw-bg-gray-50 dark:tw-bg-gray-750 tw-p-3 tw-rounded-xl tw-border tw-border-gray-100 dark:tw-border-gray-700 tw-mt-4 tw-flex tw-items-center tw-justify-between">
         <button
           type="button"
           onClick={handleDialogOpen}
-          className="tw-text-xs tw-font-semibold tw-text-brand-600 dark:tw-text-brand-400 hover:tw-underline tw-flex tw-items-center tw-gap-1.5"
+          className="tw-h-9 tw-px-4 tw-rounded-full tw-border tw-border-gray-300 tw-bg-white tw-text-sm tw-font-medium tw-text-gray-900 hover:tw-bg-gray-50"
         >
-          <Key className="tw-w-3.5 tw-h-3.5" />
-          <span>Gestionar API Key (IA)</span>
+          {hasApiKey ? "Cambiar clave" : "Usar mi clave"}
         </button>
-        <span className="tw-text-[11px] tw-font-medium tw-text-gray-500">
-          {hasApiKey === null ? "Verificando..." : hasApiKey ? "✓ Clave propia activa" : "✓ Clave del sistema"}
-        </span>
-      </div>
+      </section>
 
       {/* Modal Nativo Tailwind para Clave API */}
       {isDialogOpen && (
@@ -337,7 +325,6 @@ function Dashboard() {
   }>({ isOpen: false, message: "" });
 
   useEffect(() => {
-    document.body.classList.add("dashboard");
     if (error) {
       let errorMessage = "Ocurrió un error desconocido.";
       if (error.message.includes("401")) {
@@ -349,9 +336,6 @@ function Dashboard() {
       }
       setSnackbar({ isOpen: true, message: errorMessage });
     }
-    return () => {
-      document.body.classList.remove("dashboard");
-    };
   }, [error]);
 
   return (
@@ -360,13 +344,13 @@ function Dashboard() {
       title="Dashboard de Usuario | Diskogs +"
       description="Perfil de usuario y gestión de colección de vinilos"
     >
-      <div className="tw-flex tw-justify-center tw-items-center tw-min-h-[70vh] tw-p-4">
-        {isLoading ? (
+      {isLoading ? (
+        <div className="tw-flex tw-justify-center tw-items-center tw-min-h-[70vh]">
           <CustomCircularProgress />
-        ) : data ? (
-          <UserProfile data={data} />
-        ) : null}
-      </div>
+        </div>
+      ) : data ? (
+        <UserProfile data={data} />
+      ) : null}
 
       <CustomSnackbar
         isOpen={snackbar.isOpen}

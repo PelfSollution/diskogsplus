@@ -72,9 +72,6 @@
     @apply tw-bg-background tw-text-foreground;
   overflow-y: scroll; 
   }
-  body.dashboard {
-    @apply tw-overflow-hidden tw-pr-0;
-}
 .bio-content a {
   @apply tw-text-brand-700 tw-underline;
 }
@@ -85,6 +82,8 @@
 @layer components {
   .vinyl-disc {
     position: relative;
+    /* Capa propia: la galleta y el agujero no se pintan sobre lo que tape el vinilo */
+    isolation: isolate;
     border-radius: 9999px;
     background: repeating-radial-gradient(circle at center, #141416 0 1.4px, #26262a 1.4px 2.8px);
     display: flex;

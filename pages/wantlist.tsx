@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import Layout from "@/components/Layout";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
@@ -8,14 +6,8 @@ import useGetUserData from "@/hooks/useGetUserData";
 import type { WantlistEntry } from "@/services/supabase/getWantlistItemsUser";
 import { getWantlist } from "@/services/client/userData";
 import { removeAllSubstringsInParenthesis } from "@/lib/stringUtils";
-import {
-  Bookmark,
-  Search,
-  ArrowUpDown,
-  Filter,
-  Download,
-  Disc,
-} from "lucide-react";
+import { Search, ArrowUpDown, Download, Disc } from "lucide-react";
+import AlbumCoverCard, { COVER_GRID } from "@/components/AlbumCoverCard";
 
 function Wantlist() {
   const { data: userData } = useGetUserData();
@@ -136,137 +128,82 @@ function Wantlist() {
       title="Mi Wantlist de Vinilos | Diskogs +"
       description="Los discos de vinilo que estás buscando y deseas añadir a tu colección"
     >
-      <div className="tw-container tw-mx-auto tw-max-w-7xl tw-p-4 md:tw-p-6">
+      <div className="tw-max-w-7xl tw-mx-auto tw-px-4 md:tw-px-10 tw-py-8 md:tw-py-10 tw-flex tw-flex-col tw-gap-8">
         {/* Cabecera */}
-        <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-6">
+        <header className="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4">
           <div>
-            <div className="tw-flex tw-items-center tw-gap-2.5">
-              <div className="tw-w-10 tw-h-10 tw-rounded-xl tw-bg-brand-100 dark:tw-bg-brand-950/50 tw-text-brand-600 dark:tw-text-brand-400 tw-flex tw-items-center tw-justify-center">
-                <Bookmark className="tw-w-5 tw-h-5" />
-              </div>
-              <h1 className="tw-text-2xl md:tw-text-3xl tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-tracking-tight">
-                Mi Wantlist
-              </h1>
-            </div>
-            <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-mt-1">
-              {wantlistItems ? `${wantlistItems.length} vinilos deseados` : "Cargando..."}
+            <span className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-brand-700">Wantlist</span>
+            <h1 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-tracking-tight tw-text-gray-900 tw-mt-1">Discos que buscas</h1>
+            <p className="tw-text-sm tw-text-gray-500 tw-mt-1">
+              {wantlistItems ? (wantlistItems.length === 1 ? "1 disco" : `${wantlistItems.length} discos`) : "Cargando…"}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleImportWantlist}
-            disabled={isImporting}
-            className="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2.5 tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 disabled:tw-opacity-50 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors tw-shadow-sm"
-          >
-            <Download className="tw-w-4 tw-h-4" />
-            <span>{isImporting ? "Importando de Discogs..." : "Importar de Discogs"}</span>
-          </button>
-        </div>
-
-        {/* Barra de Filtros y Búsqueda */}
-        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-p-4 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-mb-8 tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-items-stretch sm:tw-items-center">
-          <div className="tw-flex tw-items-center tw-gap-2 tw-bg-gray-50 dark:tw-bg-gray-900 tw-px-3 tw-py-2 tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 sm:tw-w-48">
-            <Filter className="tw-w-4 tw-h-4 tw-text-gray-400 tw-shrink-0" />
+          <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2 tw-w-full sm:tw-w-auto">
+            <div className="tw-relative tw-flex-1 sm:tw-w-64">
+              <Search className="tw-w-4 tw-h-4 tw-text-gray-400 tw-absolute tw-left-3 tw-top-1/2 tw--translate-y-1/2" />
+              <input
+                type="search"
+                aria-label={filter === "name" ? "Buscar por artista" : "Buscar por disco"}
+                placeholder={filter === "name" ? "Buscar artista" : "Buscar disco"}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="tw-w-full tw-h-10 tw-pl-9 tw-pr-3 tw-text-sm tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-text-gray-900 placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-brand-600 focus:tw-ring-2 focus:tw-ring-brand-600/20"
+              />
+            </div>
             <select
+              aria-label="Buscar y ordenar por"
               value={filter}
               onChange={(e) => setFilter(e.target.value as "name" | "album")}
-              className="tw-w-full tw-bg-transparent tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white tw-outline-none"
+              className="tw-h-10 tw-px-3 tw-text-sm tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-text-gray-900 tw-outline-none focus:tw-border-brand-600"
             >
-              <option value="name">Por Artista</option>
-              <option value="album">Por Disco</option>
+              <option value="name">Artista</option>
+              <option value="album">Disco</option>
             </select>
-          </div>
-
-          <div className="tw-relative tw-flex-1">
-            <Search className="tw-w-4 tw-h-4 tw-text-gray-400 tw-absolute tw-left-3.5 tw-top-1/2 tw--translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={filter === "name" ? "Buscar por artista en wantlist..." : "Buscar por título de disco..."}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="tw-w-full tw-pl-10 tw-pr-4 tw-py-2 tw-text-sm tw-rounded-xl tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-900 dark:tw-text-white placeholder:tw-text-gray-400 tw-outline-none focus:tw-border-brand-500 focus:tw-ring-2 focus:tw-ring-brand-500/20"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setOrderAsc(!orderAsc)}
-            className={`tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-xl tw-text-sm tw-font-semibold tw-border tw-transition-colors ${
-              orderAsc
-                ? "tw-bg-gray-50 dark:tw-bg-gray-900 tw-text-gray-700 dark:tw-text-gray-300 tw-border-gray-200 dark:tw-border-gray-700 hover:tw-bg-gray-100"
-                : "tw-bg-brand-600 tw-text-white tw-border-brand-700"
-            }`}
-            title={orderAsc ? "Orden alfabético A-Z" : "Orden alfabético Z-A"}
-          >
-            <ArrowUpDown className="tw-w-4 tw-h-4" />
-            <span>{orderAsc ? "A → Z" : "Z → A"}</span>
-          </button>
-        </div>
-
-        {/* Cuadrícula de Wantlist */}
-        {filteredItems.length === 0 ? (
-          <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-3xl tw-p-10 tw-text-center tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-sm tw-max-w-md tw-mx-auto tw-my-12">
-            <Disc className="tw-w-12 tw-h-12 tw-text-gray-400 tw-mx-auto tw-mb-3" />
-            <h3 className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-1">
-              Tu Wantlist está vacía
-            </h3>
-            <p className="tw-text-sm tw-text-gray-500 tw-mb-5">
-              Navega por los discos del catálogo y pulsa el botón de &quot;Añadir a Wantlist&quot; o pulsa arriba para importar tu lista de Discogs.
-            </p>
-            <Link
-              href="/albums"
-              className="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-rounded-xl tw-bg-brand-600 hover:tw-bg-brand-700 tw-text-white tw-font-semibold tw-text-sm tw-transition-colors"
+            <button
+              type="button"
+              onClick={() => setOrderAsc(!orderAsc)}
+              className="tw-flex tw-items-center tw-gap-1.5 tw-h-10 tw-px-3 tw-rounded-lg tw-border tw-border-gray-200 tw-bg-white tw-text-sm tw-font-medium tw-text-gray-700 hover:tw-bg-gray-50"
+              title="Invertir el orden"
             >
-              <Disc className="tw-w-4 tw-h-4" />
-              <span>Explorar Vinilos</span>
-            </Link>
+              <ArrowUpDown className="tw-w-4 tw-h-4" />
+              {orderAsc ? "A → Z" : "Z → A"}
+            </button>
+            <button
+              type="button"
+              onClick={handleImportWantlist}
+              disabled={isImporting}
+              className="tw-flex tw-items-center tw-gap-2 tw-h-10 tw-px-4 tw-rounded-full tw-bg-brand-600 hover:tw-bg-brand-700 disabled:tw-opacity-50 tw-text-white tw-text-sm tw-font-semibold tw-transition-colors"
+            >
+              <Download className="tw-w-4 tw-h-4" />
+              {isImporting ? "Importando…" : "Importar de Discogs"}
+            </button>
+          </div>
+        </header>
+
+        {filteredItems.length === 0 ? (
+          <div className="tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-3 tw-py-16 tw-border tw-border-dashed tw-border-gray-300 tw-rounded-2xl">
+            <Disc className="tw-w-10 tw-h-10 tw-text-gray-400" />
+            <h2 className="tw-text-lg tw-font-semibold tw-text-gray-900">
+              {searchTerm ? "No hay discos con esa búsqueda" : "Tu wantlist está vacía"}
+            </h2>
+            <p className="tw-text-sm tw-text-gray-500 tw-max-w-sm">
+              {searchTerm
+                ? "Prueba con otro nombre o cambia entre artista y disco."
+                : "Importa tu wantlist de Discogs con el botón de arriba o añade discos desde «Comparar colecciones»."}
+            </p>
           </div>
         ) : (
-          <div className="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 tw-gap-6">
-            {filteredItems.map((item: WantlistEntry) => {
-              const artistName = removeAllSubstringsInParenthesis(item.artista || "Artista Desconocido");
-
-              return (
-                <Link
-                  key={item.disco_id}
-                  href={`/albums/${item.disco_id}`}
-                  className="tw-group tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-overflow-hidden tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-shadow-xs hover:tw-shadow-xl tw-transition-all tw-duration-300 tw-flex tw-flex-col"
-                >
-                  <div className="tw-relative tw-w-full tw-h-56 tw-bg-gray-100 dark:tw-bg-gray-900 tw-overflow-hidden">
-                    <Image
-                      src={item.image_url || "/no-portada.gif"}
-                      alt={item.album}
-                      fill
-                      className="tw-object-cover group-hover:tw-scale-105 tw-transition-transform tw-duration-500"
-                    />
-                  </div>
-
-                  <div className="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-justify-between">
-                    <div>
-                      <span className="tw-text-xs tw-font-bold tw-text-brand-600 dark:tw-text-brand-400 tw-block tw-truncate">
-                        {artistName}
-                      </span>
-                      <h3
-                        className="tw-text-sm tw-font-extrabold tw-text-gray-900 dark:tw-text-white tw-truncate tw-mt-1"
-                        title={item.album}
-                      >
-                        {item.album}
-                      </h3>
-                    </div>
-
-                    <div className="tw-flex tw-items-center tw-justify-between tw-mt-4 tw-pt-3 tw-border-t tw-border-gray-100 dark:tw-border-gray-750">
-                      <span className="tw-text-[11px] tw-text-brand-500 tw-font-semibold">
-                        ★ En tu Wantlist
-                      </span>
-                      <span className="tw-text-xs tw-font-semibold tw-text-gray-400 group-hover:tw-text-brand-500 tw-transition-colors">
-                        Ver ficha →
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className={COVER_GRID}>
+            {filteredItems.map((item: WantlistEntry) => (
+              <AlbumCoverCard
+                key={item.disco_id}
+                href={`/albums/${item.disco_id}`}
+                cover={item.image_url}
+                title={item.album || "Disco sin título"}
+                artist={removeAllSubstringsInParenthesis(item.artista || "Artista desconocido")}
+              />
+            ))}
           </div>
         )}
 

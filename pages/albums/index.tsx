@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import Layout from "@/components/Layout";
-import VinylDisc from "@/components/VinylDisc";
+import AlbumCoverCard, { COVER_GRID } from "@/components/AlbumCoverCard";
 import CustomCircularProgress from "@/components/CustomCircularProgress";
 import CustomSnackbar from "@/components/CustomSnackbar";
 import useGetAlbumList from "@/hooks/useGetAlbumList";
@@ -188,42 +186,23 @@ function Albums() {
             <p className="tw-text-sm tw-text-gray-500">Prueba con otro nombre o cambia entre artista y disco.</p>
           </div>
         ) : (
-          <div className="tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 lg:tw-grid-cols-4 xl:tw-grid-cols-5 tw-gap-x-6 tw-gap-y-8">
+          <div className={COVER_GRID}>
             {filteredAlbums.map((album: Album) => {
               if (!album || !album.id || !album.basic_information) {
                 return null;
               }
-
               const artistName =
                 album.basic_information.artists && album.basic_information.artists.length > 0
                   ? removeAllSubstringsInParenthesis(album.basic_information.artists[0].name)
                   : "Artista desconocido";
-              const cover = album.basic_information.cover_image || "/no-portada.gif";
-
               return (
-                <Link key={album.id} href={`/albums/${album.id}`} className="tw-group tw-flex tw-flex-col tw-gap-2.5">
-                  {/* Portada; al pasar el ratón asoma el vinilo por detrás */}
-                  <div className="tw-relative tw-aspect-square">
-                    <div className="tw-absolute tw-inset-[4%] tw-transition-transform tw-duration-500 tw-ease-out group-hover:tw-translate-x-[22%]">
-                      <VinylDisc size="fill" cover={cover} flat />
-                    </div>
-                    <div className="tw-relative tw-w-full tw-h-full tw-rounded-md tw-overflow-hidden tw-bg-gray-100 tw-shadow-sm group-hover:tw-shadow-lg tw-transition-shadow">
-                      <Image
-                        src={cover}
-                        alt=""
-                        fill
-                        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                        className="tw-object-cover"
-                      />
-                    </div>
-                  </div>
-                  <div className="tw-min-w-0">
-                    <h2 className="tw-text-sm tw-font-semibold tw-text-gray-900 tw-truncate" title={album.basic_information.title}>
-                      {album.basic_information.title}
-                    </h2>
-                    <p className="tw-text-[13px] tw-text-gray-500 tw-truncate">{artistName}</p>
-                  </div>
-                </Link>
+                <AlbumCoverCard
+                  key={album.id}
+                  href={`/albums/${album.id}`}
+                  cover={album.basic_information.cover_image}
+                  title={album.basic_information.title}
+                  artist={artistName}
+                />
               );
             })}
           </div>

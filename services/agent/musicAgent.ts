@@ -86,7 +86,7 @@ export function buildMusicAgentTools(context: MusicAgentContext) {
 
     build_session: tool({
       description:
-        "Propone una sesión de DJ con los vinilos de la colección de Discogs del usuario: filtra por género o estilo, busca BPM y tonalidad de las pistas, se queda con el rango de BPM pedido, las ordena por armonía (Camelot) y BPM y corta en la duración pedida. Revisa como mucho 8 discos al azar por propuesta. No guarda nada.",
+        "Propone una sesión de DJ con los vinilos de la colección de Discogs del usuario: filtra por género o estilo, busca BPM y tonalidad de las pistas, se queda con el rango de BPM pedido, las ordena por armonía (Camelot) y BPM y corta en la duración pedida. Acepta medio tiempo o doble tiempo y un BPM suelto («a 120») se busca con ±4. Revisa discos al azar por tandas, hasta 30. No guarda nada. Si no hay pistas en el rango, devuelve las más cercanas: ofrécelas o propón otro rango, y explica que muchas ediciones pequeñas no tienen BPM en las bases de datos.",
       inputSchema: z.object({
         durationMinutes: z.number().optional().describe("Duración de la sesión en minutos (por defecto 60)."),
         bpmMin: z.number().optional().describe("BPM mínimo (ej: 95)."),

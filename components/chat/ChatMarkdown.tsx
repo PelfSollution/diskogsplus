@@ -39,7 +39,7 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
 
 type Block =
   | { kind: "heading"; level: number; text: string }
-  | { kind: "list"; ordered: boolean; items: string[] }
+  | { kind: "list"; ordered: boolean; start: number; items: { text: string; children: string[] }[] }
   | { kind: "paragraph"; lines: string[] };
 
 function parseBlocks(markdown: string): Block[] {
@@ -49,22 +49,26 @@ function parseBlocks(markdown: string): Block[] {
     const last = blocks[blocks.length - 1];
     const heading = line.match(/^(#{1,4})\s+(.*)$/);
     const bullet = line.match(/^\s*[-*•]\s+(.*)$/);
-    const numbered = line.match(/^\s*\d+[.)]\s+(.*)$/);
+    const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
+    const indented = /^\s{2,}/.test(raw);
 
     if (!line.trim()) {
       blocks.push({ kind: "paragraph", lines: [] });
     } else if (heading) {
       blocks.push({ kind: "heading", level: heading[1].length, text: heading[2] });
+    } else if ((bullet || numbered) && indented && last?.kind === "list") {
+      // Sublista: va dentro del último elemento (p. ej. «* BPM: 118» bajo «1. Pista»)
+      last.items[last.items.length - 1].children.push(bullet ? bullet[1] : numbered![2]);
     } else if (bullet || numbered) {
       const ordered = Boolean(numbered);
-      const text = (bullet || numbered)![1];
-      if (last?.kind === "list" && last.ordered === ordered) last.items.push(text);
-      else blocks.push({ kind: "list", ordered, items: [text] });
+      const text = bullet ? bullet[1] : numbered![2];
+      if (last?.kind === "list" && last.ordered === ordered) last.items.push({ text, children: [] });
+      else blocks.push({ kind: "list", ordered, start: numbered ? Number(numbered[1]) : 1, items: [{ text, children: [] }] });
     } else if (last?.kind === "paragraph") {
       last.lines.push(line);
     } else if (last?.kind === "list" && /^\s{2,}/.test(raw)) {
       // Continuación de un elemento de lista
-      last.items[last.items.length - 1] += ` ${line.trim()}`;
+      last.items[last.items.length - 1].text += ` ${line.trim()}`;
     } else {
       blocks.push({ kind: "paragraph", lines: [line] });
     }
@@ -86,9 +90,22 @@ export default function ChatMarkdown({ text }: { text: string }) {
         if (block.kind === "list") {
           const List = block.ordered ? "ol" : "ul";
           return (
-            <List key={i} className={`tw-flex tw-flex-col tw-gap-1.5 tw-pl-5 ${block.ordered ? "tw-list-decimal" : "tw-list-disc"} marker:tw-text-gray-400`}>
+            <List
+              key={i}
+              start={block.ordered && block.start !== 1 ? block.start : undefined}
+              className={`tw-flex tw-flex-col tw-gap-1.5 tw-pl-5 ${block.ordered ? "tw-list-decimal" : "tw-list-disc"} marker:tw-text-gray-400`}
+            >
               {block.items.map((item, j) => (
-                <li key={j} className="tw-pl-1">{renderInline(item, `l${i}-${j}`)}</li>
+                <li key={j} className="tw-pl-1">
+                  {renderInline(item.text, `l${i}-${j}`)}
+                  {item.children.length > 0 && (
+                    <ul className="tw-list-disc tw-pl-5 tw-mt-1 tw-flex tw-flex-col tw-gap-0.5 tw-text-gray-600 marker:tw-text-gray-300">
+                      {item.children.map((child, k) => (
+                        <li key={k}>{renderInline(child, `l${i}-${j}-${k}`)}</li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
               ))}
             </List>
           );

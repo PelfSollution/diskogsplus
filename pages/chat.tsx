@@ -10,6 +10,7 @@ import {
   BadgeEuro,
   BookOpen,
   Check,
+  CircleAlert,
   Disc3,
   Gauge,
   ListMusic,
@@ -102,6 +103,13 @@ const TOOL_LABELS: Record<string, [string, string]> = {
   save_session_as_mixtape: ["Guardando la mixtape", "Mixtape guardada"],
 };
 
+/** Qué decir cuando la herramienta no encuentra nada */
+const TOOL_FAILED: Record<string, string> = {
+  build_session: "Ninguna pista en ese rango",
+  save_session_as_mixtape: "No se pudo guardar",
+  get_user_mixtape: "Mixtape vacía",
+};
+
 function ToolPills({ message }: { message: UIMessage }) {
   const tools = message.parts.filter(isToolUIPart);
   if (tools.length === 0) return null;
@@ -111,17 +119,23 @@ function ToolPills({ message }: { message: UIMessage }) {
         const name = getToolName(part);
         const [running, done] = TOOL_LABELS[name] || ["Consultando", "Consulta"];
         const finished = part.state === "output-available" || part.state === "output-error";
+        // Las herramientas devuelven { error } cuando no encuentran nada
+        const failed =
+          part.state === "output-error" ||
+          (part.state === "output-available" && Boolean((part.output as { error?: unknown } | undefined)?.error));
         return (
           <span
             key={`${name}-${i}`}
             className="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-medium tw-text-gray-600 tw-bg-gray-100 tw-rounded-full tw-px-2.5 tw-py-1"
           >
-            {finished ? (
-              <Check className="tw-w-3.5 tw-h-3.5 tw-text-brand-600" />
-            ) : (
+            {!finished ? (
               <Loader2 className="tw-w-3.5 tw-h-3.5 tw-animate-spin" />
+            ) : failed ? (
+              <CircleAlert className="tw-w-3.5 tw-h-3.5 tw-text-gray-500" />
+            ) : (
+              <Check className="tw-w-3.5 tw-h-3.5 tw-text-brand-600" />
             )}
-            {finished ? done : `${running}…`}
+            {!finished ? `${running}…` : failed ? TOOL_FAILED[name] || "Sin resultados" : done}
           </span>
         );
       })}

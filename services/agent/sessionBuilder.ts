@@ -8,8 +8,13 @@ import { enrichTracklistWithAudioFeatures } from "@/services/audioFeatures/getTr
 import { createMixtape } from "@/services/supabase/mixtapes";
 import addMixtape from "@/services/supabase/addMixtape";
 
-// Cada disco son varias peticiones a Discogs y ReccoBeats: se limita por propuesta
-const MAX_RELEASES_PER_SESSION = 8;
+// Cada disco son varias peticiones a Discogs y ReccoBeats: se revisan por tandas
+// hasta reunir material suficiente, con un máximo de discos y de tiempo
+const RELEASE_BATCH = 6;
+const MAX_RELEASES_PER_SESSION = 30;
+const TIME_BUDGET_MS = 25_000;
+// Rango mínimo: «a 120 BPM» se busca entre 116 y 124
+const MIN_BPM_WINDOW = 8;
 const MAX_COLLECTION_PAGES = 5;
 const PROPOSAL_TTL_MS = 60 * 60 * 1000;
 // Si Discogs no trae la duración, se cuenta una pista media
@@ -27,6 +32,8 @@ export type SessionTrack = {
   vinyl_position: string | null;
   spotifytrackid: string | null;
   cover_url: string | null;
+  /** El BPM se ha doblado o partido por la mitad para entrar en el rango (no se guarda) */
+  tempoAjustado?: boolean;
 };
 
 export type SessionRequest = {
@@ -131,8 +138,28 @@ export async function buildSession(username: string, accessData: any, request: S
   }
 
   const durationMinutes = Math.min(Math.max(request.durationMinutes || 60, 10), 240);
-  const bpmMin = request.bpmMin ?? null;
-  const bpmMax = request.bpmMax ?? null;
+  let bpmMin = request.bpmMin ?? null;
+  let bpmMax = request.bpmMax ?? null;
+  // Un rango demasiado estrecho no encuentra nada: se abre alrededor del centro
+  if (bpmMin !== null && bpmMax !== null && bpmMax - bpmMin < MIN_BPM_WINDOW) {
+    const center = (bpmMin + bpmMax) / 2;
+    bpmMin = center - MIN_BPM_WINDOW / 2;
+    bpmMax = center + MIN_BPM_WINDOW / 2;
+  }
+  const hasBpmFilter = bpmMin !== null || bpmMax !== null;
+  const inBpmRange = (bpm: number) => (bpmMin === null || bpm >= bpmMin) && (bpmMax === null || bpm <= bpmMax);
+
+  /**
+   * BPM de la pista dentro del rango: tal cual, o al doble o la mitad (las
+   * bases de datos suelen dar medio tiempo o doble tiempo). null si no encaja.
+   */
+  const tempoInRange = (tempo: number | null): number | null => {
+    if (tempo == null) return null;
+    for (const candidate of [tempo, tempo * 2, tempo / 2]) {
+      if (inBpmRange(candidate)) return candidate;
+    }
+    return null;
+  };
 
   let collection: CollectionRelease[];
   try {
@@ -150,15 +177,30 @@ export async function buildSession(username: string, accessData: any, request: S
     };
   }
 
-  const releases = shuffle(candidates).slice(0, MAX_RELEASES_PER_SESSION);
-  const perRelease = await Promise.all(releases.map((r) => getReleaseSessionTracks(r).catch(() => [])));
-  const allTracks = perRelease.flat();
+  // Discos por tandas hasta tener material para la duración pedida (con margen)
+  const pool = shuffle(candidates).slice(0, MAX_RELEASES_PER_SESSION);
+  const reviewed: CollectionRelease[] = [];
+  const allTracks: SessionTrack[] = [];
+  const inRange: SessionTrack[] = [];
+  const started = Date.now();
+  const enoughSeconds = durationMinutes * 60 * 1.5;
+  const inRangeSeconds = () =>
+    inRange.reduce((sum, t) => sum + (durationToSeconds(t.duration) ?? DEFAULT_TRACK_SECONDS), 0);
 
-  const inRange = allTracks.filter((t) => {
-    if (bpmMin === null && bpmMax === null) return true;
-    if (t.tempo == null) return false;
-    return (bpmMin === null || t.tempo >= bpmMin) && (bpmMax === null || t.tempo <= bpmMax);
-  });
+  while (reviewed.length < pool.length && inRangeSeconds() < enoughSeconds && Date.now() - started < TIME_BUDGET_MS) {
+    const batch = pool.slice(reviewed.length, reviewed.length + RELEASE_BATCH);
+    reviewed.push(...batch);
+    const tracks = (await Promise.all(batch.map((r) => getReleaseSessionTracks(r).catch(() => [])))).flat();
+    allTracks.push(...tracks);
+    for (const t of tracks) {
+      if (!hasBpmFilter) {
+        inRange.push(t);
+        continue;
+      }
+      const tempo = tempoInRange(t.tempo);
+      if (tempo !== null) inRange.push({ ...t, tempo, tempoAjustado: tempo !== t.tempo });
+    }
+  }
 
   // Ordenar y cortar al llegar a la duración
   const ordered = sortByHarmonyAndBpm(inRange);
@@ -170,11 +212,28 @@ export async function buildSession(username: string, accessData: any, request: S
     seconds += durationToSeconds(track.duration) ?? DEFAULT_TRACK_SECONDS;
   }
 
+  const withBpm = allTracks.filter((t) => t.tempo != null);
+  const coverage = {
+    discosQueEncajan: candidates.length,
+    discosRevisados: reviewed.length,
+    pistasRevisadas: allTracks.length,
+    pistasConBpm: withBpm.length,
+    rangoBuscado: hasBpmFilter ? `${bpmMin !== null ? Math.round(bpmMin) : "?"}–${bpmMax !== null ? Math.round(bpmMax) : "?"} BPM` : "cualquiera",
+  };
+
   if (session.length === 0) {
+    // Las más cercanas al rango, para proponer alternativas en vez de nada
+    const target = bpmMin !== null && bpmMax !== null ? (bpmMin + bpmMax) / 2 : bpmMin ?? bpmMax ?? 0;
+    const closest = [...withBpm]
+      .sort((a, b) => Math.abs((a.tempo as number) - target) - Math.abs((b.tempo as number) - target))
+      .slice(0, 6)
+      .map((t) => ({ artista: t.artista, pista: t.trackname, disco: t.album, bpm: Math.round(t.tempo as number), camelot: camelotOf(t) }));
     return {
-      error: "No hay pistas con BPM conocido en ese rango entre los discos revisados.",
-      discosRevisados: releases.map((r) => r.basic_information.title),
-      pistasSinBpm: allTracks.filter((t) => t.tempo == null).length,
+      error: "Ninguna pista con BPM conocido cae en ese rango entre los discos revisados.",
+      ...coverage,
+      motivo:
+        "ReccoBeats y Deezer no tienen BPM de muchas ediciones pequeñas; solo se cuentan las pistas con BPM conocido.",
+      pistasMasCercanas: closest,
     };
   }
 
@@ -183,8 +242,7 @@ export async function buildSession(username: string, accessData: any, request: S
   return {
     duracionAproximada: formatSessionDuration(seconds),
     duracionesEstimadas: session.filter((t) => !durationToSeconds(t.duration)).length,
-    discosRevisados: releases.length,
-    discosQueEncajan: candidates.length,
+    ...coverage,
     pistas: session.map((t, i) => ({
       orden: i + 1,
       artista: t.artista,
@@ -193,6 +251,8 @@ export async function buildSession(username: string, accessData: any, request: S
       disco_id: t.disco_id,
       posicion_vinilo: t.vinyl_position,
       bpm: t.tempo ? Math.round(t.tempo) : null,
+      // Medio tiempo o doble tiempo respecto al BPM de la base de datos
+      bpmAjustado: t.tempoAjustado || undefined,
       camelot: camelotOf(t),
       duracion: t.duration,
     })),
@@ -220,7 +280,8 @@ export async function saveSessionAsMixtape(username: string, nombre: string) {
 
   // En serie: addMixtape coloca cada pista al final
   for (const track of proposal.tracks) {
-    await addMixtape({ ...track, username, mixtape_id: mixtape.id });
+    const { tempoAjustado, ...fields } = track;
+    await addMixtape({ ...fields, username, mixtape_id: mixtape.id });
   }
   proposals.delete(username);
 

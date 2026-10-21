@@ -12,7 +12,7 @@ import { updateChatLog } from "../../../services/supabase/updateChatLogs";
 import { getLastChatLogForUser } from "../../../services/supabase/getLastChatLogForUser";
 import { getOwnedMixtapeName } from "../../../services/supabase/mixtapes";
 import { getAIClient } from "../../../lib/aiClient";
-import { getSessionUserFromCookie } from "../../../lib/session";
+import { decryptCookieJSON, getSessionUserFromCookie } from "../../../lib/session";
 import { rateLimit } from "../../../lib/rateLimit";
 import {
   buildMusicAgentTools,
@@ -110,7 +110,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const context = { username, discoId: disco_id, artist: artista, album, mixtapeId, mixtapeName };
+    const context = {
+      username,
+      discoId: disco_id,
+      artist: artista,
+      album,
+      mixtapeId,
+      mixtapeName,
+      accessData: decryptCookieJSON(req.cookies.get("accessData")?.value),
+    };
     const prompt = lastUserText(messages);
 
     // Registro del chat (si Supabase no está configurado, se omite)

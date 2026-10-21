@@ -4,6 +4,7 @@ import {
   getLastFmContext,
   getUserMixtapeTracks,
 } from "./tools";
+import { buildSession, saveSessionAsMixtape } from "./sessionBuilder";
 import { tool } from "ai";
 import { z } from "zod";
 
@@ -15,6 +16,8 @@ export interface MusicAgentContext {
   /** Mixtape con la que se trabaja (ya comprobada); sin ella, todas las del usuario */
   mixtapeId?: number;
   mixtapeName?: string;
+  /** Tokens OAuth de Discogs para leer la colección (nunca van al prompt) */
+  accessData?: unknown;
 }
 
 /**
@@ -80,6 +83,30 @@ export function buildMusicAgentTools(context: MusicAgentContext) {
           mixtapeName: context.mixtapeName,
         }),
     }),
+
+    build_session: tool({
+      description:
+        "Propone una sesión de DJ con los vinilos de la colección de Discogs del usuario: filtra por género o estilo, busca BPM y tonalidad de las pistas, se queda con el rango de BPM pedido, las ordena por armonía (Camelot) y BPM y corta en la duración pedida. Revisa como mucho 8 discos al azar por propuesta. No guarda nada.",
+      inputSchema: z.object({
+        durationMinutes: z.number().optional().describe("Duración de la sesión en minutos (por defecto 60)."),
+        bpmMin: z.number().optional().describe("BPM mínimo (ej: 95)."),
+        bpmMax: z.number().optional().describe("BPM máximo (ej: 110)."),
+        genre: z
+          .string()
+          .optional()
+          .describe("Género o estilo tal como lo nombra Discogs, en inglés: 'Soul', 'Funk', 'Jazz', 'House', 'Disco'. Varios separados por comas."),
+      }),
+      execute: async (args) => buildSession(context.username || "", context.accessData, args),
+    }),
+
+    save_session_as_mixtape: tool({
+      description:
+        "Guarda la última sesión propuesta con build_session como una mixtape nueva del usuario, en el mismo orden. Úsala SOLO cuando el usuario haya confirmado expresamente que quiere guardarla.",
+      inputSchema: z.object({
+        nombre: z.string().describe("Nombre de la mixtape nueva (ej: 'Soul 95–110 BPM')."),
+      }),
+      execute: async (args) => saveSessionAsMixtape(context.username || "", args.nombre),
+    }),
   };
 }
 
@@ -92,7 +119,8 @@ Tu misión:
 2. Usar tus herramientas disponibles (Discogs, Last.fm, Análisis Camelot, Mixtape del usuario) cuando te pregunten sobre datos del disco, tracklist, prensajes, precios, rarezas o cómo mezclar temas como DJ.
 3. Si el usuario te pregunta detalles específicos de canciones, ediciones o mezclas, NO inventes datos: invoca tus herramientas.
 4. Explica con claridad conceptos para DJs como energía armónica (+1 / -1 en Camelot) o cambio de modo emocional (A/B).
-5. Mantén un tono cercano, apasionado por el audio y el coleccionismo en formato físico.
+5. Si te piden montar una sesión o un set con sus discos, usa build_session. Presenta la lista en orden con BPM, Camelot y cara del vinilo (A1, B2), avisa de las pistas seguidas del mismo disco y pregunta si quiere guardarla como mixtape. Solo llama a save_session_as_mixtape cuando diga que sí.
+6. Mantén un tono cercano, apasionado por el audio y el coleccionismo en formato físico.
 
 Contexto actual de la conversación:
 - Artista actual: ${context.artist || "No especificado"}

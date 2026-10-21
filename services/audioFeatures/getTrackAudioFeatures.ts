@@ -72,10 +72,33 @@ export function normalizeForMatch(str: string): string {
     .trim();
 }
 
+// Etiquetas que no cambian la grabación (o casi): se ignoran al comparar versiones
+const NEUTRAL_VERSION_WORDS =
+  /\b(remaster(ed)?|\d{4}|mono|stereo|digital|explicit|clean|original|album|lp|single|version|mix|edit|radio|feat|ft|featuring|with)\b/g;
+
+/**
+ * Versión de la pista según lo que va entre paréntesis/corchetes o tras « - »:
+ * «Day Zero (Bataille Rework)» → «bataille rework»; «(2011 Remaster)» → «».
+ * Con «feat.» se ignora el resto del paréntesis (son artistas, no versión).
+ */
+export function versionTag(str: string): string {
+  const parts = [
+    ...Array.from((str || "").matchAll(/\((.*?)\)|\[(.*?)\]/g), (m) => m[1] ?? m[2] ?? ""),
+    (str || "").match(/ - (.*)$/)?.[1] ?? "",
+  ];
+  return parts
+    .filter((part) => !/^\s*(feat|ft|featuring|with)\b/i.test(part))
+    .map((part) => normalizeForMatch(`x ${part}`).replace(/^x ?/, "").replace(NEUTRAL_VERSION_WORDS, " "))
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Mismo título y misma versión: un remix no casa con el original. */
 function titlesMatch(a: string, b: string): boolean {
   const na = normalizeForMatch(a);
   const nb = normalizeForMatch(b);
-  return Boolean(na && nb && na === nb);
+  return Boolean(na && nb && na === nb && versionTag(a) === versionTag(b));
 }
 
 function artistsMatch(candidates: string[], artist: string): boolean {
@@ -243,7 +266,8 @@ export async function getTrackAudioFeatures(
 ): Promise<TrackAudioFeatures | null> {
   if (!title || !artist) return null;
 
-  return cached(`track:${normalizeForMatch(artist)}|${normalizeForMatch(title)}`, async () => {
+  const trackKey = `${normalizeForMatch(artist)}|${normalizeForMatch(title)}|${versionTag(title)}`;
+  return cached(`track:${trackKey}`, async () => {
     try {
       const recco = await fromReccoBeatsSearch(title, artist);
       if (recco) return { ...recco, source: "reccobeats" as const };

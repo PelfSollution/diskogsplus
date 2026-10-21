@@ -82,3 +82,13 @@ export function sortByHarmonyAndBpm<T extends OrderableTrack>(tracks: T[]): T[] 
 
   return [...ordered, ...rest];
 }
+
+/**
+ * ¿Mezclan bien dos pistas según la rueda Camelot? (misma tonalidad o vecina:
+ * ±1 o cambio mayor/menor). null si a alguna le falta la tonalidad.
+ */
+export function camelotCompatible(from: OrderableTrack, to: OrderableTrack): boolean | null {
+  const a = getCamelot(from);
+  const b = getCamelot(to);
+  return a && b ? camelotDistance(a, b) <= 1 : null;
+}

@@ -110,7 +110,7 @@ Portada cuadrada, título y artista debajo; al pasar el ratón, el vinilo asoma 
 Cabecera con el contexto (disco, mixtape o colección), respuestas sin burbuja con `ChatMarkdown`, etiquetas de herramientas («Consultando Discogs…»), mensajes del usuario en burbuja `bg-gray-100`, campo de texto que crece.
 
 ### Estados vacíos y errores
-Panel `border-dashed border-gray-300 rounded-2xl` con un vinilo o icono, título, una frase y un botón principal. Errores: `ErrorScreen`.
+Panel `border-dashed border-gray-300 rounded-2xl` con un vinilo o icono, título, una frase y un botón principal. Errores: `ErrorScreen` (`pages/404.tsx`, `pages/_error.tsx`). Las URL inexistentes las sirve el App Router con `app/global-not-found.tsx` (flag `experimental.globalNotFound` en `next.config.js`), que repite el mismo diseño con sus propios estilos y fuentes.
 
 ---
 
@@ -129,5 +129,4 @@ No se usa: la app es clara. Las clases `dark:` antiguas no hacen nada (no se act
 ## 8. Pendiente
 
 - Reproductor global fijo abajo (roadmap): seguir escuchando al navegar.
-- 404 de rutas inexistentes: con `app/` presente, Next 16 sirve su 404 por defecto; `pages/404.tsx` solo se ve en `/404`. Solución: `app/global-not-found.tsx` (experimental).
 - Retirar del todo la escala `vinyl` y las clases `dark:` antiguas.

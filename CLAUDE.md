@@ -23,7 +23,7 @@ Architecture overview and roadmap (Spanish): @docs/README.md
 
 ## Architecture gotchas
 
-- Mixed routers: everything lives in the Pages Router (`pages/`, `pages/api/`) **except** the DiscBOT streaming chat at `app/api/chat/route.ts` (App Router, `ai` package `OpenAIStream`).
+- Mixed routers: everything lives in the Pages Router (`pages/`, `pages/api/`) **except** the DiscBOT streaming chat at `app/api/chat/route.ts` (App Router, `ai` package `OpenAIStream`). Because `app/` exists, unmatched URLs are served by the App Router: `app/global-not-found.tsx` (enabled with `experimental.globalNotFound`) is the real 404; `pages/404.tsx` only shows at `/404`.
 - Auth is custom Discogs OAuth 1.0a via `disconnect` (no next-auth). Session lives in cookies (`username`, `isLoggedIn`, plus AES-encrypted httpOnly `usernameCipher` / `accessData`, keyed by `CRYPT_KEY`).
 - `pages/api/auth/devLogin.ts` is a dev-only bypass (403 in production) that sets mock Discogs tokens — real Discogs API calls fail under it. The normal local setup is the full stack (real Discogs OAuth + Supabase in `.env.local`).
 - AI calls use the OpenAI SDK pointed at either Gemini or OpenAI. `lib/aiClient.ts` (`getAIClient`) picks the key: env `GEMINI_API_KEY` → user's stored key (`services/supabase/getUserApiKey.ts`, encrypted in `users.openai_api_key`) → `OPENAI_API_KEY`. Keys starting with `AIza` are routed to Gemini's OpenAI-compatible endpoint. `app/api/chat/route.ts` duplicates this logic inline — keep both in sync (or migrate it to `getAIClient`).

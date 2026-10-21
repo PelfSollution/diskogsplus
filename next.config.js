@@ -15,6 +15,11 @@ const imageHosts = [
 ];
 
 const nextConfig = {
+  experimental: {
+    // Con app/ presente (ruta del chat), las URL inexistentes las sirve el App
+    // Router: app/global-not-found.tsx da la 404 propia (pages/404.tsx no llega)
+    globalNotFound: true,
+  },
   images: {
     remotePatterns: imageHosts.map((hostname) => ({
       protocol: "https",

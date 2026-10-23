@@ -1,244 +1,202 @@
+# Diskogs Plus (v2.0)
 
-# Diskogs Plus: Enriqueciendo tu experiencia en Discogs
+**Enriqueciendo tu colección de Discogs y preparando tus sesiones de vinilo.**
 
-Una aplicación web adaptable diseñada para amantes de la música en vinilo, DJs y coleccionistas que utilizan Discogs. Desarrollada con Next.js y TypeScript, esta herramienta ofrece un conjunto robusto de funcionalidades para mejorar la experiencia del usuario.
+Una aplicación web diseñada para coleccionistas de vinilo, selectores y DJs. Permite explorar tu catálogo de Discogs con información contextual enriquecida, escuchar pistas mediante un reproductor híbrido (Discogs, YouTube y Deezer), organizar y ordenar sesiones de DJ con datos armónicos (BPM y rueda Camelot), gestionar caras de vinilo físicas y utilizar a **DiscBOT** (con IA de Google Gemini) como selector inteligente para construir sets a partir de tus discos.
 
-## Funcionalidades Principales:
+---
 
-- **Exploración de Tu Catálogo:** No solo puedes visualizar tu catálogo de Discogs, sino que también puedes acceder a detalles enriquecidos de cada álbum. Esto se logra mediante la integración con otras APIs como Last.fm (etiquetas, coincidencias con otros artistas similares, etc.), Spotify y OpenAI, con las cuales podrás generar portadas y ampliar información.
+## 🚀 Funcionalidades Principales
 
-- **Mixtape Personal:** Crea tu propia "mixtape" seleccionando canciones de diferentes álbumes. Además, cuentas con la posibilidad de filtrar y ordenar las pistas por BPM, clave musical y escala Camelot, facilitando así la preparación de sesiones para DJs. Una vez satisfecho, podrás exportar esta mixtape directamente a tu cuenta de Spotify y compartirla en redes sociales.
+- **Exploración Enriquecida de tu Catálogo:**
+  - Visualización moderna de tu colección de Discogs con carátulas dinámicas interactivas (`VinylDisc`).
+  - Metadatos biográficos y artistas similares integrados mediante **Last.fm**.
+  - Tracklist completo con duraciones y posiciones físicas de cada prensaje.
 
-- **Ask to DiscBOT:** Realiza preguntas relacionadas con un álbum específico y obtén respuestas por medio de inteligencia artificial.
+- **Reproducción Híbrida de Audio:**
+  - Reproductor con cola automática integrado en la ficha del disco y en las mixtapes.
+  - Combina vídeos de Discogs, pistas oficiales «Artista - Topic» de **YouTube Music** y preescuchas de 30 segundos de **Deezer** sin requerir cuentas de pago.
 
-- **Comparativa de Catálogos:** Compara tu colección de discos con la de otros usuarios. Descubre y escucha álbumes que no posees y añádelos fácilmente a tu "Wantlist".
+- **Preparación de Sesiones y Mixtapes para DJs:**
+  - **Múltiples mixtapes con nombre propio** para organizar distintas sesiones o sets.
+  - **Detección de tempo y tono musical:** Detección automática de BPM, clave musical y escala armónica **Camelot** (mediante ReccoBeats y Deezer).
+  - **Ordenación armónica automática:** Algoritmo que encadena tonalidades vecinas en la rueda Camelot y ordena por progresión de BPM (`lib/mixtapeOrder.ts`).
+  - **Metadatos y ergonomía de vinilo:** Registro de caras y pistas (`A1`, `B2`), duración acumulada del set y **alertas visuales si colocas dos canciones consecutivas del mismo disco físico** (para evitar fallos en cabina si pinchas con una sola copia).
 
-## Futuras Funcionalidades:
+- **DiscBOT: Asistente y Selector con IA:**
+  - Chat inteligente potenciado por **Google Gemini 2.5 Flash** (vía Vercel AI SDK).
+  - Capacidad de consultar y analizar los vinilos de tu propia colección.
+  - **Construcción de sesiones asistida (`build_session`):** Pídele un set temático (*ej: "prepárame una sesión soul de 1h entre 95 y 110 BPM"*) y DiscBOT seleccionará vinilos compatibles de tu colección, ordenará la sesión armónicamente y te permitirá guardarla directamente como mixtape con un clic.
 
-- [ ] Soporte Multi-idioma.
-- [ ] Notificaciones de conciertos en tu ciudad de artistas de tu colección.
-- [ ] Implementación de next-auth junto con Supabase para usuarios que no posean una cuenta en Discogs (consultas generales de discos).
-- [ ] Utilización de Langchain para una mejor gestión de LLM (agentes, contexto específico, memoria, prevención de alucinaciones, etc.).
+- **Exportación de Mixtapes:**
+  - Exportación directa de tus sesiones a playlists privadas de **Spotify** (actualizado a los endpoints de la API de 2026).
 
-## Estructura de Carpetas
+- **Comparador de Colecciones y Wantlist:**
+  - Compara tu catálogo con el de otros usuarios de Discogs para descubrir joyas que no posees y añadirlas directamente a tu Wantlist sincronizada.
+
+- **Persistencia Híbrida y Fiabilidad:**
+  - Base de datos en la nube con **Supabase (PostgreSQL)** mediante arquitectura segura *server-only* (Service Role).
+  - Respaldo automático offline en `localStorage` si no hay conexión o si Supabase no está configurado.
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Capa | Tecnologías |
+| :--- | :--- |
+| **Framework Web** | [Next.js 16](https://nextjs.org/) (Pages Router + App Router para el streaming de chat) y [React 19](https://react.dev/) |
+| **Lenguaje** | [TypeScript](https://www.typescriptlang.org/) |
+| **Estilos & UI** | [Tailwind CSS](https://tailwindcss.com/) (prefijo `tw-`), componentes [shadcn/ui](https://ui.shadcn.com/), iconos [Lucide](https://lucide.dev/) |
+| **Inteligencia Artificial** | Google Gemini 2.5 Flash (`@ai-sdk/google`, AI SDK v7) / OpenAI compatible |
+| **Base de Datos** | [Supabase](https://supabase.com/) (PostgreSQL) con acceso restringido al servidor |
+| **APIs Externas** | Discogs API (OAuth 1.0a), Last.fm API, YouTube Data API v3, Deezer API, ReccoBeats, Spotify Web API |
+| **Entorno de Ejecución** | Node.js 24 LTS (configurado vía `.nvmrc` y `fnm`) |
+
+---
+
+## 📂 Estructura del Repositorio
+
 ```
 diskogsplus/
-┣ app/
-┃ ┗ api/
-┃   ┗ chat/
-┃ ┃   ┗ route.ts
-┣ components/
-┃ ┣ ui/
-┃ ┃ ┗ button.tsx
-┃ ┣ CustomCircularProgress.tsx
-┃ ┣ CustomHead.tsx
-┃ ┣ CustomSnackbar.tsx
-┃ ┣ Layout.tsx
-┃ ┣ MixtapeRow.tsx
-┃ ┣ TopNavBar.tsx
-┃ ┣ TurnTable.tsx
-┃ ┗ Turntable.module.css
-┣ hooks/
-┃ ┣ useCompareAlbumList.ts
-┃ ┣ useGetAlbumData.ts
-┃ ┣ useGetAlbumInfo.ts
-┃ ┣ useGetAlbumList.ts
-┃ ┣ useGetMixtape.ts
-┃ ┗ useGetUserData.ts
-┣ lib/
-┃ ┣ cryptoUtils.ts
-┃ ┣ musicnotation.ts
-┃ ┣ stringUtils.ts
-┃ ┣ supabase.ts
-┃ ┗ utils.ts
-┣ pages/
-┃ ┣ albums/
-┃ ┃ ┣ [id].tsx
-┃ ┃ ┗ index.tsx
-┃ ┣ api/
-┃ ┃ ┣ albums/
-┃ ┃ ┃ ┣ addToWantlist.ts
-┃ ┃ ┃ ┣ albumData.ts
-┃ ┃ ┃ ┣ albumInfo.ts
-┃ ┃ ┃ ┣ catalog.ts
-┃ ┃ ┃ ┣ compare.ts
-┃ ┃ ┃ ┣ enrichArtistInfo.ts
-┃ ┃ ┃ ┣ importWantlistFromDiscogs.ts
-┃ ┃ ┃ ┗ removeFromWantlist.ts
-┃ ┃ ┣ auth/
-┃ ┃ ┃ ┣ callback/
-┃ ┃ ┃ ┣ authorize.ts
-┃ ┃ ┃ ┣ authorizeSpotify.ts
-┃ ┃ ┃ ┣ identity.ts
-┃ ┃ ┃ ┗ logout.ts
-┃ ┃ ┣ images/
-┃ ┃ ┃ ┗ generate.ts
-┃ ┃ ┣ getApiKey.ts
-┃ ┃ ┗ saveApiKey.ts
-┃ ┣ 404.tsx
-┃ ┣ _app.tsx
-┃ ┣ _document.tsx
-┃ ┣ _error.tsx
-┃ ┣ chat.tsx
-┃ ┣ dashboard.module.css
-┃ ┣ dashboard.tsx
-┃ ┣ index.tsx
-┃ ┣ matching.tsx
-┃ ┣ mixtape.tsx
-┃ ┣ mixtapeplayer.tsx
-┃ ┗ wantlist.tsx
-┣ public/
-┃ ┣ diskogs-logo.gif
-┃ ┣ favicon.png
-┃ ┣ img-404.png
-┃ ┗ no-portada.gif
-┣ services/
-┃ ┣ last.fm/
-┃ ┃ ┗ fetchData.ts
-┃ ┣ openai/
-┃ ┃ ┣ enrichArtistInfo.ts
-┃ ┃ ┗ generateImageFromPrompt.ts
-┃ ┣ spotify/
-┃ ┃ ┣ getAccessToken.ts
-┃ ┃ ┣ getAlbumId.ts
-┃ ┃ ┣ getMostPopularAlbum.ts
-┃ ┃ ┣ getSpotifyMixtape.ts
-┃ ┃ ┣ getTrackAudioFeatures.ts
-┃ ┃ ┣ getTrackId.ts
-┃ ┃ ┗ getTracklistWithSpotifyIds.ts
-┃ ┗ supabase/
-┃   ┣ addChatLogs.ts
-┃   ┣ addMixtape.ts
-┃   ┣ addUser.ts
-┃   ┣ addWantlistEntry.ts
-┃   ┣ checkAlbumInWantlist.ts
-┃   ┣ checkUserExists.ts
-┃   ┣ deleteChatLogs.ts
-┃   ┣ deleteFromMixtape.ts
-┃   ┣ deleteMixtapeURL.ts
-┃   ┣ deleteWantlistEntry.ts
-┃   ┣ getArtistImageFromSupabase.ts
-┃   ┣ getArtistInfoSupabase.ts
-┃   ┣ getChatLogsUser.ts
-┃   ┣ getLastChatLogForUser.ts
-┃   ┣ getMixtape.ts
-┃   ┣ getMixtapeURLs.ts
-┃   ┣ getSongsFromSupabase.ts
-┃   ┣ getUserChats.ts
-┃   ┣ getWantlistItemsUser.ts
-┃   ┣ imageService.ts
-┃   ┣ saveArtistInfotoSupabase.ts
-┃   ┣ saveMixtapeURL.ts
-┃   ┗ updateChatLogs.ts
-┣ styles/
-┃ ┗ globals.css
-┣ types/
-┃ ┣ Mixtape.ts
-┃ ┗ types.ts
-┣ .env.local
-┣ .env.local.sample
-┣ .eslintrc.json
-┣ .gitignore
-┣ README.md
-┣ components.json
-┣ next-env.d.ts
-┣ next.config.js
-┣ package-lock.json
-┣ package.json
-┣ postcss.config.js
-┣ tailwind.config.js
-┣ tailwind.config.ts
-┗ tsconfig.json
+├── app/                        # App Router (streaming y rutas globales)
+│   ├── api/chat/route.ts       # Endpoint streaming del agente DiscBOT
+│   └── global-not-found.tsx    # Pantalla 404 global
+├── components/                 # Componentes reutilizables de UI
+│   ├── album/                  # Tracklist, cabecera, acordeón bio y sidebar multimedia
+│   ├── chat/                   # Renderizado de Markdown y herramientas de DiscBOT
+│   ├── ui/                     # Primitivas accesibles shadcn/ui (Button, etc.)
+│   ├── AppSidebar.tsx          # Navegación principal de la app
+│   ├── VinylDisc.tsx           # Componente interactivo del disco de vinilo
+│   └── CamelotChip.tsx         # Etiqueta visual para tonos de la rueda Camelot
+├── docs/                       # Documentación técnica, diseño y roadmap detallado
+│   ├── actualizacion_dependencias_2026.md
+│   ├── balance_v2_y_roadmap.md
+│   ├── design.md               # Sistema de diseño, paleta y tipografía
+│   ├── roadmap.md              # Roadmap de fases y comparativa de audio
+│   └── supabase.md             # Guía de configuración del esquema de base de datos
+├── hooks/                      # Custom React Hooks (reproductores, mixtapes, datos)
+├── lib/                        # Utilidades (Camelot, notas musicales, vinilo, cifrado, cliente IA)
+├── pages/                      # Pages Router
+│   ├── albums/                 # Catálogo y detalle de cada disco ([id].tsx)
+│   ├── api/                    # Rutas de API internas (auth Discogs/Spotify, mixtapes, etc.)
+│   ├── chat.tsx                # Interfaz de DiscBOT
+│   ├── dashboard.tsx           # Panel de usuario y configuración
+│   ├── mixtape.tsx             # Detalle y edición de una mixtape concreta
+│   ├── mixtapes.tsx            # Índice de mixtapes y sesiones
+│   └── wantlist.tsx            # Lista de deseos
+├── services/                   # Clientes de integración externos y lógica de dominio
+│   ├── agent/                  # Herramientas del agente y creador de sesiones
+│   ├── audioFeatures/          # Extracción de BPM y claves musicales
+│   ├── client/                 # Clientes fetch para el navegador
+│   ├── discogs/                # Conexión con Discogs API
+│   ├── last.fm/                # Metadatos biográficos
+│   ├── local/                  # Almacenamiento fallback en localStorage
+│   ├── spotify/                # Búsqueda y exportación a Spotify
+│   ├── supabase/               # Consultas server-side a PostgreSQL
+│   └── youtube/                # Playlists y búsqueda de vídeo
+└── supabase/
+    └── schema.sql              # Esquema DDL idempotente para la base de datos
 ```
-## Diagrama de Entidades y Relaciones (ER):
-```
-+-------------+       +---------------------+       +------------------+       +----------------+
-|   users     |       |     mixtape_urls    |       |     mixtape     |        |    wantlist    |     
-+-------------+       +---------------------+       +------------------+       +----------------+
-| username(PK)|------>| username (FK)       |<----- | username (FK)    |<----- | username (FK)  |  
-| email       |       | id (PK)             |       | id (PK)          |       | id (PK)        |
-| openai_key  |       | mixtape_url         |       | disco_id         |       | disco_id       |
-+-------------+       | fecha_creacion      |       | spotifytrackid   |       | notes          |
-        |             | spotify_username    |       | artista          |       | rating         | 
-        |             +---------------------+       | trackname        |       | created_at     |
-        |                                           | tempo            |       | artista        |
-        |                                           | key              |       | album          |
-        |---------------------------------|         | mode             |       | image_url      |
-                                          |         | duration         |       +----------------+
-                                          |         +------------------+       
-                                          |              
-                                          |      
-+-----------------------+       +-------------------+      +-------------------+
-|   generated_images_   |       |     chat_logs     |      |   enrich_artist_  | 
-|     metadata          |       +-------------------+      |     info          |      
-+-----------------------+       | id (PK)           |      +-------------------+  
-| id (PK)               |       | username (FK)     |      | id (PK)           |
-| artista               |<------| prompt            |----->| artista           |
-| image_url             |       | response          |      | album             |    
-| generated_at          |       | created_at        |      | disco_id          |
-+-----------------------+       | artista           |      | enriched_info     |
-            |                   | album             |      | created_at        |
-            |                   | disco_id          |      +-------------------+
-            |----------------|  +-------------------+
-                             |
-+-----------------+       +-----------------+       +-----------------+
-| storage.buckets |       | storage.objects |       | storage.migrate |
-+-----------------+       +-----------------+       +-----------------+
-| id (PK)         |<------| bucket_id (FK)  |       | id (PK)         |
-| name            |       | id (PK)         |       | name            |
-| owner           |<------| owner (FK)      |       | hash            |
-| created_at      |       | name            |       | executed_at     |
-+-----------------+       | created_at      |       +-----------------+
-                          | updated_at      |
-                          | last_accessed_at|
-                          | metadata        |
-                          +-----------------+
 
+---
 
-```
-## Stack Tecnológico
+## ⚙️ Instalación y Puesta en Marcha
 
-- Frontend / Backend (API routes): Next.js (React)
-- Estilos: MUI, TailwindCSS 
-- Estado y Datos: Supabase (PostgreSQL), SWR.
-- APIs: Discogs (disconnect lib.), Last.fm, Spotify, OpenAI.
-- Models: Vercel AI SDK (GPT-3.5 + DALL·E 2).
-- Deploy: Vercel.
-- Otros: TypeScript, ESLint, Prettier, VS Code, Cursor, Github Copilot
+### 1. Requisitos Previos
 
-## Inicialización del Proyecto
+- **Node.js 22+** (recomendado **Node 24 LTS**). Si usas `fnm` o `nvm`:
+  ```bash
+  nvm use || fnm use
+  ```
 
-1 - Primero, instala las dependencias:
+### 2. Instalación de Dependencias
 
 ```bash
 npm install
 ```
-2 - Configurar las variables de entorno:
 
-Modifica el archivo .env.local.sample con tus credenciales y renómbralo a .env.local
+> **Nota de seguridad:** El archivo `.npmrc` tiene configurado `ignore-scripts=true` y `save-exact=true` para proteger la cadena de suministro.
 
-```
-CONSUMER_KEY=<tu_clave_de_discogs>
-CONSUMER_SECRET=<tu_clave_secreta_de_discogs>
-BASE_URL=<tu_url_de_despliegue>
-NEXT_PUBLIC_BASE_URL=<tu_url_de_despliegue>
-CRYPT_KEY=<tu_clave_para_encrypt_dencript>
-LASTFM_API_KEY=<tu_clave_de_lastfm>
-OPENAI_API_KEY=<tu_clave_api_de_openai>
-SPOTIFY_CLIENT_ID=<tu_id_de_spotify
-SPOTIFY_CLIENT_SECRET=<tu_clave_secreta_de_spotify>
-SUPABASE_URL=<tu_url_de_supabase>
-SUPABASE_SECRET_KEY=<tu_clave_secreta_de_supabase>
+### 3. Configuración de Variables de Entorno
+
+Copia el archivo de plantilla `.env.local.sample` a `.env.local`:
+
+```bash
+cp .env.local.sample .env.local
 ```
 
-3 - Inicia servidor de desarrollo:
+Rellena las claves necesarias:
+
+```env
+# URLs del entorno
+BASE_URL=http://localhost:3000
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+
+# Cifrado local AES (32 caracteres recomendados)
+CRYPT_KEY=tu_clave_secreta_para_cifrar_sesiones
+
+# Discogs API (OAuth 1.0a)
+CONSUMER_KEY=tu_consumer_key_de_discogs
+CONSUMER_SECRET=tu_consumer_secret_de_discogs
+
+# Google AI Studio (DiscBOT con Gemini 2.5 Flash)
+GEMINI_API_KEY=tu_clave_de_gemini
+GEMINI_MODEL=gemini-2.5-flash
+
+# Last.fm API
+LASTFM_API_KEY=tu_clave_lastfm
+
+# YouTube Data API v3 (para completar pistas oficiales de audio)
+YOUTUBE_API_KEY=tu_clave_de_youtube
+
+# Supabase (server-only)
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SECRET_KEY=tu_secret_key_de_supabase
+
+# Spotify API (Opcional, para exportar mixtapes a Spotify)
+SPOTIFY_CLIENT_ID=tu_client_id
+SPOTIFY_CLIENT_SECRET=tu_client_secret
+```
+
+> 💡 **Tip para Spotify:** Si vas a probar la exportación a Spotify en local, Spotify ya no permite `localhost` como redirect URI. Configura `http://127.0.0.1:3000` en `BASE_URL` y añade `http://127.0.0.1:3000/api/auth/callback/spotify` en tu Spotify Developer Dashboard.
+
+### 4. Base de Datos (Supabase)
+
+Si vas a usar persistencia en Supabase, ejecuta el script SQL idempotente [`supabase/schema.sql`](./supabase/schema.sql) en el **SQL Editor** de tu proyecto Supabase. La guía completa se detalla en [`docs/supabase.md`](./docs/supabase.md).
+
+### 5. Iniciar en Desarrollo
 
 ```bash
 npm run dev
 ```
-Abre [http://localhost:3000](http://localhost:3000) con tu navegador para ver el resultado.
 
-4 - Deploy a Vercel:
+Abre [http://localhost:3000](http://localhost:3000) (o `http://127.0.0.1:3000` si pruebas Spotify) en tu navegador.
 
-Una forma sencilla de desplegar este proyecto es utilizar la plataforma Vercel. Ves a [https://vercel.com/signup](https://vercel.com/signup) y crea una cuenta. Una vez creada, haz click en el botón "New Project" y selecciona "Import Project". Selecciona el repositorio de Github y sigue los pasos. Una vez desplegado, puedes acceder a la aplicación desde la URL que te proporciona Vercel.
+---
 
+## 🧪 Verificación y Comandos
+
+- **Comprobar tipos TypeScript:**
+  ```bash
+  npx tsc --noEmit
+  ```
+- **Comprobar linter:**
+  ```bash
+  npm run lint
+  ```
+- **Compilar para producción:**
+  ```bash
+  npm run build
+  ```
+
+---
+
+## 📖 Documentación Adicional
+
+Para consultar los detalles de arquitectura y el trabajo en curso, revisa los documentos dentro de [`docs/`](./docs/):
+
+* [**`docs/roadmap.md`**](./docs/roadmap.md): Hoja de ruta por fases, comparativa de servicios de audio y tareas activas.
+* [**`docs/design.md`**](./docs/design.md): Guía de diseño de la v2.0 (paleta cromática, tipografías y componentes).
+* [**`docs/balance_v2_y_roadmap.md`**](./docs/balance_v2_y_roadmap.md): Balance detallado del paso de v1 a v2.
+* [**`docs/supabase.md`**](./docs/supabase.md): Auditoría de seguridad y configuración de base de datos.
+* [**`docs/actualizacion_dependencias_2026.md`**](./docs/actualizacion_dependencias_2026.md): Plan de dependencias y actualización a Node 24.
